@@ -16,16 +16,18 @@
 
 package uk.gov.hmrc.helptosavestub.models
 
+import java.time.LocalDate
+
 import play.api.libs.json.{Format, Json}
 
 
 case class UserDetails(name: String,
                        NINO: String,
-                       dateOfBirth: String,
+                       dateOfBirth: LocalDate,
                        email: String,
                        phoneNumber: String,
                        address: List[String],
-                       contactPreference: String)
+                       contactPreference: ContactPreference)
 
 object UserDetails {
 
