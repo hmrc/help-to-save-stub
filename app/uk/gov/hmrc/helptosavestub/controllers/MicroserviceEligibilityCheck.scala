@@ -16,11 +16,12 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.time.LocalDate
+
 import play.api.libs.json.Json
-import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.play.http.logging.MdcLoggingExecutionContext._
 import play.api.mvc._
-import uk.gov.hmrc.helptosavestub.models.UserDetails
+import uk.gov.hmrc.helptosavestub.models.{ContactPreference, UserDetails}
+import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.Future
 
@@ -28,9 +29,19 @@ object MicroserviceEligibilityCheck extends MicroserviceEligibilityCheck
 
 trait MicroserviceEligibilityCheck extends BaseController {
 
-	val user = UserDetails("Bob", "12345678", "22/01/1989","colm.m.cavanagh@gmail.com","0879371657",List("Happy land","happy street"),"EMAIL")
+	val user = UserDetails(
+		"Bob",
+		"12345678",
+		LocalDate.now(),
+		"bob@email.com",
+		"0879371657",
+		List("Happy land","happy street"),
+		ContactPreference.Email
+	)
+
 
 	def eligibilityCheck(nino:String) = Action.async { implicit request =>
 		Future.successful(Ok(Json.toJson(user)))
 	}
+
 }
