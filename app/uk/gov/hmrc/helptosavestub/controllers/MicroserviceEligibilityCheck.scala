@@ -30,7 +30,7 @@ object MicroserviceEligibilityCheck extends MicroserviceEligibilityCheck
 trait MicroserviceEligibilityCheck extends BaseController {
 
 	val user = UserDetails(
-		"Bob",
+		"Bob Bobber",
 		"12345678",
 		LocalDate.now(),
 		"bob@email.com",
