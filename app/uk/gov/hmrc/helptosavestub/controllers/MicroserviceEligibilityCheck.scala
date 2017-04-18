@@ -24,24 +24,59 @@ import uk.gov.hmrc.helptosavestub.models.{ContactPreference, UserDetails}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.Future
+import smartstub._
 
 object MicroserviceEligibilityCheck extends MicroserviceEligibilityCheck
 
 trait MicroserviceEligibilityCheck extends BaseController {
 
-	val user = UserDetails(
-		"Bob",
-		"12345678",
-		LocalDate.now(),
-		"bob@email.com",
-		"0879371657",
-		List("Happy land","happy street"),
-		ContactPreference.Email
-	)
+  /**
+    * This generator defines the randomly created UserDetails records from a NINO
+    */
+  object UserDetailsGenerator extends SmartStubGenerator[String, UserDetails] {
+    import org.scalacheck.Gen._
 
+    def from(in: String): Option[Long] = fromNino(in)
 
-	def eligibilityCheck(nino:String) = Action.async { implicit request =>
-		Future.successful(Ok(Json.toJson(user)))
-	}
+    def generator(in: String) = for {
+      gender <- oneOf(people.Male, people.Female)
+      forename <- people.Names.forenames(gender)
+      surname <- people.Names.surnames
+      dateOfBirth <- dateGen(1970,2000)
+      email <- people.Names.email(forename, surname, dateOfBirth.toString)
+      phoneNumber <- people.Names.phoneNo
+      address <- people.Address.ukAddress
+      contactPreference <- oneOf(ContactPreference.SMS, ContactPreference.Email)
+    } yield {
+      UserDetails(
+        s"$forename $surname",
+        in.filter(_.isLetterOrDigit).toUpperCase,
+        dateOfBirth,
+        email,
+        phoneNumber,
+        address,
+        contactPreference
+      )
+    }
+
+    // Lets hard-code a specific NINO
+    state("QQ123456C") = UserDetails(
+      "Bob",
+      "QQ123456C",
+      LocalDate.now(),
+      "bob@email.com",
+      "0879371657",
+      List("Happy land","happy street"),
+      ContactPreference.Email
+    )
+  }
+
+  def eligibilityCheck(nino:String) = Action { implicit request =>
+    UserDetailsGenerator(nino).map { x => 
+      Ok(Json.toJson(x))
+    }.getOrElse{
+      NotFound
+    }
+  }
 
 }
