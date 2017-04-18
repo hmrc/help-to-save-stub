@@ -20,7 +20,7 @@ import java.time.LocalDate
 
 import play.api.libs.json.Json
 import play.api.mvc._
-import uk.gov.hmrc.helptosavestub.models.{ContactPreference, UserDetails}
+import uk.gov.hmrc.helptosavestub.models.{ContactPreference, EligibilityResult, UserDetails}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.Future
@@ -39,9 +39,8 @@ trait MicroserviceEligibilityCheck extends BaseController {
 		ContactPreference.Email
 	)
 
-
 	def eligibilityCheck(nino:String) = Action.async { implicit request =>
-		Future.successful(Ok(Json.toJson(user)))
+			Future.successful(Ok(Json.toJson(EligibilityResult(Some(user)))))
 	}
 
 }
