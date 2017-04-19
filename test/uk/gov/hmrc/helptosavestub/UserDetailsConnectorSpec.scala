@@ -38,7 +38,7 @@ class UserDetailsConnectorSpec extends FlatSpec
     "return successful response for a given user id" in {
     val id = "1"
     stubUserDetails(id)
-    val result = new UserDetailsConnectorImpl().getUserEmail(id)
+    val result = new UserDetailsConnectorImpl().getEmail(id)
     result.futureValue should be(Email("test@test.com"))
   }
 }
