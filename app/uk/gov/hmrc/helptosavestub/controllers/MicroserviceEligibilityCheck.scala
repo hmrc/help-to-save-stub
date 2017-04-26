@@ -20,7 +20,7 @@ import java.time.LocalDate
 
 import play.api.libs.json.Json
 import play.api.mvc._
-import uk.gov.hmrc.helptosavestub.models.{ContactPreference, UserDetails}
+import uk.gov.hmrc.helptosavestub.models.{ContactPreference, EligibilityResult, UserDetails}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.Future
@@ -30,6 +30,7 @@ object MicroserviceEligibilityCheck extends MicroserviceEligibilityCheck
 
 trait MicroserviceEligibilityCheck extends BaseController {
 
+<<<<<<< HEAD
   /**
     * This generator defines the randomly created UserDetails records from a NINO
     */
@@ -61,7 +62,7 @@ trait MicroserviceEligibilityCheck extends BaseController {
 
     // Lets hard-code a specific NINO
     state("QQ123456C") = UserDetails(
-      "Bob",
+      "Bob Bobber",
       "QQ123456C",
       LocalDate.now(),
       "bob@email.com",
