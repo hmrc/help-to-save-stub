@@ -29,7 +29,7 @@ class MicroserviceEligibilityCheckControllerSpec extends UnitSpec with WithFakeA
 
   "GET /" should {
     "return a successful EligibilityResult" in {
-      val result = MicroserviceEligibilityCheck.eligibilityCheck("12345")(fakeRequest)
+      val result = MicroserviceEligibilityCheck.eligibilityCheck("QQ123456C")(fakeRequest)
       status(result) shouldBe Status.OK
       val json = contentAsString(result)
 
