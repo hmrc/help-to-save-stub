@@ -20,7 +20,7 @@ import java.time.LocalDate
 import play.api.libs.json.{ Format, Json }
 import play.api.mvc._
 import uk.gov.hmrc.play.microservice.controller.BaseController
-
+import org.scalacheck.Gen._
 import smartstub._
 
 object EdhController extends BaseController {
@@ -105,7 +105,6 @@ object EdhController extends BaseController {
   )
 
   object EligibilityGenerator extends SmartStubGenerator[String, Boolean] {
-    import org.scalacheck.Gen._
 
     def from(in: String): Option[Long] = fromNino(in)
 

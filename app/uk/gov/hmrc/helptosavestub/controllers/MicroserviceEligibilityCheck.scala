@@ -30,7 +30,6 @@ object MicroserviceEligibilityCheck extends MicroserviceEligibilityCheck
 
 trait MicroserviceEligibilityCheck extends BaseController {
 
-<<<<<<< HEAD
   /**
     * This generator defines the randomly created UserDetails records from a NINO
     */
@@ -61,16 +60,18 @@ trait MicroserviceEligibilityCheck extends BaseController {
     }
 
     // Lets hard-code a specific NINO
-    state("QQ123456C") = UserDetails(
-      "Bob Bobber",
-      "QQ123456C",
-      LocalDate.now(),
-      "bob@email.com",
-      "0879371657",
-      List("Happy land","happy street"),
-      ContactPreference.Email
-    )
+    state("QQ123456C") = user
   }
+
+  val user = UserDetails(
+    "Bob Bobber",
+    "QQ123456C",
+    LocalDate.now(),
+    "bob@email.com",
+    "0879371657",
+    List("Happy land","happy street"),
+    ContactPreference.Email
+  )
 
   def eligibilityCheck(nino:String) = Action { implicit request =>
     UserDetailsGenerator(nino).map { x => 
