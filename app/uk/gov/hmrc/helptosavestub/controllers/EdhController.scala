@@ -96,8 +96,6 @@ object EdhController extends BaseController {
     av_end_date: String
   )
 
-  // type NtpChild = Any
-
   case class NtpOutputSchema(
     nino: String,
     // applicantId: Option[Int],
@@ -115,14 +113,11 @@ object EdhController extends BaseController {
   }
 
   object WtcGenerator extends SmartStubGenerator[String, NtpOutputSchema] {
-    import org.scalacheck.Gen._
+
     def from(in: String): Option[Long] = fromNino(in)
 
     implicit def toDateString(d: LocalDate): Date =
       d.toString.filter(_ != '-')
-
-    def dateF(f: Int,t: Int) =
-      dateGen(f,t).map{_.toString.filter(_ != '-')}
 
     val genAward = for {
       status <- oneOf("OFTPCZ".toList.map(_.toString))
@@ -143,16 +138,13 @@ object EdhController extends BaseController {
     def generator(nino: String) = for {
       noAwards <- choose(0,8)
       awards <- listOfN(noAwards, genAward)
-      award <- genAward
     } yield 
       NtpOutputSchema (
         nino,
-        //        List(award)
         awards
       )
     
   }
-
 
   def uc(nino:String) = Action { implicit request =>
 
@@ -163,6 +155,9 @@ object EdhController extends BaseController {
     }
   }
 
+  /**
+    * Stubbed out implementation of API 25c
+    */
   def wtc(nino:String) = Action { implicit request =>
 
     implicit val ntpAwardFormat: Format[NtpAward] = Json.format[NtpAward]
@@ -174,6 +169,5 @@ object EdhController extends BaseController {
     }.getOrElse{
       NotFound
     }
-  }
-  
+  }  
 }
