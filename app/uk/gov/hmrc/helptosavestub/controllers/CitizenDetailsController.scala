@@ -42,6 +42,7 @@ object CitizenDetailsController extends BaseController {
 
   case class Response(person: Option[Person], address: Option[Address])
 
+  implicit val personWrites: Writes[Person] = Json.writes[Person]
   implicit val addressWrites: Writes[Address] = Json.writes[Address]
   implicit val responseWrites: Writes[Response] = Json.writes[Response]
 
