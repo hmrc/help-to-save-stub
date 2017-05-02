@@ -22,6 +22,7 @@ import org.scalacheck.Gen
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
 import smartstub.SmartStubGenerator
+import smartstub.people
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 
@@ -61,19 +62,36 @@ object CitizenDetailsController extends BaseController {
     def optionGen[A](a: Gen[A]): Gen[Option[A]] =
       Gen.frequency(99 → a.map(Some(_)), 1 → Gen.const[Option[A]](None))
 
+    val maleNameGen: Gen[String] =
+      people.Names.forenames.getOrElse(people.Male, sys.error("Could not load male names"))
+
+    val femaleNameGen: Gen[String] =
+      people.Names.forenames.getOrElse(people.Female, sys.error("Could not load female names"))
+
+    val numGen: Gen[Int] = Gen.chooseNum(1,100)
+
+    val charGen: Gen[Char] = Gen.alphaUpperChar
+
     val personGenerator: Gen[Person] = for{
-       firstName   ← optionGen(Gen.identifier)
-       lastName    ← optionGen(Gen.identifier)
+       firstName   ← optionGen(Gen.oneOf(maleNameGen, femaleNameGen))
+       lastName    ← optionGen(people.Names.surnames)
        dateOfBirth ← optionGen(dateGen())
     } yield Person(firstName, lastName, dateOfBirth)
 
     val addressGenerator: Gen[Address] = for {
-      line1     ← optionGen(Gen.alphaStr)
-      line2     ← optionGen(Gen.alphaStr)
-      line3     ← optionGen(Gen.alphaStr)
-      postcode  ← optionGen(Gen.alphaNumStr)
-      country   ← optionGen(Gen.identifier)
-    } yield Address(line1, line2, line3, postcode, country)
+      number         ← numGen
+      street         ← people.Address.streetNames
+      (code, region) ← people.Address.postcodeRegions
+      postcode       ← postcodeGen(code)
+    } yield Address(Some(number + " " + street), Some(region), None, Some(postcode), Some("UK"))
+
+    def postcodeGen(regionCode: String): Gen[String] = for {
+      number1 ← numGen
+      number2 ← numGen
+      char1 ← charGen
+      char2 ← charGen
+    } yield s"$regionCode$number1 $number2$char1$char2"
+
   }
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
