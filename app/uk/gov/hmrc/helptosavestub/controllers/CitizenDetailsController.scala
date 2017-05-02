@@ -29,14 +29,18 @@ object CitizenDetailsController extends BaseController {
 
   type NINO = String
 
-  case class Address(line1: String,
-                     line2: String,
-                     line3: String,
-                     postcode: String,
-                     country: String
+  case class Person(firstName: Option[String],
+                    lastName: Option[String],
+                    dateOfBirth: Option[LocalDate])
+
+  case class Address(line1: Option[String],
+                     line2: Option[String],
+                     line3: Option[String],
+                     postcode: Option[String],
+                     country: Option[String]
                     )
 
-  case class Response(address: Address)
+  case class Response(person: Option[Person], address: Option[Address])
 
   implicit val addressWrites: Writes[Address] = Json.writes[Address]
   implicit val responseWrites: Writes[Response] = Json.writes[Response]
@@ -45,16 +49,30 @@ object CitizenDetailsController extends BaseController {
 
     def from(in: NINO): Option[Long] = fromNino(in)
 
-    def generator(in: NINO): Gen[Response] = addressGenerator.map(Response.apply)
+    def generator(in: NINO): Gen[Response] =
+      optionGen(addressGenerator).flatMap(a ⇒
+        optionGen(personGenerator).map(p ⇒
+          Response(p, a)))
+
+    /**
+      * Return [[Some]] 90% of the time and [[None]] 1% of the time
+      */
+    def optionGen[A](a: Gen[A]): Gen[Option[A]] =
+      Gen.frequency(99 → a.map(Some(_)), 1 → Gen.const[Option[A]](None))
+
+    val personGenerator: Gen[Person] = for{
+       firstName   ← optionGen(Gen.identifier)
+       lastName    ← optionGen(Gen.identifier)
+       dateOfBirth ← optionGen(dateGen())
+    } yield Person(firstName, lastName, dateOfBirth)
 
     val addressGenerator: Gen[Address] = for {
-      line1     ← Gen.alphaStr
-      line2     ← Gen.alphaStr
-      line3     ← Gen.alphaStr
-      postcode  ← Gen.alphaNumStr
-      country   ← Gen.identifier
+      line1     ← optionGen(Gen.alphaStr)
+      line2     ← optionGen(Gen.alphaStr)
+      line3     ← optionGen(Gen.alphaStr)
+      postcode  ← optionGen(Gen.alphaNumStr)
+      country   ← optionGen(Gen.identifier)
     } yield Address(line1, line2, line3, postcode, country)
-
   }
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
