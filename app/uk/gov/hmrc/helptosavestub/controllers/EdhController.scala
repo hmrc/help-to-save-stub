@@ -17,7 +17,7 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.LocalDate
-import play.api.libs.json.{ Format, Json }
+import play.api.libs.json.{Format, Json}
 import play.api.mvc._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import org.scalacheck.Gen._
@@ -81,34 +81,34 @@ object EdhController extends BaseController {
   // )
 
   case class NtpAward(
-    aw_award_status: String, // OFTPCZ
-    aw_tax_credit_period_startdate: String,
-    aw_tax_credit_period_end_date: String,
-    av_total_taper_household_award: Int,
-    // av_total_childcare_incurred: Int,
-    // av_py_income: Int,
-    // av_cy_income: Int,
-    ae_etc1_wtc_entitlement: String, // YN
-    // ae_icc1_childcare_entitlement: String,
-    // ae_icc2_child_entitlement: String,
-    // ae_icc3_family_entitlement: String,
-    // ae_icc4_baby_entitlement: String,
-    av_end_date: String
-  )
+                       aw_award_status: String, // OFTPCZ
+                       aw_tax_credit_period_startdate: String,
+                       aw_tax_credit_period_end_date: String,
+                       av_total_taper_household_award: Int,
+                       // av_total_childcare_incurred: Int,
+                       // av_py_income: Int,
+                       // av_cy_income: Int,
+                       ae_etc1_wtc_entitlement: String, // YN
+                       // ae_icc1_childcare_entitlement: String,
+                       // ae_icc2_child_entitlement: String,
+                       // ae_icc3_family_entitlement: String,
+                       // ae_icc4_baby_entitlement: String,
+                       av_end_date: String
+                     )
 
   case class NtpOutputSchema(
-    nino: String,
-    // applicantId: Option[Int],
-    // application: Option[NtpApplication],
-    awards: List[NtpAward]
-    // children: List[NtpChild]
-  )
+                              nino: String,
+                              // applicantId: Option[Int],
+                              // application: Option[NtpApplication],
+                              awards: List[NtpAward]
+                              // children: List[NtpChild]
+                            )
 
   object EligibilityGenerator extends SmartStubGenerator[String, Boolean] {
 
     def from(in: String): Option[Long] = fromNino(in)
 
-    def generator(in: String) = oneOf(true,false)
+    def generator(in: String) = oneOf(true, false)
   }
 
   object WtcGenerator extends SmartStubGenerator[String, NtpOutputSchema] {
@@ -120,36 +120,51 @@ object EdhController extends BaseController {
 
     val genAward = for {
       status <- oneOf("OFTPCZ".toList.map(_.toString))
-      household <- choose(-1000,2000)
-      entitlement <- oneOf("Y","N")
-      endDate <- dateGen(2015,2020)
-      periodStartDate <- dateGen(2010,2015)
-      periodEndDate <- dateGen(periodStartDate, LocalDate.of(2016,1,1))      
-    } yield NtpAward (
+      household <- choose(-1000, 2000)
+      entitlement <- oneOf("Y", "N")
+      endDate <- dateGen(2015, 2020)
+      periodStartDate <- dateGen(2010, 2015)
+      periodEndDate <- dateGen(periodStartDate, LocalDate.of(2016, 1, 1))
+    } yield NtpAward(
       status,
       periodStartDate,
-      periodEndDate,      
+      periodEndDate,
+      household,
+      entitlement,
+      endDate
+    )
+    val alwaysValid = for {
+      status <- oneOf("FP".toList.map(_.toString))
+      household <- choose(1, 2000)
+      entitlement <- Gen.const("Y")
+      endDate <- dateGen(2015, 2020)
+      periodStartDate <- dateGen(2010, 2015)
+      periodEndDate <- dateGen(LocalDate.now, LocalDate.now.plusDays(3))
+    } yield NtpAward(
+      status,
+      periodStartDate,
+      periodEndDate,
       household,
       entitlement,
       endDate
     )
 
     def generator(nino: String) = for {
-      noAwards <- choose(0,8)
-      awards <- listOfN(noAwards, genAward)
-    } yield 
-      NtpOutputSchema (
+      noAwards <- choose(0, 8)
+      awards <- listOfN(noAwards, if (nino.startsWith("AE")) alwaysValid else genAward)
+    } yield
+      NtpOutputSchema(
         nino,
         awards
       )
-    
+
   }
 
-  def uc(nino:String) = Action { implicit request =>
+  def uc(nino: String) = Action { implicit request =>
 
-    EligibilityGenerator(nino).map { x => 
+    EligibilityGenerator(nino).map { x =>
       Ok(Json.toJson(x))
-    }.getOrElse{
+    }.getOrElse {
       NotFound
     }
   }
@@ -157,16 +172,16 @@ object EdhController extends BaseController {
   /**
     * Stubbed out implementation of API 25c
     */
-  def wtc(nino:String) = Action { implicit request =>
+  def wtc(nino: String) = Action { implicit request =>
 
     implicit val ntpAwardFormat: Format[NtpAward] = Json.format[NtpAward]
     implicit val ntpOutputSchemaFormat: Format[NtpOutputSchema] =
       Json.format[NtpOutputSchema]
-    
-    WtcGenerator(nino.tail ++ nino.head.toString).map { x => 
+
+    WtcGenerator(nino).map { x =>
       Ok(Json.toJson(x))
-    }.getOrElse{
+    }.getOrElse {
       NotFound
     }
-  }  
+  }
 }
