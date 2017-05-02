@@ -1,5 +1,6 @@
 # Add all the application routes to the app.routes file
-->         /help-to-save-stub         app.Routes
-->         /                          health.Routes
+GET        /citizen-details/:nino/designatory-details uk.gov.hmrc.helptosavestub.controllers.CitizenDetailsController.retrieveDetails(nino)
+->         /help-to-save-stub                         app.Routes
+->         /                                          health.Routes
 
-GET        /admin/metrics             @com.kenshoo.play.metrics.MetricsController.metrics
+GET        /admin/metrics                             @com.kenshoo.play.metrics.MetricsController.metrics
