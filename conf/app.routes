@@ -6,5 +6,3 @@ GET        /itmp/h2s/eligibility/:nino                uk.gov.hmrc.helptosavestub
 
 GET        /edh/uc/:nino                              uk.gov.hmrc.helptosavestub.controllers.EdhController.uc(nino)
 GET        /edh/wtc/:nino                             uk.gov.hmrc.helptosavestub.controllers.EdhController.wtc(nino)
-
-GET        /citizen-details/:nino/designatory-details uk.gov.hmrc.helptosavestub.controllers.CitizenDetailsController.retrieveDetails(nino)
