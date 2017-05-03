@@ -23,7 +23,6 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.Future
 
-
 object NSAndIController extends BaseController {
 
   val testAuthHeader ="Testing123"

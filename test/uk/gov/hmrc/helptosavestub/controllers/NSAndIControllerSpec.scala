@@ -32,6 +32,7 @@ class NSAndIControllerSpec extends UnitSpec with WithFakeApplication{
     "return a successful Create Account" in {
       val request = FakeRequest()
           .withHeaders(("Authorization","Testing123"))
+
           .withJsonBody(Json.toJson(testCreateAccount))
       val result = NSAndIController.createAccount()(request)
       status(result) shouldBe CREATED
