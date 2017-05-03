@@ -27,7 +27,7 @@ import play.api.libs.json._
 
 class NSAndIControllerSpec extends UnitSpec with WithFakeApplication{
   val testCreateAccount = CreateAccount("Donald2","Duck","19900101","1",",Test Street 2",Some("Test Place 3"),
-    Some("Test Place 4"),Some("Test Place 52"),Some("AB12 3CD"),Some("GB"),"AA999999A","02","+447111 111 111","online","dduck@email.com")
+    Some("Test Place 4"),Some("Test Place 52"),"AB12 3CD",Some("GB"),"AA999999A","02",Some("+447111 111 111"),"online",Some("dduck@email.com"))
   "Post /" should {
     "return a successful Create Account" in {
       val request = FakeRequest()

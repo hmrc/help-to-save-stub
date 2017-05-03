@@ -26,13 +26,13 @@ case class CreateAccount(forename: String,
                          address3: Option[String],
                          address4: Option[String],
                          address5: Option[String],
-                         postcode: Option[String],
+                         postcode: String,
                          countryCode: Option[String] ,
                          NINO: String,
                          communicationPreference: String,
-                         phoneNumber: String,
+                         phoneNumber: Option[String],
                          registrationChannel: String,
-                         emailAddress: String
+                         emailAddress: Option[String]
                         )
 object CreateAccount {
   implicit val createAccountFormat: Format[CreateAccount] = Json.format[CreateAccount]
