@@ -31,13 +31,21 @@ class NSAndIControllerSpec extends UnitSpec with WithFakeApplication{
   "Post /" should {
     "return a successful Create Account" in {
       val request = FakeRequest()
+          .withHeaders(("Authorization","Testing123"))
+
           .withJsonBody(Json.toJson(testCreateAccount))
       val result = NSAndIController.createAccount()(request)
       status(result) shouldBe CREATED
     }
-    "return a 400 for a bad request in" in {
-
+    "return a 401  UNAUTHORIZED" in {
       val request = FakeRequest()
+        .withJsonBody(Json.toJson(testCreateAccount))
+      val result = NSAndIController.createAccount()(request)
+      status(result) shouldBe UNAUTHORIZED
+    }
+    "return a 400 for a bad request in" in {
+      val request = FakeRequest()
+        .withHeaders(("Authorization","Testing123"))
         .withJsonBody(Json.toJson(testCreateAccount.toString))
       val result = NSAndIController.createAccount()(request)
       status(result) shouldBe BAD_REQUEST
