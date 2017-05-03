@@ -24,21 +24,28 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import scala.concurrent.Future
 
 
-object NSAndIController   extends BaseController{
+object NSAndIController extends BaseController {
 
-  def  createAccount() = Action.async { implicit request =>
-    val payload: JsValue = request.body.asJson match {
-      case Some(json) => json
-      case  _ => throw new Exception("No Json :(")
+  val testAuthHeader ="Testing123"
+  def createAccount() = Action.async { implicit request =>
+    request.headers.get("Authorization") match {
+      case Some(auth) if auth == testAuthHeader =>
+        val payload: JsValue = request.body.asJson match {
+          case Some(json) => json
+          case _ => throw new Exception("No Json :(")
+        }
+        //todo make more funotional :( also add in the rest of the nsAndI stuff
+        try {
+          payload.as[CreateAccount] match {
+            case c =>
+              Future.successful(Created)
+            case _ =>
+              Future.successful(BadRequest)
+          }
+        } catch {
+          case ex: Exception => Future.successful(BadRequest)
+        }
+      case _ => Future.successful(Unauthorized)
     }
-    //todo make more funotional :( also add in the rest of the nsAndI stuff
-     try{payload.as[CreateAccount] match {
-       case c =>
-         Future.successful(Created)
-       case _ =>
-         Future.successful(BadRequest)
-     }} catch {
-       case ex:Exception =>   Future.successful(BadRequest)
-     }
   }
 }
