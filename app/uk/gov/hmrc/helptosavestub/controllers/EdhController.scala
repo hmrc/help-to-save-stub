@@ -133,7 +133,7 @@ object EdhController extends BaseController {
       entitlement,
       endDate
     )
-    val alwaysEligibilyAward =  for {
+    val alwaysEligibleForAward =  for {
       status <- oneOf("PF".toList.map(_.toString))
       household <- choose(1,2000)
       entitlement <- oneOf("Y","Y")
@@ -167,7 +167,7 @@ object EdhController extends BaseController {
     def generator(nino: String) = for {
       noAwards <- choose(1,8)
       awards <- listOfN(noAwards, nino.take(2).toUpperCase() match {
-        case "AE" => alwaysEligibilyAward
+        case "AE" => alwaysEligibleForAward
         case "AC" => alwaysInEligibily
         case _ =>   genAward
       })
