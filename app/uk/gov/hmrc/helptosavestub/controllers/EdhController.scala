@@ -133,10 +133,44 @@ object EdhController extends BaseController {
       entitlement,
       endDate
     )
+    val alwaysEligibleForAward =  for {
+      status <- oneOf("PF".toList.map(_.toString))
+      household <- choose(1,2000)
+      entitlement <- oneOf("Y","Y")
+      endDate <-  LocalDate.now()
+      periodStartDate <- LocalDate.now()
+      periodEndDate <- LocalDate.now()
+    } yield NtpAward (
+      status,
+      periodStartDate,
+      periodEndDate,
+      household,
+      entitlement,
+      endDate
+    )
+    val alwaysIneligible =  for {
+      status <- oneOf("O".toList.map(_.toString))
+      household <- choose(-1000,2000)
+      entitlement <- oneOf("Y","N")
+      endDate <- dateGen(2015,2020)
+      periodStartDate <- dateGen(2010,2015)
+      periodEndDate <- dateGen(periodStartDate, LocalDate.of(2016,1,1))
+    } yield NtpAward (
+      status,
+      periodStartDate,
+      periodEndDate,
+      household,
+      entitlement,
+      endDate
+    )
 
     def generator(nino: String) = for {
-      noAwards <- choose(0,8)
-      awards <- listOfN(noAwards, genAward)
+      noAwards <- choose(1,8)
+      awards <- listOfN(noAwards, nino.take(2).toUpperCase() match {
+        case "AE" => alwaysEligibleForAward
+        case "AC" => alwaysEligibleForAward
+        case _ =>   genAward
+      })
     } yield 
       NtpOutputSchema (
         nino,
@@ -163,7 +197,7 @@ object EdhController extends BaseController {
     implicit val ntpOutputSchemaFormat: Format[NtpOutputSchema] =
       Json.format[NtpOutputSchema]
     
-    WtcGenerator(nino.tail ++ nino.head.toString).map { x => 
+    WtcGenerator(nino).map { x =>
       Ok(Json.toJson(x))
     }.getOrElse{
       NotFound
