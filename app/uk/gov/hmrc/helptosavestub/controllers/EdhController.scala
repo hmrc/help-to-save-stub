@@ -148,7 +148,7 @@ object EdhController extends BaseController {
       entitlement,
       endDate
     )
-    val alwaysInEligible =  for {
+    val alwaysIneligible =  for {
       status <- oneOf("O".toList.map(_.toString))
       household <- choose(-1000,2000)
       entitlement <- oneOf("Y","N")
