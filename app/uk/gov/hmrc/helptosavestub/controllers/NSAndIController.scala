@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.libs.json.{JsResultException, JsValue}
 import play.api.mvc.Action
-import uk.gov.hmrc.helptosavestub.models.CreateAccount
+import uk.gov.hmrc.helptosavestub.models.{CreateAccount, NSIUserInfo}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.Future
@@ -34,15 +34,24 @@ object NSAndIController extends BaseController {
           case _ => throw new Exception("No Json :(")
         }
         //todo make more funotional :( also add in the rest of the nsAndI stuff
+        //todo make the returned stuff more like the nsiStuff
         try {
           payload.as[CreateAccount] match {
             case c =>
-              Future.successful(Created)
+              if(NSIUserInfo(c).toEither.isRight){
+                Future.successful(Created)}
+              else {
+                println("We failed validaton :( "  + NSIUserInfo(c).toEither.left.get)
+
+                Future.successful(BadRequest)}
             case _ =>
+              println("We failed validaton to make ns and i data")
               Future.successful(BadRequest)
           }
         } catch {
-          case ex: Exception => Future.successful(BadRequest)
+          case ex: Exception =>
+            println("We failed to make json thing " + ex)
+            Future.successful(BadRequest)
         }
       case _ => Future.successful(Unauthorized)
     }
