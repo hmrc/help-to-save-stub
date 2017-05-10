@@ -27,11 +27,12 @@ import play.api.libs.json.{JsString, JsValue, Json, Writes}
 import uk.gov.hmrc.helptosavestub.controllers.CitizenDetailsController.Address
 
 import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
 
 case class CreateAccount(forename: String,
                          surname: String,
-                         birthDate: LocalDate,
+                         birthdate: LocalDate,
                          address1: String,
                          address2: String,
                          address3: Option[String],
@@ -46,6 +47,20 @@ case class CreateAccount(forename: String,
                          emailAddress: Option[String]
                         )
 object CreateAccount {
+
+  val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+  implicit val dateReads: Reads[LocalDate] = new Reads[LocalDate] {
+    override def reads(o: JsValue): JsResult[LocalDate] = o match {
+      case JsString(s) ⇒
+        Try(LocalDate.parse(s, formatter)) match {
+          case Success(d) ⇒ JsSuccess(d)
+          case Failure(e) ⇒ JsError(e.getMessage)
+        }
+      case other ⇒
+        JsError(s"Expected string but got $other")
+
+    }
+  }
   implicit val createAccountFormat: Format[CreateAccount] = Json.format[CreateAccount]
 }
 
@@ -74,7 +89,7 @@ object NSIUserInfo {
   def apply(createAccount: CreateAccount): ValidatedNel[String, NSIUserInfo] =
     (forenameValidation(createAccount.forename) |@|
       surnameValidation(createAccount.surname) |@|
-      dateValidation(createAccount.birthDate) |@|
+      dateValidation(createAccount.birthdate) |@|
       addressLineValidation(Address(Some(createAccount.address1),Some(createAccount.address2),
         createAccount.address3,createAccount.address4,createAccount.address5)) |@|
       postcodeValidation(Some(createAccount.postcode)) |@|
@@ -160,7 +175,6 @@ object NSIUserInfo {
     case Some(p) ⇒
       val lengthCheck =
         validatedFromBoolean(p)(_.length <= 10, "Postcode was longer thn 10 characters")
-
       val regexCheck = regexValidation(p)(postcodeRegex, "Invalid postcode format")
 
       (lengthCheck |@| regexCheck).tupled.map(_ ⇒ p)

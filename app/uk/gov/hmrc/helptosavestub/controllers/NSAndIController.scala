@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.libs.json.{JsResultException, JsValue}
+import play.api.libs.json.{Format, JsResultException, JsValue, Json}
 import play.api.mvc.Action
 import uk.gov.hmrc.helptosavestub.models.{CreateAccount, NSIUserInfo}
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -24,10 +24,10 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import scala.concurrent.Future
 
 object NSAndIController extends BaseController {
-
   val testAuthHeader ="Testing123"
+  //todo make the auth header better
   def createAccount() = Action.async { implicit request =>
-    request.headers.get("Authorization") match {
+    request.headers.get("Authorization1") match {
       case Some(auth) if auth == testAuthHeader =>
         val payload: JsValue = request.body.asJson match {
           case Some(json) => json
@@ -42,18 +42,19 @@ object NSAndIController extends BaseController {
                 Future.successful(Created)}
               else {
                 println("We failed validaton :( "  + NSIUserInfo(c).toEither.left.get)
-
-                Future.successful(BadRequest)}
+                Future.successful(BadRequest(NSIUserInfo(c).toEither.left.get.toString()))}
             case _ =>
-              println("We failed validaton to make ns and i data")
               Future.successful(BadRequest)
           }
         } catch {
           case ex: Exception =>
+            println(payload.toString())
             println("We failed to make json thing " + ex)
             Future.successful(BadRequest)
         }
-      case _ => Future.successful(Unauthorized)
+      case _ =>
+        println("We failed to add the header in " + request.headers)
+        Future.successful(Unauthorized)
     }
   }
 }
