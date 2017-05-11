@@ -16,11 +16,23 @@
 
 package uk.gov.hmrc.helptosavestub.models
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json._
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{NonEmptyList, Validated, ValidatedNel}
+import cats.syntax.cartesian._
+import play.api.libs.json.{JsString, JsValue, Json, Writes}
+import uk.gov.hmrc.helptosavestub.controllers.CitizenDetailsController.Address
+
+import scala.annotation.tailrec
+import scala.util.{Failure, Success, Try}
+import scala.util.matching.Regex
 
 case class CreateAccount(forename: String,
                          surname: String,
-                         birthDate: String,
+                         birthdate: LocalDate,
                          address1: String,
                          address2: String,
                          address3: Option[String],
@@ -35,5 +47,26 @@ case class CreateAccount(forename: String,
                          emailAddress: Option[String]
                         )
 object CreateAccount {
+
+  val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
+
+  implicit val dateReads: Reads[LocalDate] = new Reads[LocalDate] {
+    override def reads(o: JsValue): JsResult[LocalDate] = o match {
+      case JsString(s) ⇒
+        Try(LocalDate.parse(s, formatter)) match {
+          case Success(d) ⇒ JsSuccess(d)
+          case Failure(e) ⇒ JsError(e.getMessage)
+        }
+      case other ⇒
+        JsError(s"Expected string but got $other")
+
+    }
+  }
+
+  implicit val dateWrites: Writes[LocalDate] = new Writes[LocalDate] {
+    override def writes(o: LocalDate): JsValue = JsString(o.format(DateTimeFormatter.ofPattern("YYYYMMdd")))
+  }
+
   implicit val createAccountFormat: Format[CreateAccount] = Json.format[CreateAccount]
 }
+

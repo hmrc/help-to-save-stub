@@ -24,7 +24,7 @@ import play.api.mvc.Action
 import smartstub.SmartStubGenerator
 import smartstub.people
 import uk.gov.hmrc.play.microservice.controller.BaseController
-
+import uk.gov.hmrc.helptosavestub.models.NSIUserInfo.postcodeRegex
 
 object CitizenDetailsController extends BaseController {
 
@@ -82,7 +82,7 @@ object CitizenDetailsController extends BaseController {
       number         ← numGen
       street         ← people.Address.streetNames
       (code, region) ← people.Address.postcodeRegions
-      postcode       ← postcodeGen(code)
+      postcode       ← postcodeGen(code).retryUntil(s ⇒ postcodeRegex.pattern.matcher(s).matches())
     } yield Address(Some(number + " " + street), Some(region), None, Some(postcode), Some("UK"))
 
     def postcodeGen(regionCode: String): Gen[String] = for {
@@ -90,7 +90,7 @@ object CitizenDetailsController extends BaseController {
       number2 ← numGen
       char1 ← charGen
       char2 ← charGen
-    } yield s"$regionCode$number1 $number2$char1$char2"
+    } yield s"$regionCode$number1$number2$char1$char2"
 
   }
 
