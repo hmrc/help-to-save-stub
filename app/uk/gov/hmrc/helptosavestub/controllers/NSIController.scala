@@ -49,10 +49,12 @@ object NSIController extends BaseController {
     if(isAuthorised(request.headers)) {
       request.body.asJson.map(_.validate[CreateAccount]) match {
         case None ⇒
-          Future.successful(BadRequest)
+          Future.successful(BadRequest(
+            Json.toJson(SubmissionFailure(None,"No Json :(",""))))
 
         case Some(er: JsError) ⇒
-          Future.successful(BadRequest)
+          Future.successful(BadRequest(
+            Json.toJson(SubmissionFailure(None,"Invalid Json",er.toString))))
 
         case Some(JsSuccess(createAccount, _)) ⇒
           NSIUserInfo(createAccount).fold(
