@@ -51,7 +51,7 @@ object NSIController extends BaseController {
         case None ⇒
           Future.successful(BadRequest)
 
-        case Some(_: JsError) ⇒
+        case Some(er: JsError) ⇒
           Future.successful(BadRequest)
 
         case Some(JsSuccess(createAccount, _)) ⇒

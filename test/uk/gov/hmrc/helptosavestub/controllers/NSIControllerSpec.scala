@@ -16,37 +16,47 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.http.Status
-import play.api.libs.json.{JsSuccess, Json}
-import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsString, _}
-import uk.gov.hmrc.helptosavestub.models.{CreateAccount, EligibilityResult}
-import uk.gov.hmrc.play.http.SessionKeys
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-import play.api.libs.json._
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 
-class NSAndIControllerSpec extends UnitSpec with WithFakeApplication{
-  val testCreateAccount = CreateAccount("Donald2","Duck","19900101","1",",Test Street 2",Some("Test Place 3"),
-    Some("Test Place 4"),Some("Test Place 52"),"AB12 3CD",Some("GB"),"AA999999A","02",Some("+447111 111 111"),"online",Some("dduck@email.com"))
-  "Post /" should {
+import com.google.common.base.Charsets
+import com.google.common.io.BaseEncoding
+import play.api.libs.json.{JsString, JsValue, Json, Writes}
+import play.api.test.FakeRequest
+import play.api.test.Helpers._
+import uk.gov.hmrc.helptosavestub.models.CreateAccount
+import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+
+class NSIControllerSpec extends UnitSpec with WithFakeApplication {
+
+  val testCreateAccount = CreateAccount(
+    "Donald", "Duck", LocalDate.of(1990, 1, 1), "1", ",Test Street 2", None,
+    None, None, "BN124XH", Some("GB"), "AA999999A",
+    "02",None, "online", Some("dduck@email.com"))
+
+  val authHeader =  ("Authorization",  BaseEncoding.base64().encode("test.user:test123".getBytes(Charsets.UTF_8)))
+
+  "Post /create-account  " should {
     "return a successful Create Account" in {
       val request = FakeRequest()
-          .withHeaders(("Authorization","Testing123"))
+        .withHeaders(authHeader)
+        .withJsonBody(Json.toJson(testCreateAccount))
 
-          .withJsonBody(Json.toJson(testCreateAccount))
       val result = NSIController.createAccount()(request)
       status(result) shouldBe CREATED
     }
+
     "return a 401  UNAUTHORIZED" in {
       val request = FakeRequest()
         .withJsonBody(Json.toJson(testCreateAccount))
       val result = NSIController.createAccount()(request)
       status(result) shouldBe UNAUTHORIZED
     }
+
     "return a 400 for a bad request in" in {
       val request = FakeRequest()
-        .withHeaders(("Authorization","Testing123"))
-        .withJsonBody(Json.toJson(testCreateAccount.toString))
+        .withHeaders(authHeader)
+        .withJsonBody(Json.toJson(testCreateAccount.copy(emailAddress = None)))
       val result = NSIController.createAccount()(request)
       status(result) shouldBe BAD_REQUEST
     }

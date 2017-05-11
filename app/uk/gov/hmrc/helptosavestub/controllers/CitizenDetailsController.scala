@@ -24,7 +24,7 @@ import play.api.mvc.Action
 import smartstub.SmartStubGenerator
 import smartstub.people
 import uk.gov.hmrc.play.microservice.controller.BaseController
-
+import uk.gov.hmrc.helptosavestub.models.NSIUserInfo.postcodeRegex
 
 object CitizenDetailsController extends BaseController {
 
@@ -78,13 +78,11 @@ object CitizenDetailsController extends BaseController {
        dateOfBirth ← optionGen(dateGen())
     } yield Person(firstName, lastName, dateOfBirth)
 
-    val regexForValidNino = """^((GIR)(0AA)|([A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]|[A-HK-Y][0-9]([0-9]|[ABEHMNPRV-Y]))|""" +
-      """[0-9][A-HJKS-UW]))([0-9][ABD-HJLNP-UW-Z]{2})|(([A-Z]{1,4})(1ZZ))|((BFPO)([0-9]{1,4})))$"""
     val addressGenerator: Gen[Address] = for {
       number         ← numGen
       street         ← people.Address.streetNames
       (code, region) ← people.Address.postcodeRegions
-      postcode       ← postcodeGen(code).retryUntil(s ⇒ regexForValidNino.r.pattern.matcher(s).matches())
+      postcode       ← postcodeGen(code).retryUntil(s ⇒ postcodeRegex.pattern.matcher(s).matches())
     } yield Address(Some(number + " " + street), Some(region), None, Some(postcode), Some("UK"))
 
     def postcodeGen(regionCode: String): Gen[String] = for {
