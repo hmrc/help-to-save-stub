@@ -71,8 +71,8 @@ object NSIController extends BaseController {
             _ ⇒ Future.successful(Created)
           )
       }
-
     } else {
+      Logger.error("No authorisation data found in header")
       Future.successful(Unauthorized)
     }
   }
