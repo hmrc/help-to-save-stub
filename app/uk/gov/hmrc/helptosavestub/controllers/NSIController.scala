@@ -18,6 +18,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import com.google.common.base.Charsets
 import com.google.common.io.BaseEncoding
+import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{Action, Headers}
 import uk.gov.hmrc.helptosavestub.models.{CreateAccount, NSIUserInfo}
@@ -47,23 +48,30 @@ object NSIController extends BaseController {
 
   def createAccount() = Action.async { implicit request =>
     if(isAuthorised(request.headers)) {
+      lazy val requestBodyText = request.body.asText.getOrElse("")
+
       request.body.asJson.map(_.validate[CreateAccount]) match {
         case None ⇒
+          Logger.error(s"No JSON found for create-account request: $requestBodyText")
           Future.successful(BadRequest(
-            Json.toJson(SubmissionFailure(None,"No Json :(",""))))
+            Json.toJson(SubmissionFailure(None,"No JSON found",""))))
 
         case Some(er: JsError) ⇒
+          Logger.error(s"Could not parse JSON found for create-account request: $requestBodyText")
           Future.successful(BadRequest(
-            Json.toJson(SubmissionFailure(None,"Invalid Json",er.toString))))
+            Json.toJson(SubmissionFailure(None,"Invalid Json", er.toString))))
 
         case Some(JsSuccess(createAccount, _)) ⇒
           NSIUserInfo(createAccount).fold(
-            errors  ⇒
+            errors  ⇒ {
+              Logger.error(s"User details not valid for create-account request: $requestBodyText")
               Future.successful(BadRequest(
-                Json.toJson(SubmissionFailure(None,"Invalid user details",errors.toList.mkString(","))))),
+                Json.toJson(SubmissionFailure(None, "Invalid user details", errors.toList.mkString(",")))))
+            },
             _ ⇒ Future.successful(Created)
           )
       }
+
     } else {
       Future.successful(Unauthorized)
     }
