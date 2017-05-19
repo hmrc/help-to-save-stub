@@ -16,19 +16,39 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.test.FakeRequest
+import play.api.test._
 import org.scalatest.mock.MockitoSugar
+import play.api.libs.json.Json
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-//import org.jsoup.Jsoup
 
-trait SquidControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
+class SquidControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
 
-  def fakeRequest = FakeRequest()
+  def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(Json.parse("""{"createAccount": {}}"""))
 
   "Squid Controller" must {
     "return 200 when requested" in {
       val result = new SquidController().createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
+  }
+
+  "The request should return some content" in {
+    //Note that if this is returning a blank page, the controller configuration in application.conf is broken
+    val result = new SquidController().createAccount()(fakeRequest)
+    status(result)
+    val len = result.body.contentLength.getOrElse(0L)
+    len > 0 shouldBe true
+  }
+
+  "If the stub is sent a request with no JSON content it should return a 400" in {
+    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val result = new SquidController().createAccount()(fakeRequestWithoutJson)
+    status(result) shouldBe 400
+  }
+
+  "if the stub is sent with JSon that does not contain a createAccount key at the top level it should Return a 400" in {
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(Json.parse("""{"wibble": {}}"""))
+    val result = new SquidController().createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
   }
 }

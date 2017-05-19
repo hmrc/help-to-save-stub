@@ -16,13 +16,29 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import javax.inject.{Singleton, Inject}
-import play.api.mvc.{Action, AnyContent}
+import javax.inject.{Inject, Singleton}
+
+import play.api.libs.json.{JsValue, Json}
+import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 @Singleton
 class SquidController @Inject()() extends BaseController {
   def createAccount(): Action[AnyContent] = Action {implicit request =>
-    Ok("Hello World")
+    request.body.asJson match {
+      case None => BadRequest
+      case Some(j: JsValue) => {
+        val json = j.as[Map[String, JsValue]]
+        if (json.size != 1) {
+          BadRequest
+        } else {
+          if (json.keys.toList.head != "createAccount") {
+            BadRequest
+          } else {
+            Ok("Whatever")
+          }
+        }
+      }
+    }
   }
 }

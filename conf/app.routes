@@ -9,5 +9,5 @@ GET        /edh/wtc/:nino                             uk.gov.hmrc.helptosavestub
 
 POST       /create-account                            uk.gov.hmrc.helptosavestub.controllers.NSIController.createAccount()
 
-GET       /squid/create-account                       @uk.gov.hmrc.helptosavestub.controllers.SquidController.createAccount
+POST       /squid/create-account                       @uk.gov.hmrc.helptosavestub.controllers.SquidController.createAccount
 
