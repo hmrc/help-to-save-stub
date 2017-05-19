@@ -37,7 +37,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     val result = new SquidController().createAccount()(fakeRequest)
     status(result)
     val len = result.body.contentLength.getOrElse(0L)
-    len > 0 shouldBe true
+    len shouldBe 0
   }
 
   "If the stub is sent a request with no JSON content it should return a 400" in {

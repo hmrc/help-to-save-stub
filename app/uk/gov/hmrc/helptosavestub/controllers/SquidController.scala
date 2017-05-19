@@ -29,14 +29,10 @@ class SquidController @Inject()() extends BaseController {
       case None => BadRequest
       case Some(j: JsValue) => {
         val json = j.as[Map[String, JsValue]]
-        if (json.size != 1) {
+        if (json.size != 1 || (json.keys.toList.head != "createAccount")) {
           BadRequest
         } else {
-          if (json.keys.toList.head != "createAccount") {
-            BadRequest
-          } else {
-            Ok("Whatever")
-          }
+            Ok
         }
       }
     }
