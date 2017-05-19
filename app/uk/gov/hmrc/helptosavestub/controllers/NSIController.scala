@@ -39,7 +39,7 @@ object NSIController extends BaseController {
     */
 
   def isAuthorised(headers: Headers): Boolean = {
-    val decoded = headers.headers.filter(_._1 == "Authorization")
+    val decoded = headers.headers.filter(_._1 == "Authorization1")
       .map(h ⇒ Try(BaseEncoding.base64().decode(h._2)))
       .collect { case Success(bytes) ⇒ new String(bytes, Charsets.UTF_8)}
 
