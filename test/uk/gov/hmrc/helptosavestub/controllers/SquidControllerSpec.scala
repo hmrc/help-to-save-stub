@@ -199,4 +199,19 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
     errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
   }
+
+  "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER405NNNL (where N is" +
+    "number and L is letter, generate an Unauthorized" in {
+    val jsonBeginningWithER405 = generateJson(Seq(("NINO", "ER405456M")))
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER405)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 405
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+  }
 }
