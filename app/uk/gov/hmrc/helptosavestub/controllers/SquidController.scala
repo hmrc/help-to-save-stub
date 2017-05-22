@@ -53,6 +53,8 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
             case Some(aNino) if (aNino.startsWith("ER404")) => NotFound(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
             case Some(aNino) if (aNino.startsWith("ER405")) => MethodNotAllowed(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
             case Some(aNino) if (aNino.startsWith("ER415")) => UnsupportedMediaType(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
+            case Some(aNino) if (aNino.startsWith("ER500")) => InternalServerError(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
+            case Some(aNino) if (aNino.startsWith("ER503")) => ServiceUnavailable(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
             case Some(n) => Ok
             case None => Ok
           }

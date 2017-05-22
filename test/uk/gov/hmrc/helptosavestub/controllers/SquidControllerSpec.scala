@@ -229,4 +229,34 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
     errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
   }
+
+  "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER500NNNL (where N is" +
+    "number and L is letter, generate an Unauthorized" in {
+    val jsonBeginningWithER500 = generateJson(Seq(("NINO", "ER500456M")))
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER500)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 500
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+  }
+
+  "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER503NNNL (where N is" +
+    "number and L is letter, generate an Unauthorized" in {
+    val jsonBeginningWithER503 = generateJson(Seq(("NINO", "ER503456M")))
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER503)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 503
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+  }
 }
