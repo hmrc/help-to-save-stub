@@ -23,16 +23,36 @@ import play.api.test.Helpers._
 import play.api.libs.json.{JsDefined, JsValue, Json}
 import play.api.mvc.Result
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+import uk.gov.hmrc.helptosavestub.Constants._
 
 import scala.concurrent.Future
 
 class SquidControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
-
-  def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(Json.parse("""{"createAccount": {}}"""))
   val injector = fakeApplication.injector
   def messagesApi = injector.instanceOf[MessagesApi]
   def noCAKeyMap = Map[String, Map[String, String]]("wibble" -> Map())
   def noCAKeyJson = Json.toJson(noCAKeyMap)
+
+  def generateJson(variants: Seq[(String, String)] = Seq()): JsValue = {
+    val goodCreateAccountMap: Map[String, String] =
+      Map("forename" -> "Donald",
+        "surname" -> "Duck",
+        "address1" -> "1",
+        "address2" -> "Test Street 2",
+        "address3" -> "Test Place 3",
+        "address4" -> "Test Place 4",
+        "address5" -> "Test Place 5",
+        "postcode" -> "AB12 3CD",
+        "countryCode" -> "GB",
+        "NINO" -> "AA999999A",
+        "CommunicationPreference" -> "02",
+        "phoneNumber" -> "+44111 111 111",
+        "emailAddress" -> "dduck@email.com",
+        "registrationChannel" -> "online")
+    Json.toJson(Map("createAccount" -> (goodCreateAccountMap ++ variants)))
+  }
+
+  def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(generateJson())
 
   "Squid Controller" must {
     "return 200 when requested" in {
@@ -61,7 +81,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result)
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-    errorMessageId shouldBe Some("AAAA0002")
+    errorMessageId shouldBe Some(NO_JSON_ERROR_CODE)
   }
 
   "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
@@ -72,6 +92,16 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     val json: JsValue = contentAsJson(result)
     val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
     errorMessage.getOrElse("") shouldBe messagesApi("site.no-json")
+  }
+
+  "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
+    "error detail set to message site.no-json-detail" in {
+    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+    status(result)
+    val json: JsValue = contentAsJson(result)
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.no-json-detail")
   }
 
   "if the stub is sent with JSon that does not contain a createAccount key at the top level it should Return a 400" in {
@@ -87,7 +117,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result)
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-    errorMessageId shouldBe Some("AAAA0003")
+    errorMessageId shouldBe Some(NO_CREATEACCOUNTKEY_ERROR_CODE)
   }
 
   "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
@@ -106,7 +136,54 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result)
     val json: JsValue = contentAsJson(result)
-    val errorMessage = (json \ "error" \ "errorDetail").get.asOpt[String]
-    errorMessage.getOrElse("") shouldBe messagesApi("site.no-create-account-key-detail")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.no-create-account-key-detail")
+  }
+
+  "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER400NNNL (where N is" +
+    "number and L is letter, generate a bad request" in {
+    val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER400456M")))
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER400)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+  }
+
+  "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER400NNNL (where N is" +
+    "number and L is letter, generate an error object in the response with the errorCode set to PRECANNED_ERROR_CODE" in {
+    val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER400456M")))
+
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER400)
+
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
+  }
+
+  "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER400NNNL (where N is" +
+    "number and L is letter, generate an error object in the response with the error message set to site.pre-canned-error" in {
+    val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER400456M")))
+
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER400)
+
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
+  }
+
+  "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER400NNNL (where N is" +
+    "number and L is letter, generate an error object in the response with the error detial set to site.pre-canned-error-detail" in {
+    val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER400456M")))
+
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER400)
+
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
   }
 }

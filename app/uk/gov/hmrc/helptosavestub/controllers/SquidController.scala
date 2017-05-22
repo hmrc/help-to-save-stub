@@ -19,9 +19,10 @@ package uk.gov.hmrc.helptosavestub.controllers
 import javax.inject.{Inject, Singleton}
 
 import play.api.i18n.MessagesApi
-import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent, Result}
+import play.api.libs.json.{JsObject, JsValue, Json}
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.helptosavestub.Constants._
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
@@ -37,14 +38,19 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   def createAccount(): Action[AnyContent] = Action { implicit request =>
     request.body.asJson match {
-      case None => BadRequest(Json.toJson(errorJson("AAAA0002", "site.no-json")))
+      case None => BadRequest(Json.toJson(errorJson(NO_JSON_ERROR_CODE, "site.no-json", "site.no-json-detail")))
 
-      case Some(j: JsValue) => {
-        val json = j.as[Map[String, JsValue]]
-        if (json.size != 1 || (json.keys.toList.head != "createAccount")) {
-          BadRequest(errorJson("AAAA0003", "site.no-create-account-key", "site.no-create-account-key-detail"))
+      case Some(json: JsValue) => {
+        if (json.asInstanceOf[JsObject].fields.size != 1 || (json.asInstanceOf[JsObject].fields.head._1 != "createAccount")) {
+          BadRequest(errorJson(NO_CREATEACCOUNTKEY_ERROR_CODE, "site.no-create-account-key", "site.no-create-account-key-detail"))
         } else {
-          Ok
+          //TODO: Add something to check Json against schema
+          val nino = (json \ "createAccount" \ "NINO").get.asOpt[String]
+          nino match {
+            case Some(aNino) if (aNino.startsWith("ER400")) => BadRequest(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
+            case Some(n) => Ok
+            case None => Ok
+          }
         }
       }
     }
