@@ -24,15 +24,17 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 @Singleton
 class SquidController @Inject()() extends BaseController {
-  def createAccount(): Action[AnyContent] = Action {implicit request =>
+  def createAccount(): Action[AnyContent] = Action { implicit request =>
     request.body.asJson match {
       case None => BadRequest
       case Some(j: JsValue) => {
         val json = j.as[Map[String, JsValue]]
         if (json.size != 1 || (json.keys.toList.head != "createAccount")) {
-          BadRequest
+          val errorJson =
+            """{"error":{"errorMessageId": "AAAA0003","errorMessage ": "The format of the createAccount Command is not valid","errorDetail": "The top level key must be creatAccount"}}"""
+          BadRequest(Json.parse(errorJson))
         } else {
-            Ok
+          Ok
         }
       }
     }

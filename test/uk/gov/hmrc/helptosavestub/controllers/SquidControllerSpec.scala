@@ -18,8 +18,12 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.test._
 import org.scalatest.mock.MockitoSugar
-import play.api.libs.json.Json
+import play.api.test.Helpers._
+import play.api.libs.json.{JsDefined, JsValue, Json}
+import play.api.mvc.Result
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+
+import scala.concurrent.Future
 
 class SquidControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
 
@@ -50,5 +54,14 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(Json.parse("""{"wibble": {}}"""))
     val result = new SquidController().createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 400
+  }
+
+  "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error object in the response" in {
+    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(Json.parse("""{"wibble": {}}"""))
+    val result: Future[Result] = new SquidController().createAccount()(fakeRequestWithBadContent)
+    status(result)
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some("AAAA0003")
   }
 }
