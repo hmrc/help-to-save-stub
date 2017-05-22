@@ -1,2 +1,3 @@
 site.no-create-account-key = The format of the createAccount command is not valid
 site.no-create-account-key-detail = "See document ICD001 Section 4.8 for more detail
+site.no-json = "There is no parsable JSON command in request"

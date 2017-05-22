@@ -55,6 +55,25 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result) shouldBe 400
   }
 
+  "If the stub is sent a request with no JSON content it should have an Error object in the response with the errorMessageId set as AAAA0002" in {
+    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+    status(result)
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some("AAAA0002")
+  }
+
+  "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
+    "error message set to message site.no-json" in {
+    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+    status(result)
+    val json: JsValue = contentAsJson(result)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.no-json")
+  }
+
   "if the stub is sent with JSon that does not contain a createAccount key at the top level it should Return a 400" in {
     def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(noCAKeyJson)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)

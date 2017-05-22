@@ -25,18 +25,24 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
+
+  private def errorJson(code: String, messageKey: String = "", detailKey: String = ""): JsValue = {
+    val errorMap: Map[String, Map[String, String]] =
+      Map("error" ->
+        Map("errorMessageId" -> code,
+          "errorMessage" -> messagesApi(messageKey),
+          "errorDetail" -> messagesApi(detailKey)))
+    Json.toJson(errorMap)
+  }
+
   def createAccount(): Action[AnyContent] = Action { implicit request =>
     request.body.asJson match {
-      case None => BadRequest
+      case None => BadRequest(Json.toJson(errorJson("AAAA0002", "site.no-json")))
+
       case Some(j: JsValue) => {
         val json = j.as[Map[String, JsValue]]
         if (json.size != 1 || (json.keys.toList.head != "createAccount")) {
-          val errorMap: Map[String, Map[String, String]] =
-            Map("error" ->
-              Map("errorMessageId" -> "AAAA0003",
-                  "errorMessage" -> messagesApi("site.no-create-account-key"),
-                  "errorDetail" -> messagesApi("site.no-create-account-key-detail")))
-          BadRequest(Json.toJson(errorMap))
+          BadRequest(errorJson("AAAA0003", "site.no-create-account-key", "site.no-create-account-key-detail"))
         } else {
           Ok
         }
