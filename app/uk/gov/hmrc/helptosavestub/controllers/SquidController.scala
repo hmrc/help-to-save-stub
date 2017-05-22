@@ -48,6 +48,8 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           val nino = (json \ "createAccount" \ "NINO").get.asOpt[String]
           nino match {
             case Some(aNino) if (aNino.startsWith("ER400")) => BadRequest(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
+            case Some(aNino) if (aNino.startsWith("ER401")) => Unauthorized(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
+            case Some(aNino) if (aNino.startsWith("ER403")) => Forbidden(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
             case Some(n) => Ok
             case None => Ok
           }
