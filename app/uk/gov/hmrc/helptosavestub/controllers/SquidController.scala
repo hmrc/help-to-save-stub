@@ -18,21 +18,25 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import javax.inject.{Inject, Singleton}
 
+import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 @Singleton
-class SquidController @Inject()() extends BaseController {
+class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
   def createAccount(): Action[AnyContent] = Action { implicit request =>
     request.body.asJson match {
       case None => BadRequest
       case Some(j: JsValue) => {
         val json = j.as[Map[String, JsValue]]
         if (json.size != 1 || (json.keys.toList.head != "createAccount")) {
-          val errorJson =
-            """{"error":{"errorMessageId": "AAAA0003","errorMessage ": "The format of the createAccount Command is not valid","errorDetail": "The top level key must be creatAccount"}}"""
-          BadRequest(Json.parse(errorJson))
+          val errorMap: Map[String, Map[String, String]] =
+            Map("error" ->
+              Map("errorMessageId" -> "AAAA0003",
+                  "errorMessage" -> messagesApi("site.no-create-account-key"),
+                  "errorDetail" -> messagesApi("site.no-create-account-key-detail")))
+          BadRequest(Json.toJson(errorMap))
         } else {
           Ok
         }
