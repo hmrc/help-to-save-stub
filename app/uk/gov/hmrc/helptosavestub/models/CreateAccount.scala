@@ -32,7 +32,7 @@ import scala.util.matching.Regex
 
 case class CreateAccount(forename: String,
                          surname: String,
-                         birthdate: LocalDate,
+                         birthDate: LocalDate,
                          address1: String,
                          address2: String,
                          address3: Option[String],

@@ -16,12 +16,14 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import akka.util.ByteString
 import play.api.test._
 import org.scalatest.mock.MockitoSugar
 import play.api.i18n.MessagesApi
 import play.api.test.Helpers._
 import play.api.libs.json.{JsDefined, JsValue, Json}
-import play.api.mvc.Result
+import play.api.libs.streams.Accumulator
+import play.api.mvc.{AnyContentAsEmpty, Result}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import uk.gov.hmrc.helptosavestub.Constants._
 
@@ -33,28 +35,49 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   def noCAKeyMap = Map[String, Map[String, String]]("wibble" -> Map())
   def noCAKeyJson = Json.toJson(noCAKeyMap)
 
+  val goodCreateAccountMap: Map[String, String] =
+    Map("forename" -> "Donald",
+      "surname" -> "Duck",
+      "address1" -> "1",
+      "address2" -> "Test Street 2",
+      "address3" -> "Test Place 3",
+      "address4" -> "Test Place 4",
+      "address5" -> "Test Place 5",
+      "postcode" -> "AB12 3CD",
+      "countryCode" -> "GB",
+      "NINO" -> "AA999999A",
+      "birthDate" ->"19920509",
+      "communicationPreference" -> "02",
+      "phoneNumber" -> "+44111 111 111",
+      "emailAddress" -> "dduck@email.com",
+      "registrationChannel" -> "online")
+
   def generateJson(variants: Seq[(String, String)] = Seq()): JsValue = {
-    val goodCreateAccountMap: Map[String, String] =
-      Map("forename" -> "Donald",
-        "surname" -> "Duck",
-        "address1" -> "1",
-        "address2" -> "Test Street 2",
-        "address3" -> "Test Place 3",
-        "address4" -> "Test Place 4",
-        "address5" -> "Test Place 5",
-        "postcode" -> "AB12 3CD",
-        "countryCode" -> "GB",
-        "NINO" -> "AA999999A",
-        "CommunicationPreference" -> "02",
-        "phoneNumber" -> "+44111 111 111",
-        "emailAddress" -> "dduck@email.com",
-        "registrationChannel" -> "online")
     Json.toJson(Map("createAccount" -> (goodCreateAccountMap ++ variants)))
   }
 
-  def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(generateJson())
+  def generateJsonFromMap(m: Map[String, String]): JsValue = {
+    Json.toJson(Map("createAccount" -> m))
+  }
+
+  def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(generateJson()).withHeaders((CONTENT_TYPE, "application/json"))
+
+  def makeFakeRequest(json: JsValue) = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
+
+  def buildRequest(json: JsValue) = FakeRequest(
+    "POST",
+    "/help-to-save-stub/create-account",
+    FakeHeaders(),
+    json.toString())
 
   "Squid Controller" must {
+
+    "return 415 if the mime type is not application/json" in {
+      val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+      status(result) shouldBe 415
+    }
+
     "return 200 when requested" in {
       val result = new SquidController(messagesApi).createAccount()(fakeRequest)
       status(result) shouldBe 200
@@ -70,13 +93,13 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "If the stub is sent a request with no JSON content it should return a 400" in {
-    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
     status(result) shouldBe 400
   }
 
   "If the stub is sent a request with no JSON content it should have an Error object in the response with the errorMessageId set as AAAA0002" in {
-    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
     val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
     status(result)
     val json: JsValue = contentAsJson(result)
@@ -86,7 +109,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
   "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
     "error message set to message site.no-json" in {
-    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
     val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
     status(result)
     val json: JsValue = contentAsJson(result)
@@ -96,7 +119,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
   "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
     "error detail set to message site.no-json-detail" in {
-    val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
+    val fakeRequestWithoutJson: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
     val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
     status(result)
     val json: JsValue = contentAsJson(result)
@@ -105,14 +128,14 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "if the stub is sent with JSon that does not contain a createAccount key at the top level it should Return a 400" in {
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(noCAKeyJson)
+    def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 400
   }
 
   "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
     "object in the response with the errorMessageId set as AAAA0003" in {
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(noCAKeyJson)
+    def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
     val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result)
     val json: JsValue = contentAsJson(result)
@@ -122,7 +145,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
   "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
     "object in the response with the Error message set to message site.no-create-account-key" in {
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(noCAKeyJson)
+    def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
     val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result)
     val json: JsValue = contentAsJson(result)
@@ -132,7 +155,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
   "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
     "object in the response with the Error detail set to message site.no-create-account-key-detail" in {
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(noCAKeyJson)
+    def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
     val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result)
     val json: JsValue = contentAsJson(result)
@@ -143,7 +166,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER400NNNL (where N is" +
     "number and L is letter, generate a bad request" in {
     val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER400456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER400)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER400)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 400
     val json: JsValue = contentAsJson(result)
@@ -158,7 +181,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER401NNNL (where N is" +
     "number and L is letter, generate an Unauthorized" in {
     val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER401456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER400)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER400)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 401
     val json: JsValue = contentAsJson(result)
@@ -173,7 +196,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER403NNNL (where N is" +
     "number and L is letter, generate an Unauthorized" in {
     val jsonBeginningWithER403 = generateJson(Seq(("NINO", "ER403456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER403)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER403)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 403
     val json: JsValue = contentAsJson(result)
@@ -188,7 +211,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER404NNNL (where N is" +
     "number and L is letter, generate an Unauthorized" in {
     val jsonBeginningWithER404 = generateJson(Seq(("NINO", "ER404456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER404)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER404)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 404
     val json: JsValue = contentAsJson(result)
@@ -203,7 +226,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER405NNNL (where N is" +
     "number and L is letter, generate an Unauthorized" in {
     val jsonBeginningWithER405 = generateJson(Seq(("NINO", "ER405456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER405)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER405)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 405
     val json: JsValue = contentAsJson(result)
@@ -218,7 +241,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER415NNNL (where N is" +
     "number and L is letter, generate an Unauthorized" in {
     val jsonBeginningWithER415 = generateJson(Seq(("NINO", "ER415456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER415)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER415)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 415
     val json: JsValue = contentAsJson(result)
@@ -233,7 +256,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER500NNNL (where N is" +
     "number and L is letter, generate an Unauthorized" in {
     val jsonBeginningWithER500 = generateJson(Seq(("NINO", "ER500456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER500)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER500)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 500
     val json: JsValue = contentAsJson(result)
@@ -248,7 +271,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER503NNNL (where N is" +
     "number and L is letter, generate an Unauthorized" in {
     val jsonBeginningWithER503 = generateJson(Seq(("NINO", "ER503456M")))
-    def fakeRequestWithBadContent = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(jsonBeginningWithER503)
+    def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER503)
     val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
     status(result) shouldBe 503
     val json: JsValue = contentAsJson(result)
@@ -258,5 +281,16 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
     errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+  }
+
+  "if the stub is sent some good JSON that can not be parsed into a CreateAccount case class then return an" +
+    "UNABLE_TO_PARSE_COMMAND_ERROR_CODE error code" in {
+    val mapWithoutForename = goodCreateAccountMap - "forename"
+    def fakeRequest = makeFakeRequest(generateJsonFromMap(mapWithoutForename))
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(UNABLE_TO_PARSE_COMMAND_ERROR_CODE)
   }
 }
