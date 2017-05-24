@@ -30,12 +30,12 @@ import uk.gov.hmrc.helptosavestub.Constants._
 import scala.concurrent.Future
 
 class SquidControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
-  val injector = fakeApplication.injector
-  def messagesApi = injector.instanceOf[MessagesApi]
-  def noCAKeyMap = Map[String, Map[String, String]]("wibble" -> Map())
-  def noCAKeyJson = Json.toJson(noCAKeyMap)
+  private val injector = fakeApplication.injector
+  private def messagesApi = injector.instanceOf[MessagesApi]
+  private def noCAKeyMap = Map[String, Map[String, String]]("wibble" -> Map())
+  private def noCAKeyJson = Json.toJson(noCAKeyMap)
 
-  val goodCreateAccountMap: Map[String, String] =
+  private val goodCreateAccountMap: Map[String, String] =
     Map("forename" -> "Donald",
       "surname" -> "Duck",
       "address1" -> "1",
@@ -52,19 +52,19 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       "emailAddress" -> "dduck@email.com",
       "registrationChannel" -> "online")
 
-  def generateJson(variants: Seq[(String, String)] = Seq()): JsValue = {
+  private def generateJson(variants: Seq[(String, String)] = Seq()): JsValue = {
     Json.toJson(Map("createAccount" -> (goodCreateAccountMap ++ variants)))
   }
 
-  def generateJsonFromMap(m: Map[String, String]): JsValue = {
+  private def generateJsonFromMap(m: Map[String, String]): JsValue = {
     Json.toJson(Map("createAccount" -> m))
   }
 
-  def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(generateJson()).withHeaders((CONTENT_TYPE, "application/json"))
+  private def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(generateJson()).withHeaders((CONTENT_TYPE, "application/json"))
 
-  def makeFakeRequest(json: JsValue) = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
+  private def makeFakeRequest(json: JsValue) = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
 
-  def buildRequest(json: JsValue) = FakeRequest(
+  private def buildRequest(json: JsValue) = FakeRequest(
     "POST",
     "/help-to-save-stub/create-account",
     FakeHeaders(),
@@ -449,6 +449,40 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     errorMessage.getOrElse("") shouldBe messagesApi("site.numeric-chars-forename")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
     errorDetail.getOrElse("") shouldBe messagesApi("site.numeric-chars-forename-detail")
+  }
+
+  "if the stub is sent JSON with a forename with disallowed special characters, a bad request is returned with:" +
+    "FORENAME_DISSALLOWED_CHARS_ERROR_CODE (ZYRA0711) as the error code and site.disallowed-chars-forename and " +
+    "site.disallowed-chars-forename-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("forename", "Dona$%#d")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_DISALLOWED_CHARS_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.disallowed-chars-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.disallowed-chars-forename-detail")
+  }
+
+  "if the stub is sent JSON with a forename with disallowed special characters in the first position, a bad request is returned with:" +
+    "FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE (ZYRA0712) as the error code and site.first-char-special-forename and " +
+    "site.first-char-special-forename-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("forename", "&Donald")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.first-char-special-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.first-char-special-forename-detail")
   }
 
   "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +

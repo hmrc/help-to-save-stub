@@ -54,6 +54,15 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     }
   }
 
+  private def hasDisallowedChars(str: String): Boolean = {
+    val goodNameExpr = """^[a-zA-Z&\.-]*$""".r
+    !goodNameExpr.pattern.matcher(str).matches()
+  }
+
+  private def hasSpecialInFirstPlace(str: String): Boolean = {
+    """^[&\.-].*""".r.pattern.matcher(str).matches()
+  }
+
   private def invalidPostcode(postcode: String): Boolean = {
     val noSpacesPostcode = postcode.filter {_ != ' '}
     val row2Expr = """^[A-P|R-U|WYZ]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
@@ -79,13 +88,9 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       })
 
 //        val noSpacesPostcode = postcode.filter{_ != ' '}
-//        val postcodeRegex =
-//          ("""^GIR0AA|[A-PR-UWYZ][0-9]{1,2}|[A-HK-Y][0-9]|[A-HK-Y][0-9][0-9]|[ABEHMNPRV-Y]|""" +
-//            """[0-9][A-HJKS-UW][0-9][ABD-HJLNP-UW-Z]{2}|[A-Z]{1,4}1ZZ|BFPO[0-9]{1,4}$""").r
-//        noSpacesPostcode match {
-//          case postcodeRegex() => false
-//          case _ => true
-//        }
+//        val postcodeRegex =     ("""^((GIR)(0AA)|([A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]|[A-HK-Y][0-9]([0-9]|[ABEHMNPRV-Y]))|""" +
+//          """[0-9][A-HJKS-UW]))([0-9][ABD-HJLNP-UW-Z]{2})|(([A-Z]{1,4})(1ZZ))|((BFPO)([0-9]{1,4})))$""").r
+//        !postcodeRegex.pattern.matcher(noSpacesPostcode).matches()
   }
 
   private def validateCreateAccount(json: JsValue): Either[(String, String, String), CreateAccount] = {
@@ -98,6 +103,10 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left((FORENAME_LEADING_SPACES_ERROR_CODE, messagesApi("site.leading-spaces-forename"), messagesApi("site.leading-spaces-forename-detail")))
         } else if (hasNumericChars(createAccount.forename)) {
           Left((FORENAME_NUMERIC_CHARS_ERROR_CODE, messagesApi("site.numeric-chars-forename"), messagesApi("site.numeric-chars-forename-detail")))
+        } else if (hasDisallowedChars(createAccount.forename)) {
+          Left((FORENAME_DISALLOWED_CHARS_ERROR_CODE, messagesApi("site.disallowed-chars-forename"), messagesApi("site.disallowed-chars-forename-detail")))
+        } else if (hasSpecialInFirstPlace(createAccount.forename)) {
+          Left((FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.first-char-special-forename"), messagesApi("site.first-char-special-forename-detail")))
         } else if (invalidPostcode(createAccount.postcode)) {
           Left((INVALID_POSTCODE_ERROR_CODE, messagesApi("site.invalid-postcode"), messagesApi("site.invalid-postcode-detail")))
         } else {

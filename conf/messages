@@ -1,3 +1,7 @@
+site.disallowed-chars-forename = The forename must only have alphabetic chars and -, ., &
+site.disallowed-chars-forename-detail = The forename must only have alphabetic chars and -, ., &. See ICD001 Appendix B for more detail
+site.first-char-special-forename = The first character of the forname is one of &.-.
+site.first-char-special-forename-detail = The first character of the forname is one of &.-. See ICD001 Appendix B for more detail
 site.invalid-postcode = The format of the postcode is not valid
 site.invalid-postcode-detail = Postcode format invalid. See ICD001 Appendix A for more detail
 site.leading-spaces-forename = The forename must not have leading spaces
@@ -7,7 +11,7 @@ site.no-create-account-key-detail = "See document ICD001 Section 4.8 for more de
 site.no-json = "There is no parsable JSON command in request"
 site.no-json-detail = "Either there is no Json in the POST, or the JSON that is present is unparsable."
 site.numeric-chars-forename = The forename must not have numeric chars
-site.leading-spaces-forename-detail = The forename must not numeric characters. See ICD001 Appendix B for more detail
+site.numeric-chars-forename-detail = The forename must not numeric characters. See ICD001 Appendix B for more detail
 site.pre-canned-error = "This is a pre-canned response."
 site.pre-canned-error-detail = "This is a pre-canned response set up for test purposes. See HTS-188."
 site.unparsable-command = "The Json cannot be parsed into a CreateAccount case class"
