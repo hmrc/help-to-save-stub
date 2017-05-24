@@ -54,14 +54,11 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     }
   }
 
-  private def hasDisallowedChars(str: String): Boolean = {
-    val goodNameExpr = """^[a-zA-Z&\.-]*$""".r
-    !goodNameExpr.pattern.matcher(str).matches()
-  }
+  private def hasDisallowedChars(str: String): Boolean = !"""^[a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
 
-  private def hasSpecialInFirstPlace(str: String): Boolean = {
-    """^[&\.-].*""".r.pattern.matcher(str).matches()
-  }
+  private def hasSpecialInFirstPlace(str: String): Boolean = """^[&\.-].*""".r.pattern.matcher(str).matches
+
+  private def hasSpecialInLastPlace(str: String): Boolean = """.*[&\.-]$""".r.pattern.matcher(str).matches
 
   private def invalidPostcode(postcode: String): Boolean = {
     val noSpacesPostcode = postcode.filter {_ != ' '}
@@ -107,6 +104,8 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left((FORENAME_DISALLOWED_CHARS_ERROR_CODE, messagesApi("site.disallowed-chars-forename"), messagesApi("site.disallowed-chars-forename-detail")))
         } else if (hasSpecialInFirstPlace(createAccount.forename)) {
           Left((FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.first-char-special-forename"), messagesApi("site.first-char-special-forename-detail")))
+        } else if (hasSpecialInLastPlace(createAccount.forename)) {
+          Left((FORENAME_LAST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.last-char-special-forename"), messagesApi("site.last-char-special-forename-detail")))
         } else if (invalidPostcode(createAccount.postcode)) {
           Left((INVALID_POSTCODE_ERROR_CODE, messagesApi("site.invalid-postcode"), messagesApi("site.invalid-postcode-detail")))
         } else {

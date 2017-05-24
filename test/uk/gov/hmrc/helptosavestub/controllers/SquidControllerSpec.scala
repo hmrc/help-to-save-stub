@@ -485,6 +485,23 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     errorDetail.getOrElse("") shouldBe messagesApi("site.first-char-special-forename-detail")
   }
 
+  "if the stub is sent JSON with a forename with disallowed special characters in the last position, a bad request is returned with:" +
+    "FORENAME_LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
+    "site.first-char-special-forename-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("forename", "Donald-")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_LAST_CHAR_SPECIAL_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.last-char-special-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.last-char-special-forename-detail")
+  }
+
   "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +
     " the message site.invalid-postcode, and the detail site.invalid-postcode-detail" in {
     val jsonWithBadPostCode = generateJson(Seq(("postcode", "678889098")))
