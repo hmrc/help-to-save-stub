@@ -54,13 +54,18 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     val row5Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
     val row6Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d[ABEHMNPR|V-Y]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
     val row7Expr = """^[A-P|R-U|WYZ]\d[A-H|HJK|S-U|W]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
+    val row8Expr = "^[A-Z]1ZZ$".r
+    val row9Expr = "^[A-Z][A-Z]1ZZ$".r
+    val row10Expr = "^[A-Z][A-Z][A-Z]1ZZ$".r
+    val row11Expr = "^[A-Z][A-Z][A-Z][A-Z]1ZZ$".r
+    val row12Expr = """^BFPO\d$""".r
+    val row13Expr = """^BFPO\d\d$""".r
+    val row14Expr = """^BFPO\d\d\d$""".r
+    val row15Expr = """^BFPO\d\d\d\d$""".r
+
     (noSpacesPostcode == "GIR0AA") || (noSpacesPostcode match {
-      case row2Expr() => true
-      case row3Expr() => true
-      case row4Expr() => true
-      case row5Expr() => true
-      case row6Expr() => true
-      case row7Expr() => true
+      case row2Expr() | row3Expr() | row4Expr() | row5Expr() | row6Expr() | row7Expr() | row8Expr() | row9Expr()
+           | row10Expr() | row11Expr() | row12Expr() | row13Expr() | row14Expr() | row15Expr() => true
       case _  => false
     })
   }

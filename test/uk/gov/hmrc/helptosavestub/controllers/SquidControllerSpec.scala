@@ -337,10 +337,84 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 7)" in {
-    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "B9E9 HH")))
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB9E9 HH")))
     def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
     val result = new SquidController(messagesApi).createAccount()(fakeRequest)
     status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 8)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "Z1 ZZ")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 9)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "AA1 ZZ")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 10)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "ZZZ1 ZZ")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 11)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "ZZZZ1 ZZ")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 12)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 9")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 13)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 99")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 14)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 999")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 15)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 9999")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "The following real postcodes should all pass:" in {
+    for (pc <- Seq("BFPO 9999", "BN44 1ST", "E98 1SN", "EH99 1SP", "BS98 1TL")) {
+      var jsonWithGoodPostcode = generateJson(Seq(("postcode", pc)))
+      var fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+      var result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      status(result) shouldBe 200
+    }
+  }
+
+  "None of the following strings are postcodes" in {
+    for (pc <- Seq("wibble", "DOG", "bn44 3dh", "Q99 MM")) {
+      var jsonWithGoodPostcode = generateJson(Seq(("postcode", pc)))
+      var fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+      var result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      status(result) shouldBe 400
+    }
   }
 
   "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +
