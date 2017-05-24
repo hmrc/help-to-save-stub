@@ -37,22 +37,45 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     Json.toJson(errorMap)
   }
 
-  private def errorJsonWithDetail(code: String, messageKey: String = "", detailKey: String = ""): JsValue = {
+  private def errorJsonWithTriple(triple: (String, String, String)): JsValue = {
     val errorMap: Map[String, Map[String, String]] =
       Map("error" ->
-        Map("errorMessageId" -> code,
-          "errorMessage" -> messagesApi(messageKey),
-          "errorDetail" -> detailKey))
+        Map("errorMessageId" -> triple._1,
+          "errorMessage" -> triple._2,
+          "errorDetail" -> triple._3))
     Json.toJson(errorMap)
   }
 
-  private def validateCreateAccount(json: JsValue): Either[(String, String), CreateAccount] = {
+  private def validPostcode(postcode: String): Boolean = {
+    val noSpacesPostcode = postcode.filter{_ != ' '}
+    val row2Expr = """^[A-P|R-U|WYZ]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
+    val row3Expr = """^[A-P|R-U|WYZ]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
+    val row4Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
+    val row5Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
+    val row6Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d[ABEHMNPR|V-Y]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
+    val row7Expr = """^[A-P|R-U|WYZ]\d[A-H|HJK|S-U|W]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
+    (noSpacesPostcode == "GIR0AA") || (noSpacesPostcode match {
+      case row2Expr() => true
+      case row3Expr() => true
+      case row4Expr() => true
+      case row5Expr() => true
+      case row6Expr() => true
+      case row7Expr() => true
+      case _  => false
+    })
+  }
+
+  private def validateCreateAccount(json: JsValue): Either[(String, String, String), CreateAccount] = {
     //Convert incoming json to a case class
     val parseResult = Json.fromJson[CreateAccount]((json \ "createAccount").get)
 
     parseResult match {
-      case JsSuccess(createAccount, _) => Right(createAccount)
-      case JsError(errors) => Left((UNABLE_TO_PARSE_COMMAND_ERROR_CODE, errors.toString()))
+      case JsSuccess(createAccount, _) => if (validPostcode(createAccount.postcode)) {
+        Right(createAccount)
+      } else {
+        Left((INVALID_POSTCODE_ERROR_CODE, messagesApi("site.invalid-postcode"), messagesApi("site.invalid-postcode-detail")))
+      }
+      case JsError(errors) => Left((UNABLE_TO_PARSE_COMMAND_ERROR_CODE, messagesApi("site.unparsable-command"), errors.toString()))
     }
   }
 
@@ -77,7 +100,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
             case Some(n) => {
               validateCreateAccount(json) match {
                 case Right(_) => Ok
-                case Left(errorPair) => BadRequest(errorJsonWithDetail(errorPair._1, "site.unparable-command", errorPair._2))
+                case Left(errorTriple) => BadRequest(errorJsonWithTriple(errorTriple))
               }
             }
             case None => Ok

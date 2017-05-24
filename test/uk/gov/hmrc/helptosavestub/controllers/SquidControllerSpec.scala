@@ -43,7 +43,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       "address3" -> "Test Place 3",
       "address4" -> "Test Place 4",
       "address5" -> "Test Place 5",
-      "postcode" -> "AB12 3CD",
+      "postcode" -> "GIR 0AA",
       "countryCode" -> "GB",
       "NINO" -> "AA999999A",
       "birthDate" ->"19920509",
@@ -292,5 +292,69 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
     errorMessageId shouldBe Some(UNABLE_TO_PARSE_COMMAND_ERROR_CODE)
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 1)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "GIR 0AA")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 2)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "P09 WW")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 3)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "U009 DD")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 4)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB99 HH")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 5)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB990 HH")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 6)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB9E9 HH")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 7)" in {
+    val jsonWithGoodPostcode = generateJson(Seq(("postcode", "B9E9 HH")))
+    def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+    status(result) shouldBe 200
+  }
+
+  "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +
+    " the message site.invalid-postcode, and the detail site.invalid-postcode-detail" in {
+    val jsonWithBadPostCode = generateJson(Seq(("postcode", "678889098")))
+    def fakeRequestWithBadContent = makeFakeRequest(jsonWithBadPostCode)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(INVALID_POSTCODE_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.invalid-postcode")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.invalid-postcode-detail")
   }
 }
