@@ -46,8 +46,16 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     Json.toJson(errorMap)
   }
 
-  private def validPostcode(postcode: String): Boolean = {
-    val noSpacesPostcode = postcode.filter{_ != ' '}
+  private def hasNumericChars(str: String): Boolean = {
+    val numericExpr = """.*\d.*""".r
+    str match {
+      case numericExpr() => true
+      case _ => false
+    }
+  }
+
+  private def invalidPostcode(postcode: String): Boolean = {
+    val noSpacesPostcode = postcode.filter {_ != ' '}
     val row2Expr = """^[A-P|R-U|WYZ]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
     val row3Expr = """^[A-P|R-U|WYZ]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
     val row4Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
@@ -63,11 +71,21 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     val row14Expr = """^BFPO\d\d\d$""".r
     val row15Expr = """^BFPO\d\d\d\d$""".r
 
-    (noSpacesPostcode == "GIR0AA") || (noSpacesPostcode match {
-      case row2Expr() | row3Expr() | row4Expr() | row5Expr() | row6Expr() | row7Expr() | row8Expr() | row9Expr()
-           | row10Expr() | row11Expr() | row12Expr() | row13Expr() | row14Expr() | row15Expr() => true
-      case _  => false
-    })
+    (noSpacesPostcode != "GIR0AA") &&
+      (noSpacesPostcode match {
+        case row2Expr() | row3Expr() | row4Expr() | row5Expr() | row6Expr() | row7Expr() | row8Expr() | row9Expr()
+             | row10Expr() | row11Expr() | row12Expr() | row13Expr() | row14Expr() | row15Expr() => false
+        case _ => true
+      })
+
+//        val noSpacesPostcode = postcode.filter{_ != ' '}
+//        val postcodeRegex =
+//          ("""^GIR0AA|[A-PR-UWYZ][0-9]{1,2}|[A-HK-Y][0-9]|[A-HK-Y][0-9][0-9]|[ABEHMNPRV-Y]|""" +
+//            """[0-9][A-HJKS-UW][0-9][ABD-HJLNP-UW-Z]{2}|[A-Z]{1,4}1ZZ|BFPO[0-9]{1,4}$""").r
+//        noSpacesPostcode match {
+//          case postcodeRegex() => false
+//          case _ => true
+//        }
   }
 
   private def validateCreateAccount(json: JsValue): Either[(String, String, String), CreateAccount] = {
@@ -75,11 +93,16 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     val parseResult = Json.fromJson[CreateAccount]((json \ "createAccount").get)
 
     parseResult match {
-      case JsSuccess(createAccount, _) => if (validPostcode(createAccount.postcode)) {
-        Right(createAccount)
-      } else {
-        Left((INVALID_POSTCODE_ERROR_CODE, messagesApi("site.invalid-postcode"), messagesApi("site.invalid-postcode-detail")))
-      }
+      case JsSuccess(createAccount, _) =>
+        if (createAccount.forename.startsWith(" ")) {
+          Left((FORENAME_LEADING_SPACES_ERROR_CODE, messagesApi("site.leading-spaces-forename"), messagesApi("site.leading-spaces-forename-detail")))
+        } else if (hasNumericChars(createAccount.forename)) {
+          Left((FORENAME_NUMERIC_CHARS_ERROR_CODE, messagesApi("site.numeric-chars-forename"), messagesApi("site.numeric-chars-forename-detail")))
+        } else if (invalidPostcode(createAccount.postcode)) {
+          Left((INVALID_POSTCODE_ERROR_CODE, messagesApi("site.invalid-postcode"), messagesApi("site.invalid-postcode-detail")))
+        } else {
+          Right(createAccount)
+        }
       case JsError(errors) => Left((UNABLE_TO_PARSE_COMMAND_ERROR_CODE, messagesApi("site.unparsable-command"), errors.toString()))
     }
   }
@@ -113,7 +136,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
         }
       }
     }
-
   }
 
 

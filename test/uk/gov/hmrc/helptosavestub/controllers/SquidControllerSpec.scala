@@ -417,6 +417,40 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     }
   }
 
+  "if the stub is sent JSON with a forename with leading spaces, a bad request is returned with:" +
+    "FORENAME_LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-forename and " +
+    "site.leading-spaces-forename-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("forename", "    The Donald")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_LEADING_SPACES_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.leading-spaces-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.leading-spaces-forename-detail")
+  }
+
+  "if the stub is sent JSON with a forename with numeric characters, a bad request is returned with:" +
+    "FORENAME_NUMERIC_CHARS_ERROR_CODE (ZYRA0705) as the error code and site.numeric-chars-forename and " +
+    "site.numeric-chars-forename-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("forename", "D0n4ld")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_NUMERIC_CHARS_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.numeric-chars-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.numeric-chars-forename-detail")
+  }
+
   "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +
     " the message site.invalid-postcode, and the detail site.invalid-postcode-detail" in {
     val jsonWithBadPostCode = generateJson(Seq(("postcode", "678889098")))
