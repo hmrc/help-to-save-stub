@@ -60,15 +60,11 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     Json.toJson(Map("createAccount" -> m))
   }
 
-  private def fakeRequest = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(generateJson()).withHeaders((CONTENT_TYPE, "application/json"))
+  private def fakeRequest = FakeRequest().withJsonBody(generateJson()).withHeaders((CONTENT_TYPE, "application/json"))
 
-  private def makeFakeRequest(json: JsValue) = FakeRequest("POST", "/help-to-save-stub/create-account").withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
+  private def makeFakeRequest(json: JsValue) = FakeRequest().withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
 
-  private def buildRequest(json: JsValue) = FakeRequest(
-    "POST",
-    "/help-to-save-stub/create-account",
-    FakeHeaders(),
-    json.toString())
+  private def buildRequest(json: JsValue) = FakeRequest("", "", FakeHeaders(), json.toString())
 
   "Squid Controller" must {
 
@@ -418,7 +414,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "if the stub is sent JSON with a forename with leading spaces, a bad request is returned with:" +
-    "FORENAME_LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-forename and " +
+    "LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-forename and " +
     "site.leading-spaces-forename-detail are returned in the error JSON" +
     "and the appropriate message" in {
     val badJson = generateJson(Seq(("forename", "    The Donald")))
@@ -427,7 +423,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result) shouldBe 400
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-    errorMessageId shouldBe Some(FORENAME_LEADING_SPACES_ERROR_CODE)
+    errorMessageId shouldBe Some(LEADING_SPACES_ERROR_CODE)
     val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
     errorMessage.getOrElse("") shouldBe messagesApi("site.leading-spaces-forename")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
@@ -444,7 +440,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result) shouldBe 400
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-    errorMessageId shouldBe Some(FORENAME_NUMERIC_CHARS_ERROR_CODE)
+    errorMessageId shouldBe Some(NUMERIC_CHARS_ERROR_CODE)
     val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
     errorMessage.getOrElse("") shouldBe messagesApi("site.numeric-chars-forename")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
@@ -500,6 +496,91 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     errorMessage.getOrElse("") shouldBe messagesApi("site.last-char-special-forename")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
     errorDetail.getOrElse("") shouldBe messagesApi("site.last-char-special-forename-detail")
+  }
+
+  "if the stub is sent JSON with a forename with too few alphabetic characters at the begining, a bad request is returned with:" +
+    "FORENAME_TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-forename and " +
+    "site.too-few-initial-alpha-forename-detail are returned in the error JSON and the appropriate message." in {
+    //TODO: Find out what this number should actually be - initially setting it to 3
+    val badJson = generateJson(Seq(("forename", "D&&onald")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_TOO_FEW_INITIAL_ALPHA_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.too-few-initial-alpha-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.too-few-initial-alpha-forename-detail")
+  }
+
+  "if the stub is sent JSON with a forename with too few consecutive alphabetic characters, a bad request is returned with:" +
+    "FORENAME_TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE (ZYRA0715) as the error code and site.too-few-consecutive-alpha-forename and " +
+    "site.too-few-consecutive-alpha-forename-detail are returned in the error JSON and the appropriate message." in {
+    //TODO: Find out what this number should actually be - initially setting it to 4
+    val badJson = generateJson(Seq(("forename", "Don&l")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.too-few-consecutive-alpha-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.too-few-consecutive-alpha-forename-detail")
+  }
+
+  "if the stub is sent JSON with a forename with too few consecutive alphabetic characters, a bad request is returned with:" +
+    "FORENAME_TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE (ZYRA0716) as the error code and site.too-many-consecutive-special-forename and " +
+    "site.too-many-consecutive-special-forename-detail are returned in the error JSON and the appropriate message." in {
+    //TODO: Find out what this number should actually be - initially setting it to 2
+    val badJson = generateJson(Seq(("forename", "Don--aldddd")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FORENAME_TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.too-many-consecutive-special-forename")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.too-many-consecutive-special-forename-detail")
+  }
+
+  "if the stub is sent JSON with a surname with leading spaces, a bad request is returned with:" +
+    "LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-surname and " +
+    "site.leading-spaces-surname-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("surname", "     Duck")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(LEADING_SPACES_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.leading-spaces-surname")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.leading-spaces-surname-detail")
+  }
+
+  "if the stub is sent JSON with a surname with numeric characters, a bad request is returned with:" +
+    "NUMERIC_CHARS_ERROR_CODE (ZYRA0705) as the error code and site.numeric-chars-surname and " +
+    "site.numeric-chars-surname-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("surname", "D0n4ld")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(NUMERIC_CHARS_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.numeric-chars-surname")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.numeric-chars-surname-detail")
   }
 
   "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +

@@ -46,19 +46,19 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     Json.toJson(errorMap)
   }
 
-  private def hasNumericChars(str: String): Boolean = {
-    val numericExpr = """.*\d.*""".r
-    str match {
-      case numericExpr() => true
-      case _ => false
-    }
-  }
+  private def hasNumericChars(str: String): Boolean = """.*\d.*""".r.pattern.matcher(str).matches
 
   private def hasDisallowedChars(str: String): Boolean = !"""^[a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
 
   private def hasSpecialInFirstPlace(str: String): Boolean = """^[&\.-].*""".r.pattern.matcher(str).matches
 
   private def hasSpecialInLastPlace(str: String): Boolean = """.*[&\.-]$""".r.pattern.matcher(str).matches
+
+  private def hasInsufficientAlphaCharsAtStart(str: String) = !"^[a-zA-Z]{3}.*".r.pattern.matcher(str).matches
+
+  private def hasInsufficientConsecutiveAlphaChars(str: String) = !"^.*[a-zA-Z]{4}.*".r.pattern.matcher(str).matches
+
+  private def hasTooManyConsecutiveSpecialChars(str: String) = """^.*[&\.-]{2}.*""".r.pattern.matcher(str).matches
 
   private def invalidPostcode(postcode: String): Boolean = {
     val noSpacesPostcode = postcode.filter {_ != ' '}
@@ -97,17 +97,27 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     parseResult match {
       case JsSuccess(createAccount, _) =>
         if (createAccount.forename.startsWith(" ")) {
-          Left((FORENAME_LEADING_SPACES_ERROR_CODE, messagesApi("site.leading-spaces-forename"), messagesApi("site.leading-spaces-forename-detail")))
+          Left((LEADING_SPACES_ERROR_CODE, messagesApi("site.leading-spaces-forename"), messagesApi("site.leading-spaces-forename-detail")))
         } else if (hasNumericChars(createAccount.forename)) {
-          Left((FORENAME_NUMERIC_CHARS_ERROR_CODE, messagesApi("site.numeric-chars-forename"), messagesApi("site.numeric-chars-forename-detail")))
+          Left((NUMERIC_CHARS_ERROR_CODE, messagesApi("site.numeric-chars-forename"), messagesApi("site.numeric-chars-forename-detail")))
         } else if (hasDisallowedChars(createAccount.forename)) {
           Left((FORENAME_DISALLOWED_CHARS_ERROR_CODE, messagesApi("site.disallowed-chars-forename"), messagesApi("site.disallowed-chars-forename-detail")))
         } else if (hasSpecialInFirstPlace(createAccount.forename)) {
           Left((FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.first-char-special-forename"), messagesApi("site.first-char-special-forename-detail")))
         } else if (hasSpecialInLastPlace(createAccount.forename)) {
           Left((FORENAME_LAST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.last-char-special-forename"), messagesApi("site.last-char-special-forename-detail")))
+        } else if (hasInsufficientAlphaCharsAtStart(createAccount.forename)) {
+          Left((FORENAME_TOO_FEW_INITIAL_ALPHA_ERROR_CODE, messagesApi("site.too-few-initial-alpha-forename"), messagesApi("site.too-few-initial-alpha-forename-detail")))
+        } else if (hasInsufficientConsecutiveAlphaChars(createAccount.forename)) {
+          Left((FORENAME_TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, messagesApi("site.too-few-consecutive-alpha-forename"), messagesApi("site.too-few-consecutive-alpha-forename-detail")))
+        } else if (hasTooManyConsecutiveSpecialChars(createAccount.forename)) {
+          Left((FORENAME_TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, messagesApi("site.too-many-consecutive-special-forename"), messagesApi("site.too-many-consecutive-special-forename-detail")))
+        } else if (createAccount.surname.startsWith(" ")) {
+          Left((LEADING_SPACES_ERROR_CODE, messagesApi("site.leading-spaces-surname"), messagesApi("site.leading-spaces-surname-detail")))
         } else if (invalidPostcode(createAccount.postcode)) {
           Left((INVALID_POSTCODE_ERROR_CODE, messagesApi("site.invalid-postcode"), messagesApi("site.invalid-postcode-detail")))
+        } else if (hasNumericChars(createAccount.surname)) {
+          Left((NUMERIC_CHARS_ERROR_CODE, messagesApi("site.numeric-chars-surname"), messagesApi("site.numeric-chars-surname-detail")))
         } else {
           Right(createAccount)
         }
@@ -145,7 +155,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       }
     }
   }
-
 
   def createAccount(): Action[AnyContent] = Action { request =>
     val mimeType = request.headers.toSimpleMap.get(CONTENT_TYPE)
