@@ -16,14 +16,21 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.lang.IllegalArgumentException
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
 
+import org.joda.time.{DateTime, LocalDate, LocalDateTime}
+import org.joda.time.format.DateTimeFormat
 import play.api.i18n.MessagesApi
-import play.api.libs.json._
+import play.api.libs.json.{JsError, _}
 import play.api.mvc._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.Constants._
-import uk.gov.hmrc.helptosavestub.models.CreateAccount
+import uk.gov.hmrc.helptosavestub.models.{AccountCommand, CreateAccount}
+
+import scala.util.{Failure, Success, Try}
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
@@ -61,7 +68,9 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   private def hasTooManyConsecutiveSpecialChars(str: String) = """^.*[&\.-]{2}.*""".r.pattern.matcher(str).matches
 
   private def invalidPostcode(postcode: String): Boolean = {
-    val noSpacesPostcode = postcode.filter {_ != ' '}
+    val noSpacesPostcode = postcode.filter {
+      _ != ' '
+    }
     val row2Expr = """^[A-P|R-U|WYZ]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
     val row3Expr = """^[A-P|R-U|WYZ]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
     val row4Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
@@ -84,18 +93,29 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
         case _ => true
       })
 
-//        val noSpacesPostcode = postcode.filter{_ != ' '}
-//        val postcodeRegex =     ("""^((GIR)(0AA)|([A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]|[A-HK-Y][0-9]([0-9]|[ABEHMNPRV-Y]))|""" +
-//          """[0-9][A-HJKS-UW]))([0-9][ABD-HJLNP-UW-Z]{2})|(([A-Z]{1,4})(1ZZ))|((BFPO)([0-9]{1,4})))$""").r
-//        !postcodeRegex.pattern.matcher(noSpacesPostcode).matches()
+    //        val noSpacesPostcode = postcode.filter{_ != ' '}
+    //        val postcodeRegex =     ("""^((GIR)(0AA)|([A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]|[A-HK-Y][0-9]([0-9]|[ABEHMNPRV-Y]))|""" +
+    //          """[0-9][A-HJKS-UW]))([0-9][ABD-HJLNP-UW-Z]{2})|(([A-Z]{1,4})(1ZZ))|((BFPO)([0-9]{1,4})))$""").r
+    //        !postcodeRegex.pattern.matcher(noSpacesPostcode).matches()
+  }
+
+  private def parseLocalDate(str: String) = Try (java.time.LocalDate.parse(str, DateTimeFormatter.ofPattern("yyyyMMdd")))
+
+  private def monthFromDate(str: String): Try[Int] = {
+    val month = """^\d{8}$""".r.pattern.matcher(str).matches()
+    if (month) {
+      Try(str.substring(4,6).toInt)
+    } else {
+      Failure(new IllegalArgumentException())
+    }
   }
 
   //Helper method
   private def mt(code: String, mk0: String, mk1: String): (String, String, String) = (code, messagesApi(mk0), messagesApi(mk1))
 
-  private def validateCreateAccount(json: JsValue): Either[(String, String, String), CreateAccount] = {
+  private def validateCreateAccount(json: JsValue): Either[(String, String, String), AccountCommand] = {
     //Convert incoming json to a case class
-    val parseResult = Json.fromJson[CreateAccount]((json \ "createAccount").get)
+    val parseResult = Json.fromJson[AccountCommand]((json \ "createAccount").get)
 
     parseResult match {
       case JsSuccess(createAccount, _) =>
@@ -114,7 +134,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
         } else if (hasInsufficientConsecutiveAlphaChars(createAccount.forename)) {
           Left(mt(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-forename", "site.too-few-consecutive-alpha-forename-detail"))
         } else if (hasTooManyConsecutiveSpecialChars(createAccount.forename)) {
-          Left(mt(FORENAME_TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
+          Left(mt(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
         } else if (createAccount.surname.startsWith(" ")) {
           Left(mt(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
         } else if (invalidPostcode(createAccount.postcode)) {
@@ -131,9 +151,18 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left(mt(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
         } else if (hasInsufficientConsecutiveAlphaChars(createAccount.surname)) {
           Left(mt(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
+        } else if (hasTooManyConsecutiveSpecialChars(createAccount.surname)) {
+          Left(mt(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
+        } else if (parseLocalDate(createAccount.birthDate).isFailure) {
+          val monthNumber = monthFromDate(createAccount.birthDate)
+          monthNumber match {
+            case Success(m) if (m > 12) => Left(mt(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
+            case _ => Left(mt(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
+          }
         } else {
           Right(createAccount)
         }
+
       case JsError(errors) => Left((UNABLE_TO_PARSE_COMMAND_ERROR_CODE, messagesApi("site.unparsable-command"), errors.toString()))
     }
   }
