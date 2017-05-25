@@ -431,7 +431,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "if the stub is sent JSON with a forename with numeric characters, a bad request is returned with:" +
-    "FORENAME_NUMERIC_CHARS_ERROR_CODE (ZYRA0705) as the error code and site.numeric-chars-forename and " +
+    "NUMERIC_CHARS_ERROR_CODE (ZYRA0705) as the error code and site.numeric-chars-forename and " +
     "site.numeric-chars-forename-detail are returned in the error JSON" +
     "and the appropriate message" in {
     val badJson = generateJson(Seq(("forename", "D0n4ld")))
@@ -448,7 +448,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "if the stub is sent JSON with a forename with disallowed special characters, a bad request is returned with:" +
-    "FORENAME_DISSALLOWED_CHARS_ERROR_CODE (ZYRA0711) as the error code and site.disallowed-chars-forename and " +
+    "DISSALLOWED_CHARS_ERROR_CODE (ZYRA0711) as the error code and site.disallowed-chars-forename and " +
     "site.disallowed-chars-forename-detail are returned in the error JSON" +
     "and the appropriate message" in {
     val badJson = generateJson(Seq(("forename", "Dona$%#d")))
@@ -457,7 +457,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result) shouldBe 400
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-    errorMessageId shouldBe Some(FORENAME_DISALLOWED_CHARS_ERROR_CODE)
+    errorMessageId shouldBe Some(DISALLOWED_CHARS_ERROR_CODE)
     val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
     errorMessage.getOrElse("") shouldBe messagesApi("site.disallowed-chars-forename")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
@@ -465,7 +465,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "if the stub is sent JSON with a forename with disallowed special characters in the first position, a bad request is returned with:" +
-    "FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE (ZYRA0712) as the error code and site.first-char-special-forename and " +
+    "FIRST_CHAR_SPECIAL_ERROR_CODE (ZYRA0712) as the error code and site.first-char-special-forename and " +
     "site.first-char-special-forename-detail are returned in the error JSON" +
     "and the appropriate message" in {
     val badJson = generateJson(Seq(("forename", "&Donald")))
@@ -474,7 +474,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result) shouldBe 400
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-    errorMessageId shouldBe Some(FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE)
+    errorMessageId shouldBe Some(FIRST_CHAR_SPECIAL_ERROR_CODE)
     val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
     errorMessage.getOrElse("") shouldBe messagesApi("site.first-char-special-forename")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
@@ -482,7 +482,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
   }
 
   "if the stub is sent JSON with a forename with disallowed special characters in the last position, a bad request is returned with:" +
-    "FORENAME_LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
+    "LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
     "site.first-char-special-forename-detail are returned in the error JSON" +
     "and the appropriate message" in {
     val badJson = generateJson(Seq(("forename", "Donald-")))
@@ -491,7 +491,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     status(result) shouldBe 400
     val json: JsValue = contentAsJson(result)
     val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-    errorMessageId shouldBe Some(FORENAME_LAST_CHAR_SPECIAL_ERROR_CODE)
+    errorMessageId shouldBe Some(LAST_CHAR_SPECIAL_ERROR_CODE)
     val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
     errorMessage.getOrElse("") shouldBe messagesApi("site.last-char-special-forename")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
@@ -581,6 +581,57 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     errorMessage.getOrElse("") shouldBe messagesApi("site.numeric-chars-surname")
     val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
     errorDetail.getOrElse("") shouldBe messagesApi("site.numeric-chars-surname-detail")
+  }
+
+  "if the stub is sent JSON with a surname with disallowed special characters, a bad request is returned with:" +
+    "DISSALLOWED_CHARS_ERROR_CODE (ZYRA0711) as the error code and site.disallowed-chars-surname and " +
+    "site.disallowed-chars-surname-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("surname", "Duck$%#chesky")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(DISALLOWED_CHARS_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.disallowed-chars-surname")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.disallowed-chars-surname-detail")
+  }
+
+  "if the stub is sent JSON with a surname with disallowed special characters in the first position, a bad request is returned with:" +
+    "FIRST_CHAR_SPECIAL_ERROR_CODE (ZYRA0712) as the error code and site.first-char-special-surname and " +
+    "site.first-char-special-surname-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("surname", "&Duckchesky")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(FIRST_CHAR_SPECIAL_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.first-char-special-surname")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.first-char-special-surname-detail")
+  }
+
+  "if the stub is sent JSON with a surname with disallowed special characters in the last position, a bad request is returned with:" +
+    "LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
+    "site.first-char-special-forename-detail are returned in the error JSON" +
+    "and the appropriate message" in {
+    val badJson = generateJson(Seq(("surname", "Duckchesky-")))
+    def fakeRequestWithBadContent = makeFakeRequest(badJson)
+    val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+    status(result) shouldBe 400
+    val json: JsValue = contentAsJson(result)
+    val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+    errorMessageId shouldBe Some(LAST_CHAR_SPECIAL_ERROR_CODE)
+    val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+    errorMessage.getOrElse("") shouldBe messagesApi("site.last-char-special-surname")
+    val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+    errorDetail.getOrElse("") shouldBe messagesApi("site.last-char-special-surname-detail")
   }
 
   "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +

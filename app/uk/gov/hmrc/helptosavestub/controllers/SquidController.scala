@@ -101,11 +101,11 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
         } else if (hasNumericChars(createAccount.forename)) {
           Left((NUMERIC_CHARS_ERROR_CODE, messagesApi("site.numeric-chars-forename"), messagesApi("site.numeric-chars-forename-detail")))
         } else if (hasDisallowedChars(createAccount.forename)) {
-          Left((FORENAME_DISALLOWED_CHARS_ERROR_CODE, messagesApi("site.disallowed-chars-forename"), messagesApi("site.disallowed-chars-forename-detail")))
+          Left((DISALLOWED_CHARS_ERROR_CODE, messagesApi("site.disallowed-chars-forename"), messagesApi("site.disallowed-chars-forename-detail")))
         } else if (hasSpecialInFirstPlace(createAccount.forename)) {
-          Left((FORENAME_FIRST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.first-char-special-forename"), messagesApi("site.first-char-special-forename-detail")))
+          Left((FIRST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.first-char-special-forename"), messagesApi("site.first-char-special-forename-detail")))
         } else if (hasSpecialInLastPlace(createAccount.forename)) {
-          Left((FORENAME_LAST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.last-char-special-forename"), messagesApi("site.last-char-special-forename-detail")))
+          Left((LAST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.last-char-special-forename"), messagesApi("site.last-char-special-forename-detail")))
         } else if (hasInsufficientAlphaCharsAtStart(createAccount.forename)) {
           Left((FORENAME_TOO_FEW_INITIAL_ALPHA_ERROR_CODE, messagesApi("site.too-few-initial-alpha-forename"), messagesApi("site.too-few-initial-alpha-forename-detail")))
         } else if (hasInsufficientConsecutiveAlphaChars(createAccount.forename)) {
@@ -118,6 +118,12 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left((INVALID_POSTCODE_ERROR_CODE, messagesApi("site.invalid-postcode"), messagesApi("site.invalid-postcode-detail")))
         } else if (hasNumericChars(createAccount.surname)) {
           Left((NUMERIC_CHARS_ERROR_CODE, messagesApi("site.numeric-chars-surname"), messagesApi("site.numeric-chars-surname-detail")))
+        } else if (hasDisallowedChars(createAccount.surname)) {
+          Left((DISALLOWED_CHARS_ERROR_CODE, messagesApi("site.disallowed-chars-surname"), messagesApi("site.disallowed-chars-surname-detail")))
+        } else if (hasSpecialInFirstPlace(createAccount.surname)) {
+          Left((FIRST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.first-char-special-surname"), messagesApi("site.first-char-special-surname-detail")))
+        } else if (hasSpecialInLastPlace(createAccount.surname)) {
+          Left((LAST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.last-char-special-surname"), messagesApi("site.last-char-special-surname-detail")))
         } else {
           Right(createAccount)
         }
