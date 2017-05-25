@@ -107,9 +107,9 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
         } else if (hasSpecialInLastPlace(createAccount.forename)) {
           Left((LAST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.last-char-special-forename"), messagesApi("site.last-char-special-forename-detail")))
         } else if (hasInsufficientAlphaCharsAtStart(createAccount.forename)) {
-          Left((FORENAME_TOO_FEW_INITIAL_ALPHA_ERROR_CODE, messagesApi("site.too-few-initial-alpha-forename"), messagesApi("site.too-few-initial-alpha-forename-detail")))
+          Left((TOO_FEW_INITIAL_ALPHA_ERROR_CODE, messagesApi("site.too-few-initial-alpha-forename"), messagesApi("site.too-few-initial-alpha-forename-detail")))
         } else if (hasInsufficientConsecutiveAlphaChars(createAccount.forename)) {
-          Left((FORENAME_TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, messagesApi("site.too-few-consecutive-alpha-forename"), messagesApi("site.too-few-consecutive-alpha-forename-detail")))
+          Left((TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, messagesApi("site.too-few-consecutive-alpha-forename"), messagesApi("site.too-few-consecutive-alpha-forename-detail")))
         } else if (hasTooManyConsecutiveSpecialChars(createAccount.forename)) {
           Left((FORENAME_TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, messagesApi("site.too-many-consecutive-special-forename"), messagesApi("site.too-many-consecutive-special-forename-detail")))
         } else if (createAccount.surname.startsWith(" ")) {
@@ -124,6 +124,10 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left((FIRST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.first-char-special-surname"), messagesApi("site.first-char-special-surname-detail")))
         } else if (hasSpecialInLastPlace(createAccount.surname)) {
           Left((LAST_CHAR_SPECIAL_ERROR_CODE, messagesApi("site.last-char-special-surname"), messagesApi("site.last-char-special-surname-detail")))
+        } else if (hasInsufficientAlphaCharsAtStart(createAccount.surname)) {
+          Left((TOO_FEW_INITIAL_ALPHA_ERROR_CODE, messagesApi("site.too-few-initial-alpha-surname"), messagesApi("site.too-few-initial-alpha-surname-detail")))
+        } else if (hasInsufficientConsecutiveAlphaChars(createAccount.surname)) {
+          Left((TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, messagesApi("site.too-few-consecutive-alpha-surname"), messagesApi("site.too-few-consecutive-alpha-surname-detail")))
         } else {
           Right(createAccount)
         }
