@@ -19,10 +19,13 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.time.LocalDate
 import play.api.libs.json.Json
 import play.api.mvc._
-import smartstub._
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import org.scalacheck.Gen
+import hmrc.smartstub._
 
 object ItmpController extends BaseController {
+
+  implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
 
   type Address = List[String]
   type Email = String
@@ -38,47 +41,35 @@ object ItmpController extends BaseController {
     weeklyHouseholdIncome: Int
   )
 
-  object UserDetailsGenerator extends SmartStubGenerator[String, H2SEligibility] {
-    import org.scalacheck.Gen._
-
-    def from(in: String): Option[Long] =
-      fromNino(in)
-
-    def generator(in: String) = for {
-      gender <- oneOf(people.Male, people.Female)
-      forename <- people.Names.forenames(gender)
-      surname <- people.Names.surnames
-      dateOfBirth <- dateGen(1970,2000)
-      email <- people.Names.email(forename, surname, dateOfBirth.toString)
-      address <- option(people.Address.ukAddress)
-      wtcEligibility <- oneOf(true, false)
-      ucEligibility <- oneOf(true, false)
-      income <- choose(0, 2 * 120)
-    } yield {
-      H2SEligibility(
-        s"$forename $surname",
-        dateOfBirth,
-        address,
-        email,
-        wtcEligibility || (ucEligibility && income > 120),
-        wtcEligibility,
-        ucEligibility,
-        income
-      )
-    }
+  def generator(in: String) = for {
+    forename <- Gen.forename
+    surname <- Gen.surname
+    dateOfBirth <- Gen.date(1970,2000)
+    email = s"${forename.toLowerCase}.${surname.toLowerCase}@gmail.com"
+    address <- Gen.option(Gen.ukAddress)
+    wtcEligibility <- Gen.oneOf(true, false)
+    ucEligibility <- Gen.oneOf(true, false)
+    income <- Gen.choose(0, 2 * 120)
+  } yield {
+    H2SEligibility(
+      s"$forename $surname",
+      dateOfBirth,
+      address,
+      email,
+      wtcEligibility || (ucEligibility && income > 120),
+      wtcEligibility,
+      ucEligibility,
+      income
+    )
   }
 
-
   def eligibilityCheck(nino:String) = Action { implicit request =>
-
     implicit val responseFormatter = Json.format[H2SEligibility]
 
-    UserDetailsGenerator(nino).map { x => 
+    generator(nino).seeded(nino).map { x =>
       Ok(Json.toJson(x))
     }.getOrElse{
       NotFound
     }
   }
-
-
 }
