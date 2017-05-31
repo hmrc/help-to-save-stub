@@ -866,5 +866,24 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
       errorDetail.getOrElse("") shouldBe messagesApi("site.bad-month-date-detail")
     }
+
+    "if the stub is sent JSON with a numeric string of length 8 and the day is not valid for the date and year, an object is " +
+      "returned with code set to BAD_DAY_DATE_ERROR_CODE, (CWFDAT03) " +
+      " the message site.bad-day-date, and the detail site.bad-day-date-detail" in {
+      val badJson = generateJson(Seq(("birthDate", "20020229")))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe 400
+      val json: JsValue = contentAsJson(result)
+      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+      errorMessageId shouldBe Some(BAD_DAY_DATE_ERROR_CODE)
+      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-day-date"))
+      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-day-date")
+      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
+      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-day-date-detail")
+    }
   }
 }

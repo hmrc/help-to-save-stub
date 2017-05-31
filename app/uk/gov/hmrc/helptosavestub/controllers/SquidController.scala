@@ -18,7 +18,8 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.lang.IllegalArgumentException
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
+import java.time.format.{DateTimeFormatter, ResolverStyle}
+import java.time.temporal.TemporalAdjusters
 import javax.inject.{Inject, Singleton}
 
 import org.joda.time.{DateTime, LocalDate, LocalDateTime}
@@ -30,6 +31,7 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.Constants._
 import uk.gov.hmrc.helptosavestub.models.{AccountCommand, CreateAccount}
 
+import scala.reflect.internal.ClassfileConstants.FlagTranslation
 import scala.util.{Failure, Success, Try}
 
 @Singleton
@@ -99,14 +101,49 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     //        !postcodeRegex.pattern.matcher(noSpacesPostcode).matches()
   }
 
-  private def parseLocalDate(str: String) = Try (java.time.LocalDate.parse(str, DateTimeFormatter.ofPattern("yyyyMMdd")))
+  private def unparsableLocalDate(str: String) = {
+    !"""^\d{8}$""".r.pattern.matcher(str).matches()
+  }
 
-  private def monthFromDate(str: String): Try[Int] = {
-    val month = """^\d{8}$""".r.pattern.matcher(str).matches()
-    if (month) {
-      Try(str.substring(4,6).toInt)
-    } else {
+  private def yearFromDate(date: String): Try[Int] = {
+    if (unparsableLocalDate(date)) {
       Failure(new IllegalArgumentException())
+    } else {
+      Try(date.substring(0, 4).toInt)
+    }
+  }
+
+  private def monthFromDate(date: String): Try[Int] = {
+    if (unparsableLocalDate(date)) {
+      Failure(new IllegalArgumentException())
+    } else {
+      Try(date.substring(4, 6).toInt)
+    }
+  }
+
+  private def dayFromDate(date: String): Try[Int] = {
+    if (unparsableLocalDate(date)) {
+      Failure(new IllegalArgumentException())
+    } else {
+      Try(date.substring(6, 8).toInt)
+    }
+  }
+
+  private def invalidDay(date: String): Boolean = {
+    val dayNumber: Try[Int] = dayFromDate(date)
+    val monthNumber = monthFromDate(date)
+    val yearNumber = yearFromDate(date)
+
+    if (dayNumber.isSuccess && monthNumber.isSuccess && yearNumber.isSuccess) {
+      val day = dayNumber.getOrElse(0)
+      val month = monthNumber.getOrElse(0)
+      val year = yearNumber.getOrElse(0)
+      val firstDayOfMonthDate = java.time.LocalDate.of(year, month, 1)
+      val lastDayOfMonthDate = firstDayOfMonthDate.`with`(TemporalAdjusters.lastDayOfMonth())
+      val lastDay = lastDayOfMonthDate
+      day < 1 || day > lastDay.getDayOfMonth
+    } else {
+      true
     }
   }
 
@@ -153,12 +190,12 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left(mt(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
         } else if (hasTooManyConsecutiveSpecialChars(createAccount.surname)) {
           Left(mt(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
-        } else if (parseLocalDate(createAccount.birthDate).isFailure) {
-          val monthNumber = monthFromDate(createAccount.birthDate)
-          monthNumber match {
-            case Success(m) if (m > 12) => Left(mt(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
-            case _ => Left(mt(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
-          }
+        } else if (unparsableLocalDate(createAccount.birthDate)) {
+          Left(mt(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
+        } else if (monthFromDate(createAccount.birthDate).getOrElse(13) > 12) {
+          Left(mt(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
+        } else if (invalidDay(createAccount.birthDate)) {
+          Left(mt(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
         } else {
           Right(createAccount)
         }

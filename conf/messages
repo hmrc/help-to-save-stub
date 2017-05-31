@@ -1,3 +1,5 @@
+site.bad-day-date = The day must be valid for the month and year.
+site.bad-day-date-detail = The day must be valid for the month and year. See ICD001 Appendix B for more detail
 site.bad-month-date = The birthdate have a month between 01 and 12.
 site.bad-month-date-detail = The birthdate have a month between 01 and 12. See ICD001 Appendix B for more detail
 site.disallowed-chars-forename = The forename must only have alphabetic chars and -, ., &
