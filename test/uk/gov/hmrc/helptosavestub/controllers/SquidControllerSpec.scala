@@ -885,5 +885,43 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
       errorDetail.getOrElse("") shouldBe messagesApi("site.bad-day-date-detail")
     }
+
+    "if the stub is sent JSON with a numeric string of but the century is before 1800 or after 2099, an object is " +
+      "returned with code set to BAD_DAY_CENTURY_ERROR_CODE, (CWFDAT06) " +
+      " the message site.bad-century-date, and the detail site.bad-century-date-detail" in {
+      val badJson = generateJson(Seq(("birthDate", "21050215")))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe 400
+      val json: JsValue = contentAsJson(result)
+      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+      errorMessageId shouldBe Some(BAD_CENTURY_DATE_ERROR_CODE)
+      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-century-date"))
+      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-century-date")
+      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
+      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-century-date-detail")
+    }
+
+    "if the stub is sent JSON with an unrecognized country code an object is " +
+      "returned with code set to UNKNOWN_COUNTRY_CODE_ERROR_CODE, (TAR10005) " +
+      " the message site.unknown-country-code, and the detail site.unknown-country-code-detail" in {
+      val badJson = generateJson(Seq(("countryCode", "MJ")))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe 400
+      val json: JsValue = contentAsJson(result)
+      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+      errorMessageId shouldBe Some(UNKNOWN_COUNTRY_CODE_ERROR_CODE)
+      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.unknown-country-code"))
+      errorMessage.getOrElse("") shouldBe messagesApi("site.unknown-country-code")
+      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
+      errorDetail.getOrElse("") shouldBe messagesApi("site.unknown-country-code-detail")
+    }
   }
 }

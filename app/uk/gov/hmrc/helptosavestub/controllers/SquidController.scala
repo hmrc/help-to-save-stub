@@ -21,9 +21,6 @@ import java.time.LocalDate
 import java.time.format.{DateTimeFormatter, ResolverStyle}
 import java.time.temporal.TemporalAdjusters
 import javax.inject.{Inject, Singleton}
-
-import org.joda.time.{DateTime, LocalDate, LocalDateTime}
-import org.joda.time.format.DateTimeFormat
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsError, _}
 import play.api.mvc._
@@ -36,6 +33,28 @@ import scala.util.{Failure, Success, Try}
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
+
+  private val countryCodes = Set[String](
+    "GM", "CZ", "VA", "BS", "ZW", "ZM", "YE", "VN", "VE", "VU",
+    "UZ", "UY", "US", "AE", "UA", "UG", "TV", "TM", "TR", "TN",
+    "TT", "TO", "TG", "TH", "TZ", "TJ", "SY", "CH", "SE", "SZ",
+    "SR", "SD", "LK", "ES", "SS", "ZA", "SO", "SB", "SI", "SK",
+    "SG", "SL", "SC", "RS", "SN", "SA", "ST", "SM", "WS", "VC",
+    "LC", "KN", "RW", "RU", "RO", "QA", "PT", "PL", "PH", "PE",
+    "PY", "PG", "PA", "PW", "PK", "OM", "NO", "NG", "NE", "NI",
+    "NZ", "NL", "NP", "NR", "NA", "MZ", "MA", "ME", "MN", "MC",
+    "MD", "FM", "MX", "MU", "MR", "MH", "MT", "ML", "MV", "MY",
+    "MW", "MG", "MK", "LU", "LT", "LI", "LY", "LR", "LS", "LB",
+    "LV", "LA", "KG", "KW", "XK", "KR", "KP", "KI", "KE", "KZ",
+    "JO", "JP", "JM", "CI", "IT", "IL", "IE", "IQ", "IR", "ID",
+    "IN", "IS", "HU", "HN", "HT", "GY", "GW", "GN", "GT", "GD",
+    "GR", "GH", "DE", "GE", "GA", "FR", "FI", "FJ", "ET", "EE",
+    "ER", "GQ", "SV", "EG", "EC", "TL", "DO", "DM", "DJ", "DK",
+    "CY", "CU", "HR", "CR", "CD", "CG", "KM", "CO", "CN", "CL",
+    "TD", "CF", "CV", "CA", "CM", "KH", "BI", "MM", "BF", "BG",
+    "BN", "BR", "BW", "BA", "BO", "BT", "BJ", "BZ", "BE", "BY",
+    "BB", "BD", "BH", "AZ", "AT", "AU", "AM", "AR", "AG", "AO",
+    "AD", "DZ", "AL", "AF", "GB", "CS", "YU", "DD", "SU")
 
   private def errorJson(code: String, messageKey: String = "", detailKey: String = ""): JsValue = {
     val errorMap: Map[String, Map[String, String]] =
@@ -147,6 +166,17 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     }
   }
 
+  private def invalidCentury(date: String): Boolean = {
+    val yearNumber = yearFromDate(date)
+
+    if (yearNumber.isSuccess) {
+      val year = yearNumber.getOrElse(0)
+      year < 1800 || year > 2099
+    } else {
+      true
+    }
+  }
+
   //Helper method
   private def mt(code: String, mk0: String, mk1: String): (String, String, String) = (code, messagesApi(mk0), messagesApi(mk1))
 
@@ -196,6 +226,10 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left(mt(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
         } else if (invalidDay(createAccount.birthDate)) {
           Left(mt(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
+        } else if (invalidCentury(createAccount.birthDate)) {
+          Left(mt(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
+        } else if (!countryCodes.contains(createAccount.countryCode.getOrElse(""))) {
+          Left(mt(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
         } else {
           Right(createAccount)
         }

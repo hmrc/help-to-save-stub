@@ -1,3 +1,5 @@
+site.bad-century-date = The century must be 19th 20th, or 21st.
+site.bad-century-date = The century must be 19th 20th, or 21st. Valid dates run from Jan 1st 1800 through to December 31st 2099. See ICD001 Appendix B for more detail
 site.bad-day-date = The day must be valid for the month and year.
 site.bad-day-date-detail = The day must be valid for the month and year. See ICD001 Appendix B for more detail
 site.bad-month-date = The birthdate have a month between 01 and 12.
@@ -42,6 +44,8 @@ site.too-many-consecutive-special-forename = There must be no more than two spec
 site.too-many-consecutive-special-forename-detail = There must be no more than two special consecutive characters in a forename. See ICD001 Appendix B for more detail.
 site.too-many-consecutive-special-surname = There must be no more than two special consecutive characters in a surname.
 site.too-many-consecutive-special-surname-detail = There must be no more than two special consecutive characters in a surname. See ICD001 Appendix B for more detail.
+site.unknown-country-code = This argument does not exist in the country code table.
+site.unknown-country-code-detail = This argument does not exist in the country code table. 
 site.unparsable-command = The Json cannot be parsed into a CreateAccount case class.
-site.unparsable-date = The birthdate is in the wrong format or is unparseable.
+site.unparsable-date = The birthdate is in the wrong format or is unparseable. See ICD001 Appendix B for more detail.
 site.unparsable-date-detail = The birthdate is in the wrong format or is unparseable. See ICD001 Appendix B for more detail.
