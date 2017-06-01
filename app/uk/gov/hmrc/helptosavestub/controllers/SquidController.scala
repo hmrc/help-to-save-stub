@@ -183,6 +183,14 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     !ninoRegex.pattern.matcher(nino).matches()
   }
 
+  private def invalidCommunicationPreference(pref: String): Boolean = {
+    pref != "00" && pref != "02"
+  }
+
+  private def emailRequired(pref: String, emailAddress: Option[String]) = {
+    pref == "02" && emailAddress.isEmpty
+  }
+
   //Helper method
   private def mt(code: String, mk0: String, mk1: String): (String, String, String) = (code, messagesApi(mk0), messagesApi(mk1))
 
@@ -238,6 +246,10 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left(mt(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
         } else if (invalidNino(createAccount.NINO)) {
           Left(mt(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
+        } else if (invalidCommunicationPreference(createAccount.communicationPreference)) {
+          Left(mt(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
+        } else if (emailRequired(createAccount.communicationPreference, createAccount.emailAddress)) {
+          Left(mt(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
         } else {
           Right(createAccount)
         }

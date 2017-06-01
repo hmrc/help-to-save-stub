@@ -901,7 +901,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       assert(messagesApi.isDefinedAt("site.bad-century-date"))
       errorMessage.getOrElse("") shouldBe messagesApi("site.bad-century-date")
       val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
+      assert(messagesApi.isDefinedAt("site.bad-century-date-detail"))
       errorDetail.getOrElse("") shouldBe messagesApi("site.bad-century-date-detail")
     }
 
@@ -920,7 +920,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       assert(messagesApi.isDefinedAt("site.unknown-country-code"))
       errorMessage.getOrElse("") shouldBe messagesApi("site.unknown-country-code")
       val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
+      assert(messagesApi.isDefinedAt("site.unknown-country-code-detail"))
       errorDetail.getOrElse("") shouldBe messagesApi("site.unknown-country-code-detail")
     }
 
@@ -939,8 +939,46 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       assert(messagesApi.isDefinedAt("site.bad-nino"))
       errorMessage.getOrElse("") shouldBe messagesApi("site.bad-nino")
       val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
+      assert(messagesApi.isDefinedAt("site.bad-nino-detail"))
       errorDetail.getOrElse("") shouldBe messagesApi("site.bad-nino-detail")
+    }
+
+    "if the stub is sent JSON with a communicationPreference that is not one of 00, 02, then an object is " +
+      "returned with code set to BAD_COMM_PREF_ERROR_CODE, (AAAA0005) " +
+      " the message site.bad-comm-pref, and the detail site.bad-comm-pref-detail" in {
+      val badJson = generateJson(Seq(("communicationPreference", "01")))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe 400
+      val json: JsValue = contentAsJson(result)
+      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+      errorMessageId shouldBe Some(BAD_COMM_PREF_ERROR_CODE)
+      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-comm-pref"))
+      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-comm-pref")
+      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-comm-pref-detail"))
+      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-comm-pref-detail")
+    }
+
+    "if the stub is sent JSON with a communicationPreference that is 02 but without an email then an object is " +
+      "returned with code set to EMAIL_NEEDED_ERROR_CODE, (ZYMC0004) " +
+      " the message site.email-needed, and the detail site.email-needed-detail" in {
+      val badJson = generateJsonFromMap(goodCreateAccountMap - "emailAddress")
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe 400
+      val json: JsValue = contentAsJson(result)
+      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+      errorMessageId shouldBe Some(EMAIL_NEEDED_ERROR_CODE)
+      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.email-needed"))
+      errorMessage.getOrElse("") shouldBe messagesApi("site.email-needed")
+      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.email-needed-detail"))
+      errorDetail.getOrElse("") shouldBe messagesApi("site.email-needed-detail")
     }
   }
 }
