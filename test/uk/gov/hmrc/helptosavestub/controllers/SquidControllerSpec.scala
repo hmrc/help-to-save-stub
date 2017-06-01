@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import akka.util.ByteString
 import play.api.test._
 import org.scalatest.mock.MockitoSugar
 import play.api.i18n.MessagesApi

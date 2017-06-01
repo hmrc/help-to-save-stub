@@ -16,9 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.lang.IllegalArgumentException
-import java.time.LocalDate
-import java.time.format.{DateTimeFormatter, ResolverStyle}
+import play.api.Logger
 import java.time.temporal.TemporalAdjusters
 import javax.inject.{Inject, Singleton}
 import play.api.i18n.MessagesApi
@@ -26,13 +24,13 @@ import play.api.libs.json.{JsError, _}
 import play.api.mvc._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.Constants._
-import uk.gov.hmrc.helptosavestub.models.{AccountCommand, CreateAccount}
-
-import scala.reflect.internal.ClassfileConstants.FlagTranslation
-import scala.util.{Failure, Success, Try}
+import uk.gov.hmrc.helptosavestub.models.AccountCommand
+import scala.util.{Failure, Try}
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
+
+  private val logger = Logger("SquidController")
 
   private val countryCodes = Set[String](
     "GM", "CZ", "VA", "BS", "ZW", "ZM", "YE", "VN", "VE", "VU",
@@ -197,6 +195,8 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   private def validateCreateAccount(json: JsValue): Either[(String, String, String), AccountCommand] = {
     //Convert incoming json to a case class
     val parseResult = Json.fromJson[AccountCommand]((json \ "createAccount").get)
+
+    logger.info(json.toString())
 
     parseResult match {
       case JsSuccess(createAccount, _) =>
