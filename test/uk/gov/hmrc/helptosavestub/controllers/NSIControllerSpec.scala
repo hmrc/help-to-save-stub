@@ -34,7 +34,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
     None, None, "BN124XH", Some("GB"), "AA999999A",
     "02",None, "online", Some("dduck@email.com"))
 
-  val authHeader =  ("Authorization",  BaseEncoding.base64().encode("test.user:test123".getBytes(Charsets.UTF_8)))
+  val authHeader =  ("Authorization1",  BaseEncoding.base64().encode("test.user:test123".getBytes(Charsets.UTF_8)))
 
   "Post /create-account  " should {
     "return a successful Create Account" in {
