@@ -48,7 +48,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       "address5" -> "Test Place 5",
       "postcode" -> "GIR 0AA",
       "countryCode" -> "GB",
-      "NINO" -> "AA999999A",
+      "NINO" -> "WM123456C",
       "birthDate" -> "19920509",
       "communicationPreference" -> "02",
       "phoneNumber" -> "+44111 111 111",
@@ -922,6 +922,25 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
       assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
       errorDetail.getOrElse("") shouldBe messagesApi("site.unknown-country-code-detail")
+    }
+
+    "if the stub is sent JSON with an badly formatted NINO an object is " +
+      "returned with code set to BAD_NINO_ERROR_CODE, (ZYRC0508) " +
+      " the message site.bad-nino, and the detail site.bad-nino-detail" in {
+      val badJson = generateJson(Seq(("NINO", "THIS-IS-NOT-A-NINO")))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe 400
+      val json: JsValue = contentAsJson(result)
+      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
+      errorMessageId shouldBe Some(BAD_NINO_ERROR_CODE)
+      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-nino"))
+      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-nino")
+      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
+      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
+      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-nino-detail")
     }
   }
 }

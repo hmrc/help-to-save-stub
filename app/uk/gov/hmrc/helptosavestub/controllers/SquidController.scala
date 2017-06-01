@@ -56,6 +56,8 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     "BB", "BD", "BH", "AZ", "AT", "AU", "AM", "AR", "AG", "AO",
     "AD", "DZ", "AL", "AF", "GB", "CS", "YU", "DD", "SU")
 
+  private val ninoRegex = """^(([A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z])([0-9]{2})([0-9]{2})([0-9]{2})([A-D]{1})|((XX)(99)(99)(99)(X)))$""".r
+
   private def errorJson(code: String, messageKey: String = "", detailKey: String = ""): JsValue = {
     val errorMap: Map[String, Map[String, String]] =
       Map("error" ->
@@ -177,6 +179,10 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     }
   }
 
+  private def invalidNino(nino: String): Boolean = {
+    !ninoRegex.pattern.matcher(nino).matches()
+  }
+
   //Helper method
   private def mt(code: String, mk0: String, mk1: String): (String, String, String) = (code, messagesApi(mk0), messagesApi(mk1))
 
@@ -230,6 +236,8 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           Left(mt(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
         } else if (!countryCodes.contains(createAccount.countryCode.getOrElse(""))) {
           Left(mt(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
+        } else if (invalidNino(createAccount.NINO)) {
+          Left(mt(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
         } else {
           Right(createAccount)
         }
