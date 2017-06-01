@@ -279,7 +279,11 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
             case Some(n) => {
               validateCreateAccount(json) match {
                 case Right(_) => Ok
-                case Left(errorTriple) => BadRequest(errorJsonWithTriple(errorTriple))
+                case Left(errorTriple) => {
+                  val errorJson = errorJsonWithTriple(errorTriple)
+                  logger.error(errorJson.toString())
+                  BadRequest(errorJson)
+                }
               }
             }
             case None => Ok
