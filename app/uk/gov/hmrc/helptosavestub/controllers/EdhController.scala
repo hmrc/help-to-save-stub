@@ -130,7 +130,6 @@ object EdhController extends BaseController {
   val alwaysEligibleForAward =  for {
     status <- oneOf("PF".toList.map(_.toString))
     household <- choose(1,2000)
-    entitlement <- oneOf("Y","Y")
     endDate <-  LocalDate.now()
     periodStartDate <- LocalDate.now()
     periodEndDate <- LocalDate.now()
@@ -139,7 +138,7 @@ object EdhController extends BaseController {
     periodStartDate,
     periodEndDate,
     household,
-    entitlement,
+    "Y",
     endDate
   )
 
