@@ -20,12 +20,15 @@ import java.time.LocalDate
 import play.api.libs.json.{ Format, Json }
 import play.api.mvc._
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import org.scalacheck.Gen._
-import smartstub._
+import org.scalacheck.Gen
+import Gen._
+import hmrc.smartstub._
 
 object EdhController extends BaseController {
 
   type Date = String
+
+  implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
 
   // case class NtpApplication(
   //   av_version_type: String,
@@ -104,84 +107,67 @@ object EdhController extends BaseController {
     // children: List[NtpChild]
   )
 
-  object EligibilityGenerator extends SmartStubGenerator[String, Boolean] {
 
-    def from(in: String): Option[Long] = fromNino(in)
+  implicit def toDateString(d: LocalDate): Date =
+    d.toString.filter(_ != '-')
 
-    def generator(in: String) = oneOf(true,false)
-  }
+  val genAward = for {
+    status <- oneOf("OFTPCZ".toList.map(_.toString))
+    household <- choose(-1000,2000)
+    entitlement <- oneOf("Y","N")
+    endDate <- Gen.date(2015,2020)
+    periodStartDate <- Gen.date(2010,2015)
+    periodEndDate <- Gen.date(periodStartDate, LocalDate.of(2016,1,1))
+  } yield NtpAward (
+    status,
+    periodStartDate,
+    periodEndDate,
+    household,
+    entitlement,
+    endDate
+  )
 
-  object WtcGenerator extends SmartStubGenerator[String, NtpOutputSchema] {
+  val alwaysEligibleForAward =  for {
+    status <- oneOf("PF".toList.map(_.toString))
+    household <- choose(1,2000)
+    endDate <-  LocalDate.now()
+    periodStartDate <- LocalDate.now()
+    periodEndDate <- LocalDate.now()
+  } yield NtpAward (
+    status,
+    periodStartDate,
+    periodEndDate,
+    household,
+    "Y",
+    endDate
+  )
 
-    def from(in: String): Option[Long] = fromNino(in)
+  val alwaysIneligible =  for {
+    household <- choose(-1000,2000)
+    entitlement <- oneOf("Y","N")
+    endDate <- Gen.date(2015,2020)
+    periodStartDate <- Gen.date(2010,2015)
+    periodEndDate <- Gen.date(periodStartDate, LocalDate.of(2016,1,1))
+  } yield NtpAward (
+    "O",
+    periodStartDate,
+    periodEndDate,
+    household,
+    entitlement,
+    endDate
+  )
 
-    implicit def toDateString(d: LocalDate): Date =
-      d.toString.filter(_ != '-')
-
-    val genAward = for {
-      status <- oneOf("OFTPCZ".toList.map(_.toString))
-      household <- choose(-1000,2000)
-      entitlement <- oneOf("Y","N")
-      endDate <- dateGen(2015,2020)
-      periodStartDate <- dateGen(2010,2015)
-      periodEndDate <- dateGen(periodStartDate, LocalDate.of(2016,1,1))      
-    } yield NtpAward (
-      status,
-      periodStartDate,
-      periodEndDate,      
-      household,
-      entitlement,
-      endDate
-    )
-    val alwaysEligibleForAward =  for {
-      status <- oneOf("PF".toList.map(_.toString))
-      household <- choose(1,2000)
-      entitlement <- oneOf("Y","Y")
-      endDate <-  LocalDate.now()
-      periodStartDate <- LocalDate.now()
-      periodEndDate <- LocalDate.now()
-    } yield NtpAward (
-      status,
-      periodStartDate,
-      periodEndDate,
-      household,
-      entitlement,
-      endDate
-    )
-    val alwaysIneligible =  for {
-      status <- oneOf("O".toList.map(_.toString))
-      household <- choose(-1000,2000)
-      entitlement <- oneOf("Y","N")
-      endDate <- dateGen(2015,2020)
-      periodStartDate <- dateGen(2010,2015)
-      periodEndDate <- dateGen(periodStartDate, LocalDate.of(2016,1,1))
-    } yield NtpAward (
-      status,
-      periodStartDate,
-      periodEndDate,
-      household,
-      entitlement,
-      endDate
-    )
-
-    def generator(nino: String) = for {
-      noAwards <- choose(1,8)
-      awards <- listOfN(noAwards, nino.take(2).toUpperCase() match {
-        case "AE" => alwaysEligibleForAward
-        case "AC" => alwaysEligibleForAward
-        case _ =>   genAward
-      })
-    } yield 
-      NtpOutputSchema (
-        nino,
-        awards
-      )
-    
-  }
+  def generator(nino: String) = for {
+    noAwards <- choose(1,8)
+    awards <- listOfN(noAwards, nino.take(2).toUpperCase() match {
+      case "AE" => alwaysEligibleForAward
+      case "AC" => alwaysEligibleForAward
+      case _ =>   genAward
+    })
+  } yield NtpOutputSchema(nino, awards)
 
   def uc(nino:String) = Action { implicit request =>
-
-    EligibilityGenerator(nino).map { x => 
+    Gen.boolean.seeded(nino).map { x =>
       Ok(Json.toJson(x))
     }.getOrElse{
       NotFound
@@ -197,10 +183,10 @@ object EdhController extends BaseController {
     implicit val ntpOutputSchemaFormat: Format[NtpOutputSchema] =
       Json.format[NtpOutputSchema]
     
-    WtcGenerator(nino).map { x =>
+    generator(nino).seeded(nino).map { x =>
       Ok(Json.toJson(x))
     }.getOrElse{
       NotFound
     }
-  }  
+  }
 }

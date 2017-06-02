@@ -21,8 +21,7 @@ import java.time.LocalDate
 import org.scalacheck.Gen
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
-import smartstub.SmartStubGenerator
-import smartstub.people
+import hmrc.smartstub._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.models.NSIUserInfo.postcodeRegex
 
@@ -47,55 +46,34 @@ object CitizenDetailsController extends BaseController {
   implicit val addressWrites: Writes[Address] = Json.writes[Address]
   implicit val responseWrites: Writes[Response] = Json.writes[Response]
 
-  object ResponseGenerator extends SmartStubGenerator[NINO, Response] {
+  val responseGen: Gen[Response] = {
+    import Gen._
 
-    def from(in: NINO): Option[Long] = fromNino(in)
+    val personGen = for {
+      fnameO <- Gen.forename.almostAlways
+      snameO <- Gen.surname.almostAlways
+      dobO <- option(Gen.date(1940, 2017))
+    } yield Person( fnameO, snameO, dobO ) 
 
-    def generator(in: NINO): Gen[Response] =
-      optionGen(addressGenerator).flatMap(a ⇒
-        optionGen(personGenerator).map(p ⇒
-          Response(p, a)))
+    val addressGen = for {
+      address <- Gen.ukAddress.map{_.map{x => const(x).almostAlways}}
+      initAdd = address.init ++ List.fill(3)(const(Option.empty[String]))
+      add1 <- initAdd(0)
+      add2 <- initAdd(1)
+      add3 <- initAdd(2)
+      postcodeO <- address.last
+      countryO <- const("UK").almostAlways
+    } yield Address(add1, add2, add3, postcodeO, countryO)
 
-    /**
-      * Return [[Some]] 90% of the time and [[None]] 1% of the time
-      */
-    def optionGen[A](a: Gen[A]): Gen[Option[A]] =
-      Gen.frequency(99 → a.map(Some(_)), 1 → Gen.const[Option[A]](None))
-
-    val maleNameGen: Gen[String] =
-      people.Names.forenames.getOrElse(people.Male, sys.error("Could not load male names"))
-
-    val femaleNameGen: Gen[String] =
-      people.Names.forenames.getOrElse(people.Female, sys.error("Could not load female names"))
-
-    val numGen: Gen[Int] = Gen.chooseNum(1,100)
-
-    val charGen: Gen[Char] = Gen.alphaUpperChar
-
-    val personGenerator: Gen[Person] = for{
-       firstName   ← optionGen(Gen.oneOf(maleNameGen, femaleNameGen))
-       lastName    ← optionGen(people.Names.surnames)
-       dateOfBirth ← optionGen(dateGen())
-    } yield Person(firstName, lastName, dateOfBirth)
-
-    val addressGenerator: Gen[Address] = for {
-      number         ← numGen
-      street         ← people.Address.streetNames
-      (code, region) ← people.Address.postcodeRegions
-      postcode       ← postcodeGen(code).retryUntil(s ⇒ postcodeRegex.pattern.matcher(s).matches())
-    } yield Address(Some(number + " " + street), Some(region), None, Some(postcode), Some("UK"))
-
-    def postcodeGen(regionCode: String): Gen[String] = for {
-      number1 ← numGen
-      number2 ← numGen
-      char1 ← charGen
-      char2 ← charGen
-    } yield s"$regionCode$number1$number2$char1$char2"
-
+    for {
+      personO <- personGen.almostAlways
+      addressO <- addressGen.almostAlways
+    } yield Response( personO, addressO )
   }
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
-    ResponseGenerator(nino).map { response =>
+    implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
+    responseGen.seeded(nino).map { response =>
       Ok(Json.toJson(response))
     }.getOrElse{
       NotFound

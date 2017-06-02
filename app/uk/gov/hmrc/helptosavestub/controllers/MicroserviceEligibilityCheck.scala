@@ -24,58 +24,55 @@ import uk.gov.hmrc.helptosavestub.models.{ContactPreference, EligibilityResult, 
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.concurrent.Future
-import smartstub._
+import org.scalacheck._
+import hmrc.smartstub._
+//import hmrc.smartstub.Enumerable.instances.ninoEnum
 
 object MicroserviceEligibilityCheck extends MicroserviceEligibilityCheck
 
 trait MicroserviceEligibilityCheck extends BaseController {
 
+  implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
+
   /**
     * This generator defines the randomly created UserDetails records from a NINO
     */
-  object UserDetailsGenerator extends SmartStubGenerator[String, UserDetails] {
-    import org.scalacheck.Gen._
-
-    def from(in: String): Option[Long] = fromNino(in)
-
-    def generator(in: String) = for {
-      gender <- oneOf(people.Male, people.Female)
-      forename <- people.Names.forenames(gender)
-      surname <- people.Names.surnames
-      dateOfBirth <- dateGen(1970,2000)
-      email <- people.Names.email(forename, surname, dateOfBirth.toString)
-      phoneNumber <- people.Names.phoneNo
-      address <- people.Address.ukAddress
-      contactPreference <- oneOf(ContactPreference.SMS, ContactPreference.Email)
-    } yield {
-      UserDetails(
-        s"$forename $surname",
-        in.filter(_.isLetterOrDigit).toUpperCase,
-        dateOfBirth,
-        email,
-        phoneNumber,
-        address,
-        contactPreference
-      )
-    }
-
-    // Lets hard-code a specific NINO
-    state("QQ123456C") = user
+  val generator = for {
+    forename <- Gen.forename
+    surname <- Gen.surname
+    dateOfBirth <- Gen.date(1970,2000)
+    email = s"${forename.toLowerCase}.${surname.toLowerCase}@gmail.com"
+    phoneNumber <- Gen.ukPhoneNumber
+    address <- Gen.ukAddress
+    contactPreference <- Gen.oneOf(ContactPreference.SMS, ContactPreference.Email)
+  } yield {
+    UserDetails(
+      s"$forename $surname",
+      "",
+      dateOfBirth,
+      email,
+      phoneNumber,
+      address,
+      contactPreference
+    )
   }
 
-  val user = UserDetails(
+  def user = UserDetails(
     "Bob Bobber",
     "QQ123456C",
-    LocalDate.now(),
+    LocalDate.now,
     "bob@email.com",
     "0879371657",
     List("Happy land","happy street"),
     ContactPreference.Email
   )
 
-  def eligibilityCheck(nino:String) = Action { implicit request =>
-    UserDetailsGenerator(nino).map { x => 
-      Ok(Json.toJson(x))
+  val store = generator.asMutable[String]
+  store("QQ123456C") = user
+
+  def eligibilityCheck(ninoIn:String) = Action { implicit request =>
+    store.get(ninoIn).map { x => 
+      Ok(Json.toJson(x.copy(NINO = ninoIn)))
     }.getOrElse{
       NotFound
     }
