@@ -19,23 +19,35 @@ package uk.gov.hmrc.helptosavestub.controllers
 import play.api.test._
 import org.scalatest.mock.MockitoSugar
 import play.api.i18n.MessagesApi
+import play.api.libs.json
 import play.api.test.Helpers._
-import play.api.libs.json.{JsDefined, JsValue, Json}
+import play.api.libs.json._
 import play.api.libs.streams.Accumulator
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import uk.gov.hmrc.helptosavestub.Constants._
 
 import scala.concurrent.Future
+case class TestError(errorMessageId: String, errorMessage: String, errorDetail: String)
+
+object TestError {
+  implicit val formatError: Format[TestError] = Json.format[TestError]
+}
+
+case class TestErrorWrapper(error: TestError)
+
+object TestErrorWrapper {
+  implicit val formatWrapper: Format[TestErrorWrapper] = Json.format[TestErrorWrapper]
+}
 
 class SquidControllerSpec extends UnitSpec with WithFakeApplication with MockitoSugar {
   private val injector = fakeApplication.injector
 
-  private def messagesApi = injector.instanceOf[MessagesApi]
+  private val messagesApi = injector.instanceOf[MessagesApi]
 
-  private def noCAKeyMap = Map[String, Map[String, String]]("wibble" -> Map())
+  private val noCAKeyMap = Map[String, Map[String, String]]("wibble" -> Map())
 
-  private def noCAKeyJson = Json.toJson(noCAKeyMap)
+  private val noCAKeyJson = Json.toJson(noCAKeyMap)
 
   private val goodCreateAccountMap: Map[String, String] =
     Map("forename" -> "Donald",
@@ -53,6 +65,8 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       "phoneNumber" -> "+44111 111 111",
       "emailAddress" -> "dduck@email.com",
       "registrationChannel" -> "online")
+
+  private val squidController = new SquidController(messagesApi)
 
   private def generateJson(variants: Seq[(String, String)] = Seq()): JsValue = {
     Json.toJson(Map("createAccount" -> (goodCreateAccountMap ++ variants)))
@@ -72,18 +86,18 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
     "return 415 if the mime type is not application/json" in {
       val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account")
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+      val result = squidController.createAccount()(fakeRequestWithoutJson)
       status(result) shouldBe 415
     }
 
     "return 200 when requested" in {
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
     "The request should return some content" in {
       //Note that if this is returning a blank page, the controller configuration in application.conf is broken
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result)
       val len = result.body.contentLength.getOrElse(0L)
       len shouldBe 0
@@ -91,17 +105,19 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
     "If the stub is sent a request with no JSON content it should return a 400" in {
       val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+      val result = squidController.createAccount()(fakeRequestWithoutJson)
       status(result) shouldBe 400
     }
 
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the errorMessageId set as AAAA0002" in {
       val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
-      val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+      val result: Future[Result] = squidController.createAccount()(fakeRequestWithoutJson)
       status(result)
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(NO_JSON_ERROR_CODE)
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) => w.error.errorMessageId shouldBe(NO_JSON_ERROR_CODE)
+        case JsError(_) => fail
+      }
     }
 
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
