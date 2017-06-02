@@ -49,31 +49,25 @@ object CitizenDetailsController extends BaseController {
   val responseGen: Gen[Response] = {
     import Gen._
 
-    /**
-      * Return [[Some]] 99% of the time and [[None]] 1% of the time
-      */
-    def usually[A](a: Gen[A]): Gen[Option[A]] =
-      Gen.frequency(99 → a.map(Some(_)), 1 → const[Option[A]](None))
-
     val personGen = for {
-      fnameO <- usually(Gen.forename)
-      snameO <- usually(Gen.surname)
+      fnameO <- Gen.forename.almostAlways
+      snameO <- Gen.surname.almostAlways
       dobO <- option(Gen.date(1940, 2017))
     } yield Person( fnameO, snameO, dobO ) 
 
     val addressGen = for {
-      address <- Gen.ukAddress.map{_.map{x => usually(const(x))}}
+      address <- Gen.ukAddress.map{_.map{x => const(x).almostAlways}}
       initAdd = address.init ++ List.fill(3)(const(Option.empty[String]))
       add1 <- initAdd(0)
       add2 <- initAdd(1)
       add3 <- initAdd(2)
       postcodeO <- address.last
-      countryO <- usually(const("UK"))
+      countryO <- const("UK").almostAlways
     } yield Address(add1, add2, add3, postcodeO, countryO)
 
     for {
-      personO <- usually(personGen)
-      addressO <- usually(addressGen)
+      personO <- personGen.almostAlways
+      addressO <- addressGen.almostAlways
     } yield Response( personO, addressO )
   }
 

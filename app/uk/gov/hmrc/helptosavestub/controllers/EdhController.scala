@@ -169,7 +169,7 @@ object EdhController extends BaseController {
   } yield NtpOutputSchema(nino, awards)
 
   def uc(nino:String) = Action { implicit request =>
-    oneOf(List(true, false)).seeded(nino).map { x =>
+    Gen.boolean.seeded(nino).map { x =>
       Ok(Json.toJson(x))
     }.getOrElse{
       NotFound

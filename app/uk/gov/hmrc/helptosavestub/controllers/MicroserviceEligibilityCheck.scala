@@ -42,10 +42,7 @@ trait MicroserviceEligibilityCheck extends BaseController {
     surname <- Gen.surname
     dateOfBirth <- Gen.date(1970,2000)
     email = s"${forename.toLowerCase}.${surname.toLowerCase}@gmail.com"
-    phoneNumber <- for {
-      pref <- Gen.numStr.map{_.take(4)}
-      suffix <- Gen.numStr.map{_.take(6)}
-    } yield s"0${pref} ${suffix}"
+    phoneNumber <- Gen.ukPhoneNumber
     address <- Gen.ukAddress
     contactPreference <- Gen.oneOf(ContactPreference.SMS, ContactPreference.Email)
   } yield {
