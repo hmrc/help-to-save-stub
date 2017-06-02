@@ -143,14 +143,13 @@ object EdhController extends BaseController {
   )
 
   val alwaysIneligible =  for {
-    status <- oneOf("O".toList.map(_.toString))
     household <- choose(-1000,2000)
     entitlement <- oneOf("Y","N")
     endDate <- Gen.date(2015,2020)
     periodStartDate <- Gen.date(2010,2015)
     periodEndDate <- Gen.date(periodStartDate, LocalDate.of(2016,1,1))
   } yield NtpAward (
-    status,
+    "O",
     periodStartDate,
     periodEndDate,
     household,
