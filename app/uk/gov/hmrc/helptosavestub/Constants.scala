@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestub
 
 object Constants {
   val NO_JSON_ERROR_CODE = "AAAA0002"                    //Unofficial
-  val NO_CREATEACCOUNTKEY_ERROR_CODE = "AAAA0003"        //Unofficial
+  //val NO_CREATEACCOUNTKEY_ERROR_CODE = "AAAA0003"        //Unofficial
   val PRECANNED_RESPONSE_ERROR_CODE = "AAAA0004"         //Unofficial
   val UNABLE_TO_PARSE_COMMAND_ERROR_CODE = "AAAAA0005"
   val INVALID_POSTCODE_ERROR_CODE = "ZYRC0506"

@@ -19,10 +19,17 @@ package uk.gov.hmrc.helptosavestub.models
 
 import play.api.libs.json._
 
-// Unfortunately, this is almost excaly the same as CreateAccount with the exception of the type of the birthdate.
+// Unfortunately, this is almost exactly the same as CreateAccount with the exception of the type of the birthdate.
 // The ICD001 document specifies various errors that could be generated when the date is wrong and so it has to be
 // parsed into a date during the validation process rather than the JSON parsing period - the latter either succeeds or
 // fails.
+
+case class Wrapper (createAccount: AccountCommand)
+
+object Wrapper {
+  implicit val wrapperFormat: Format[Wrapper] = Json.format[Wrapper]
+}
+
 case class AccountCommand (forename: String,
                            surname: String,
                            birthDate: String,

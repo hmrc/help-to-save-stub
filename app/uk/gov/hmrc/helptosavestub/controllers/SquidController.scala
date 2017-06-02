@@ -24,8 +24,10 @@ import play.api.libs.json.{JsError, _}
 import play.api.mvc._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.Constants._
-import uk.gov.hmrc.helptosavestub.models.AccountCommand
+import uk.gov.hmrc.helptosavestub.models.{Wrapper, AccountCommand}
 import scala.util.{Failure, Try}
+
+case class Error(code: String, messageKey: String, messageDetailKey: String, additional: Option[String] = None)
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
@@ -56,21 +58,21 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private val ninoRegex = """^(([A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z])([0-9]{2})([0-9]{2})([0-9]{2})([A-D]{1})|((XX)(99)(99)(99)(X)))$""".r
 
-  private def errorJson(code: String, messageKey: String = "", detailKey: String = ""): JsValue = {
-    val errorMap: Map[String, Map[String, String]] =
-      Map("error" ->
-        Map("errorMessageId" -> code,
-          "errorMessage" -> messagesApi(messageKey),
-          "errorDetail" -> messagesApi(detailKey)))
-    Json.toJson(errorMap)
-  }
+  private def errorJson(error: Error): JsValue = {
+    val errorMap =
+      error.additional match {
+        case None =>
+          Map("error" ->
+            Map("errorMessageId" -> error.code,
+              "errorMessage" -> messagesApi(error.messageKey),
+              "errorDetail" -> messagesApi(error.messageDetailKey)))
+        case Some(additional) =>
+          Map("error" ->
+            Map("errorMessageId" -> error.code,
+              "errorMessage" -> messagesApi(error.messageKey),
+              "errorDetail" -> additional))
+      }
 
-  private def errorJsonWithTriple(triple: (String, String, String)): JsValue = {
-    val errorMap: Map[String, Map[String, String]] =
-      Map("error" ->
-        Map("errorMessageId" -> triple._1,
-          "errorMessage" -> triple._2,
-          "errorDetail" -> triple._3))
     Json.toJson(errorMap)
   }
 
@@ -113,11 +115,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
              | row10Expr() | row11Expr() | row12Expr() | row13Expr() | row14Expr() | row15Expr() => false
         case _ => true
       })
-
-    //        val noSpacesPostcode = postcode.filter{_ != ' '}
-    //        val postcodeRegex =     ("""^((GIR)(0AA)|([A-PR-UWYZ]([0-9]{1,2}|([A-HK-Y][0-9]|[A-HK-Y][0-9]([0-9]|[ABEHMNPRV-Y]))|""" +
-    //          """[0-9][A-HJKS-UW]))([0-9][ABD-HJLNP-UW-Z]{2})|(([A-Z]{1,4})(1ZZ))|((BFPO)([0-9]{1,4})))$""").r
-    //        !postcodeRegex.pattern.matcher(noSpacesPostcode).matches()
   }
 
   private def unparsableLocalDate(str: String) = {
@@ -189,10 +186,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     pref == "02" && emailAddress.isEmpty
   }
 
-  //Helper method
-  private def mt(code: String, mk0: String, mk1: String): (String, String, String) = (code, messagesApi(mk0), messagesApi(mk1))
-
-  private def validateCreateAccount(json: JsValue): Either[(String, String, String), AccountCommand] = {
+  private def validateCreateAccount(json: JsValue): Either[Error, AccountCommand] = {
     //Convert incoming json to a case class
     val parseResult = Json.fromJson[AccountCommand]((json \ "createAccount").get)
 
@@ -200,93 +194,69 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
     parseResult match {
       case JsSuccess(createAccount, _) =>
-        if (createAccount.forename.startsWith(" ")) {
-          Left(mt(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
-        } else if (hasNumericChars(createAccount.forename)) {
-          Left(mt(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
-        } else if (hasDisallowedChars(createAccount.forename)) {
-          Left(mt(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
-        } else if (hasSpecialInFirstPlace(createAccount.forename)) {
-          Left(mt(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
-        } else if (hasSpecialInLastPlace(createAccount.forename)) {
-          Left(mt(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-forename", "site.last-char-special-forename-detail"))
-        } else if (hasInsufficientAlphaCharsAtStart(createAccount.forename)) {
-          Left(mt(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-forename", "site.too-few-initial-alpha-forename-detail"))
-        } else if (hasInsufficientConsecutiveAlphaChars(createAccount.forename)) {
-          Left(mt(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-forename", "site.too-few-consecutive-alpha-forename-detail"))
-        } else if (hasTooManyConsecutiveSpecialChars(createAccount.forename)) {
-          Left(mt(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
-        } else if (createAccount.surname.startsWith(" ")) {
-          Left(mt(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
-        } else if (invalidPostcode(createAccount.postcode)) {
-          Left(mt(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
-        } else if (hasNumericChars(createAccount.surname)) {
-          Left(mt(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
-        } else if (hasDisallowedChars(createAccount.surname)) {
-          Left(mt(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
-        } else if (hasSpecialInFirstPlace(createAccount.surname)) {
-          Left(mt(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
-        } else if (hasSpecialInLastPlace(createAccount.surname)) {
-          Left(mt(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
-        } else if (hasInsufficientAlphaCharsAtStart(createAccount.surname)) {
-          Left(mt(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
-        } else if (hasInsufficientConsecutiveAlphaChars(createAccount.surname)) {
-          Left(mt(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
-        } else if (hasTooManyConsecutiveSpecialChars(createAccount.surname)) {
-          Left(mt(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
-        } else if (unparsableLocalDate(createAccount.birthDate)) {
-          Left(mt(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
-        } else if (monthFromDate(createAccount.birthDate).getOrElse(13) > 12) {
-          Left(mt(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
-        } else if (invalidDay(createAccount.birthDate)) {
-          Left(mt(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
-        } else if (invalidCentury(createAccount.birthDate)) {
-          Left(mt(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
-        } else if (!countryCodes.contains(createAccount.countryCode.getOrElse(""))) {
-          Left(mt(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
-        } else if (invalidNino(createAccount.NINO)) {
-          Left(mt(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
-        } else if (invalidCommunicationPreference(createAccount.communicationPreference)) {
-          Left(mt(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
-        } else if (emailRequired(createAccount.communicationPreference, createAccount.emailAddress)) {
-          Left(mt(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
-        } else {
-          Right(createAccount)
+        createAccount match {
+          case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
+          case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
+          case ca if hasDisallowedChars(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
+          case ca if hasSpecialInFirstPlace(ca.forename) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
+          case ca if hasSpecialInLastPlace(ca.forename) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-forename", "site.last-char-special-forename-detail"))
+          case ca if hasInsufficientAlphaCharsAtStart(ca.forename) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-forename", "site.too-few-initial-alpha-forename-detail"))
+          case ca if hasInsufficientConsecutiveAlphaChars(ca.forename) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-forename", "site.too-few-consecutive-alpha-forename-detail"))
+          case ca if hasTooManyConsecutiveSpecialChars(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
+          case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
+          case ca if hasNumericChars(ca.surname) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
+          case ca if hasDisallowedChars(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
+          case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
+          case ca if hasSpecialInLastPlace(ca.surname) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
+          case ca if hasInsufficientAlphaCharsAtStart(ca.surname) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
+          case ca if hasInsufficientConsecutiveAlphaChars(ca.surname) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
+          case ca if hasTooManyConsecutiveSpecialChars(ca.surname) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
+          case ca if invalidPostcode(ca.postcode) => Left(Error(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
+          case ca if unparsableLocalDate(ca.birthDate) => Left(Error(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
+          case ca if monthFromDate(ca.birthDate).getOrElse(13) > 12 => Left(Error(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
+          case ca if invalidDay(ca.birthDate) => Left(Error(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
+          case ca if invalidCentury(ca.birthDate) => Left(Error(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
+          case ca if !countryCodes.contains(ca.countryCode.getOrElse("")) => Left(Error(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
+          case ca if invalidNino(ca.NINO) => Left(Error(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
+          case ca if invalidCommunicationPreference(ca.communicationPreference) => Left(Error(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
+          case ca if emailRequired(ca.communicationPreference, ca.emailAddress) => Left(Error(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
+          case _ => Right(createAccount)
         }
-
-      case JsError(errors) => Left((UNABLE_TO_PARSE_COMMAND_ERROR_CODE, messagesApi("site.unparsable-command"), errors.toString()))
+      case JsError(errors) => Left(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.unparsable-command", "", Some(errors.toString())))
     }
   }
 
   def processBody(request: Request[AnyContent]): Result = {
     request.body.asJson match {
-      case None => BadRequest(Json.toJson(errorJson(NO_JSON_ERROR_CODE, "site.no-json", "site.no-json-detail")))
+      case None => BadRequest(Json.toJson(errorJson(Error(NO_JSON_ERROR_CODE, "site.no-json", "site.no-json-detail"))))
 
       case Some(json: JsValue) => {
-        if (json.asInstanceOf[JsObject].fields.size != 1 || (json.asInstanceOf[JsObject].fields.head._1 != "createAccount")) {
-          BadRequest(errorJson(NO_CREATEACCOUNTKEY_ERROR_CODE, "site.no-create-account-key", "site.no-create-account-key-detail"))
-        } else {
-          val nino = (json \ "createAccount" \ "NINO").get.asOpt[String]
-          nino match {
-            case Some(aNino) if aNino.startsWith("ER400") => BadRequest(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(aNino) if aNino.startsWith("ER401") => Unauthorized(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(aNino) if aNino.startsWith("ER403") => Forbidden(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(aNino) if aNino.startsWith("ER404") => NotFound(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(aNino) if aNino.startsWith("ER405") => MethodNotAllowed(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(aNino) if aNino.startsWith("ER415") => UnsupportedMediaType(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(aNino) if aNino.startsWith("ER500") => InternalServerError(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(aNino) if aNino.startsWith("ER503") => ServiceUnavailable(errorJson(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
-            case Some(n) => {
-              validateCreateAccount(json) match {
-                case Right(_) => Ok
-                case Left(errorTriple) => {
-                  val errorJson = errorJsonWithTriple(errorTriple)
-                  logger.error(errorJson.toString())
-                  BadRequest(errorJson)
+        val wrapper = Json.fromJson[Wrapper](json)
+        wrapper match {
+          case JsError(errors) => BadRequest(errorJson(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.no-create-account-key", "site.no-create-account-key-detail")))
+
+          case JsSuccess(wrappedCreateAccount, _) => {
+            val nino = wrappedCreateAccount.createAccount.NINO
+            nino match {
+              case aNino if aNino.startsWith("ER400") => BadRequest(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER401") => Unauthorized(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER403") => Forbidden(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER404") => NotFound(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER405") => MethodNotAllowed(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER415") => UnsupportedMediaType(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER500") => InternalServerError(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case _ => {
+                validateCreateAccount(json) match {
+                  case Right(_) => Ok
+                  case Left(error) => {
+                    val errJson = errorJson(error)
+                    logger.error(errJson.toString())
+                    BadRequest(errJson)
+                  }
                 }
               }
             }
-            case None => Ok
           }
         }
       }

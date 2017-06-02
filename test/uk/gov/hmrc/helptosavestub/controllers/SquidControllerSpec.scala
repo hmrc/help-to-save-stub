@@ -134,17 +134,6 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     }
 
     "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
-      "object in the response with the errorMessageId set as AAAA0003" in {
-      def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-
-      val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
-      status(result)
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(NO_CREATEACCOUNTKEY_ERROR_CODE)
-    }
-
-    "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
       "object in the response with the Error message set to message site.no-create-account-key" in {
       def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
 
@@ -307,7 +296,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     }
 
     "if the stub is sent some good JSON that can not be parsed into a CreateAccount case class then return an" +
-      "UNABLE_TO_PARSE_COMMAND_ERROR_CODE error code" in {
+      " UNABLE_TO_PARSE_COMMAND_ERROR_CODE error code" in {
       val mapWithoutForename = goodCreateAccountMap - "forename"
 
       def fakeRequest = makeFakeRequest(generateJsonFromMap(mapWithoutForename))
