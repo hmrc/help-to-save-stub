@@ -115,7 +115,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       status(result)
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
-        case JsSuccess(w, _) => w.error.errorMessageId shouldBe(NO_JSON_ERROR_CODE)
+        case JsSuccess(w, _) => w.error.errorMessageId shouldBe NO_JSON_ERROR_CODE
         case JsError(_) => fail
       }
     }
@@ -123,12 +123,13 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
       "error message set to message site.no-json" in {
       val fakeRequestWithoutJson = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
-      val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+      val result: Future[Result] = squidController.createAccount()(fakeRequestWithoutJson)
       status(result)
-      val json: JsValue = contentAsJson(result)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.no-json"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.no-json")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) => w.error.errorMessage shouldBe messagesApi("site.no-json")
+        case JsError(_) => fail
+      }
     }
 
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
@@ -136,15 +137,15 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val fakeRequestWithoutJson: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
       val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
       status(result)
-      val json: JsValue = contentAsJson(result)
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.no-json-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.no-json-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) => w.error.errorDetail shouldBe messagesApi("site.no-json-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that does not contain a createAccount key at the top level it should Return a 400" in {
       def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
     }
@@ -152,25 +153,24 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
       "object in the response with the Error message set to message site.no-create-account-key" in {
       def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-
       val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result)
-      val json: JsValue = contentAsJson(result)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.no-create-account-key"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.no-create-account-key")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) => w.error.errorMessage shouldBe messagesApi("site.no-create-account-key")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
       "object in the response with the Error detail set to message site.no-create-account-key-detail" in {
       def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-
       val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
-      status(result)
-      val json: JsValue = contentAsJson(result)
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.no-create-account-key-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.no-create-account-key-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) => w.error.errorDetail shouldBe messagesApi("site.no-create-account-key-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER400NNNL (where N is" +
@@ -181,49 +181,55 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.pre-canned-error"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER401NNNL (where N is" +
       "number and L is letter, generate an Unauthorized" in {
       val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER401456M")))
-
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER400)
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 401
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER403NNNL (where N is" +
       "number and L is letter, generate an Unauthorized" in {
       val jsonBeginningWithER403 = generateJson(Seq(("NINO", "ER403456M")))
-
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER403)
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 403
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER404NNNL (where N is" +
@@ -234,13 +240,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 404
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER405NNNL (where N is" +
@@ -251,13 +261,16 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 405
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER415NNNL (where N is" +
@@ -268,13 +281,16 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 415
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER500NNNL (where N is" +
@@ -285,13 +301,16 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 500
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER503NNNL (where N is" +
@@ -302,13 +321,16 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 503
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(PRECANNED_RESPONSE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      errorMessage.getOrElse("") shouldBe messagesApi("site.pre-canned-error")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      errorDetail.getOrElse("") shouldBe messagesApi("site.pre-canned-error-detail")
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PRECANNED_RESPONSE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.pre-canned-error"))
+          w.error.errorMessage shouldBe messagesApi("site.pre-canned-error")
+          assert(messagesApi.isDefinedAt("site.pre-canned-error-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.pre-canned-error-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent some good JSON that can not be parsed into a CreateAccount case class then return an" +
@@ -487,15 +509,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(LEADING_SPACES_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.leading-spaces-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.leading-spaces-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.leading-spaces-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.leading-spaces-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe LEADING_SPACES_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.leading-spaces-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.leading-spaces-forename")
+          assert(messagesApi.isDefinedAt("site.leading-spaces-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.leading-spaces-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a forename with numeric characters, a bad request is returned with:" +
@@ -508,15 +532,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(NUMERIC_CHARS_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.numeric-chars-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.numeric-chars-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.numeric-chars-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.numeric-chars-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe NUMERIC_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.numeric-chars-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.numeric-chars-forename")
+          assert(messagesApi.isDefinedAt("site.numeric-chars-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.numeric-chars-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a forename with disallowed special characters, a bad request is returned with:" +
@@ -529,15 +555,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(DISALLOWED_CHARS_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.disallowed-chars-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.disallowed-chars-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.disallowed-chars-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.disallowed-chars-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe DISALLOWED_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.disallowed-chars-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.disallowed-chars-forename")
+          assert(messagesApi.isDefinedAt("site.disallowed-chars-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.disallowed-chars-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a forename with disallowed special characters in the first position, a bad request is returned with:" +
@@ -550,15 +578,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(FIRST_CHAR_SPECIAL_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.first-char-special-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.first-char-special-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.first-char-special-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.first-char-special-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe FIRST_CHAR_SPECIAL_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.first-char-special-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.first-char-special-forename")
+          assert(messagesApi.isDefinedAt("site.first-char-special-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.first-char-special-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a forename with disallowed special characters in the last position, a bad request is returned with:" +
@@ -571,15 +601,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(LAST_CHAR_SPECIAL_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.last-char-special-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.last-char-special-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.last-char-special-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.last-char-special-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe LAST_CHAR_SPECIAL_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.last-char-special-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.last-char-special-forename")
+          assert(messagesApi.isDefinedAt("site.last-char-special-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.last-char-special-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a forename with too few alphabetic characters at the begining, a bad request is returned with:" +
@@ -592,15 +624,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(TOO_FEW_INITIAL_ALPHA_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.too-few-initial-alpha-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.too-few-initial-alpha-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-forename")
+          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a forename with too few consecutive alphabetic characters, a bad request is returned with:" +
@@ -613,15 +647,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.too-few-consecutive-alpha-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.too-few-consecutive-alpha-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-forename")
+          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a forename with too many consecutive special characters, a bad request is returned with:" +
@@ -634,17 +670,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      messagesApi.isDefinedAt("site.too-many-consecutive-special-forename") shouldBe true
-      assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-forename"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.too-many-consecutive-special-forename")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      messagesApi.isDefinedAt("site.too-many-consecutive-special-forename-detail") shouldBe true
-      assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-forename-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.too-many-consecutive-special-forename-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.too-many-consecutive-special-forename")
+          assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-many-consecutive-special-forename-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with leading spaces, a bad request is returned with:" +
@@ -657,15 +693,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(LEADING_SPACES_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.leading-spaces-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.leading-spaces-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.leading-spaces-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.leading-spaces-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe LEADING_SPACES_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.leading-spaces-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.leading-spaces-surname")
+          assert(messagesApi.isDefinedAt("site.leading-spaces-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.leading-spaces-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with numeric characters, a bad request is returned with:" +
@@ -678,15 +716,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(NUMERIC_CHARS_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.numeric-chars-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.numeric-chars-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.numeric-chars-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.numeric-chars-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe NUMERIC_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.numeric-chars-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.numeric-chars-surname")
+          assert(messagesApi.isDefinedAt("site.numeric-chars-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.numeric-chars-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with disallowed special characters, a bad request is returned with:" +
@@ -694,20 +734,21 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       "site.disallowed-chars-surname-detail are returned in the error JSON" +
       "and the appropriate message" in {
       val badJson = generateJson(Seq(("surname", "Duck$%#chesky")))
-
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(DISALLOWED_CHARS_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.disallowed-chars-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.disallowed-chars-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.disallowed-chars-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.disallowed-chars-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe DISALLOWED_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.disallowed-chars-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.disallowed-chars-surname")
+          assert(messagesApi.isDefinedAt("site.disallowed-chars-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.disallowed-chars-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with disallowed special characters in the first position, a bad request is returned with:" +
@@ -720,15 +761,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(FIRST_CHAR_SPECIAL_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.first-char-special-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.first-char-special-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.first-char-special-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.first-char-special-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe FIRST_CHAR_SPECIAL_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.first-char-special-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.first-char-special-surname")
+          assert(messagesApi.isDefinedAt("site.first-char-special-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.first-char-special-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with disallowed special characters in the last position, a bad request is returned with:" +
@@ -741,15 +784,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(LAST_CHAR_SPECIAL_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.last-char-special-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.last-char-special-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.last-char-special-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.last-char-special-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe LAST_CHAR_SPECIAL_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.last-char-special-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.last-char-special-surname")
+          assert(messagesApi.isDefinedAt("site.last-char-special-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.last-char-special-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with too few alphabetic characters at the begining, a bad request is returned with:" +
@@ -762,15 +807,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(TOO_FEW_INITIAL_ALPHA_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.too-few-initial-alpha-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.too-few-initial-alpha-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-surname")
+          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with too few consecutive alphabetic characters, a bad request is returned with:" +
@@ -783,15 +830,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.too-few-consecutive-alpha-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.too-few-consecutive-alpha-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-surname")
+          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a surname with too many consecutive special characters, a bad request is returned with:" +
@@ -804,15 +853,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-surname"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.too-many-consecutive-special-surname")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-surname-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.too-many-consecutive-special-surname-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.too-many-consecutive-special-surname")
+          assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-many-consecutive-special-surname-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +
@@ -823,15 +874,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(INVALID_POSTCODE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.invalid-postcode"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.invalid-postcode")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.invalid-postcode-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.invalid-postcode-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe INVALID_POSTCODE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.invalid-postcode"))
+          w.error.errorMessage shouldBe messagesApi("site.invalid-postcode")
+          assert(messagesApi.isDefinedAt("site.invalid-postcode-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.invalid-postcode-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with an unparseable or badly formatted date and error object is returned with code set to UNPARSABLE_DATE_ERROR_CODE, (CWFDAT02) " +
@@ -841,15 +894,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(UNPARSABLE_DATE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.unparsable-date"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.unparsable-date")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.unparsable-date-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.unparsable-date-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe UNPARSABLE_DATE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.unparsable-date"))
+          w.error.errorMessage shouldBe messagesApi("site.unparsable-date")
+          assert(messagesApi.isDefinedAt("site.unparsable-date-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.unparsable-date-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a numeric string of length 8 and the month is not between 01 and 12, an object is " +
@@ -860,15 +915,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(BAD_MONTH_DATE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-month-date"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-month-date")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-month-date-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe BAD_MONTH_DATE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-month-date"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-month-date")
+          assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-month-date-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a numeric string of length 8 and the day is not valid for the date and year, an object is " +
@@ -879,15 +936,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(BAD_DAY_DATE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-day-date"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-day-date")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-day-date-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-day-date-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe BAD_DAY_DATE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-day-date"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-day-date")
+          assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-day-date-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a numeric string of but the century is before 1800 or after 2099, an object is " +
@@ -898,15 +957,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(BAD_CENTURY_DATE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-century-date"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-century-date")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-century-date-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-century-date-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe BAD_CENTURY_DATE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-century-date"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-century-date")
+          assert(messagesApi.isDefinedAt("site.bad-century-date-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-century-date-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with an unrecognized country code an object is " +
@@ -917,15 +978,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(UNKNOWN_COUNTRY_CODE_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.unknown-country-code"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.unknown-country-code")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.unknown-country-code-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.unknown-country-code-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe UNKNOWN_COUNTRY_CODE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.unknown-country-code"))
+          w.error.errorMessage shouldBe messagesApi("site.unknown-country-code")
+          assert(messagesApi.isDefinedAt("site.unknown-country-code-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.unknown-country-code-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with an badly formatted NINO an object is " +
@@ -936,15 +999,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(BAD_NINO_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-nino"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-nino")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-nino-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-nino-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe BAD_NINO_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-nino"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-nino")
+          assert(messagesApi.isDefinedAt("site.bad-nino-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-nino-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a communicationPreference that is not one of 00, 02, then an object is " +
@@ -955,15 +1020,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(BAD_COMM_PREF_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-comm-pref"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.bad-comm-pref")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.bad-comm-pref-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.bad-comm-pref-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe BAD_COMM_PREF_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-comm-pref"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-comm-pref")
+          assert(messagesApi.isDefinedAt("site.bad-comm-pref-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-comm-pref-detail")
+        case JsError(_) => fail
+      }
     }
 
     "if the stub is sent JSON with a communicationPreference that is 02 but without an email then an object is " +
@@ -974,15 +1041,17 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(EMAIL_NEEDED_ERROR_CODE)
-      val errorMessage = (json \ "error" \ "errorMessage").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.email-needed"))
-      errorMessage.getOrElse("") shouldBe messagesApi("site.email-needed")
-      val errorDetail = (json \ "error" \ "errorDetail").get.asOpt[String]
-      assert(messagesApi.isDefinedAt("site.email-needed-detail"))
-      errorDetail.getOrElse("") shouldBe messagesApi("site.email-needed-detail")
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe EMAIL_NEEDED_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.email-needed"))
+          w.error.errorMessage shouldBe messagesApi("site.email-needed")
+          assert(messagesApi.isDefinedAt("site.email-needed-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.email-needed-detail")
+        case JsError(_) => fail
+      }
     }
   }
 }
