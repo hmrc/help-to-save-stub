@@ -135,7 +135,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
       "error detail set to message site.no-json-detail" in {
       val fakeRequestWithoutJson: FakeRequest[AnyContentAsEmpty.type] = FakeRequest("POST", "/help-to-save-stub/create-account").withHeaders((CONTENT_TYPE, "application/json"))
-      val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithoutJson)
+      val result: Future[Result] = squidController.createAccount()(fakeRequestWithoutJson)
       status(result)
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -153,7 +153,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
       "object in the response with the Error message set to message site.no-create-account-key" in {
       def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-      val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result: Future[Result] = squidController.createAccount()(fakeRequestWithBadContent)
       status(result)
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -165,7 +165,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
     "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
       "object in the response with the Error detail set to message site.no-create-account-key-detail" in {
       def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-      val result: Future[Result] = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result: Future[Result] = squidController.createAccount()(fakeRequestWithBadContent)
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
         case JsSuccess(w, _) => w.error.errorDetail shouldBe messagesApi("site.no-create-account-key-detail")
@@ -179,7 +179,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER400)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -198,7 +198,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER401456M")))
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER400)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 401
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -217,7 +217,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val jsonBeginningWithER403 = generateJson(Seq(("NINO", "ER403456M")))
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER403)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 403
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -238,7 +238,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER404)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 404
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -259,7 +259,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER405)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 405
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -279,7 +279,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER415)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 415
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -299,7 +299,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER500)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 500
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -319,7 +319,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER503)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 503
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
@@ -339,7 +339,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(generateJsonFromMap(mapWithoutForename))
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 400
       val json: JsValue = contentAsJson(result)
       val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
@@ -351,7 +351,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -360,7 +360,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -369,7 +369,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -378,7 +378,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -387,7 +387,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -396,7 +396,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -405,7 +405,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -414,7 +414,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -423,7 +423,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -432,7 +432,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -441,7 +441,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -450,7 +450,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -459,7 +459,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -468,7 +468,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -477,7 +477,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequest)
+      val result = squidController.createAccount()(fakeRequest)
       status(result) shouldBe 200
     }
 
@@ -485,7 +485,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       for (pc <- Seq("BFPO 9999", "BN44 1ST", "E98 1SN", "EH99 1SP", "BS98 1TL")) {
         var jsonWithGoodPostcode = generateJson(Seq(("postcode", pc)))
         var fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
-        var result = new SquidController(messagesApi).createAccount()(fakeRequest)
+        var result = squidController.createAccount()(fakeRequest)
         status(result) shouldBe 200
       }
     }
@@ -494,7 +494,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       for (pc <- Seq("wibble", "DOG", "bn44 3dh", "Q99 MM")) {
         var jsonWithGoodPostcode = generateJson(Seq(("postcode", pc)))
         var fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
-        var result = new SquidController(messagesApi).createAccount()(fakeRequest)
+        var result = squidController.createAccount()(fakeRequest)
         status(result) shouldBe 400
       }
     }
@@ -507,7 +507,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -530,7 +530,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -553,7 +553,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -576,7 +576,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -599,7 +599,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -622,7 +622,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -645,7 +645,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -668,7 +668,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -691,7 +691,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -714,7 +714,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -736,7 +736,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("surname", "Duck$%#chesky")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -759,7 +759,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -782,7 +782,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -805,7 +805,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -828,7 +828,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -851,7 +851,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -872,7 +872,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonWithBadPostCode)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -892,7 +892,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("birthDate", "YYYY1336")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -913,7 +913,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("birthDate", "20011305")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -934,7 +934,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("birthDate", "20020229")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -955,7 +955,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("birthDate", "21050215")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -976,7 +976,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("countryCode", "MJ")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -997,7 +997,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("NINO", "THIS-IS-NOT-A-NINO")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -1018,7 +1018,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJson(Seq(("communicationPreference", "01")))
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -1039,7 +1039,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       val badJson = generateJsonFromMap(goodCreateAccountMap - "emailAddress")
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
       status(result) shouldBe 400
 
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
