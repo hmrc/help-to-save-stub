@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import play.api.http.Status
 import play.api.test._
 import org.scalatest.mock.MockitoSugar
 import play.api.i18n.MessagesApi
@@ -90,9 +91,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       status(result) shouldBe 415
     }
 
-    "return 200 when requested" in {
+    "return Status.CREATED when requested" in {
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "The request should return some content" in {
@@ -352,7 +353,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 2)" in {
@@ -361,7 +362,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 3)" in {
@@ -370,7 +371,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 4)" in {
@@ -379,7 +380,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 5)" in {
@@ -388,7 +389,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 6)" in {
@@ -397,7 +398,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 7)" in {
@@ -406,7 +407,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 8)" in {
@@ -415,7 +416,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 9)" in {
@@ -424,7 +425,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 10)" in {
@@ -433,7 +434,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 11)" in {
@@ -442,7 +443,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 12)" in {
@@ -451,7 +452,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 13)" in {
@@ -460,7 +461,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 14)" in {
@@ -469,7 +470,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 15)" in {
@@ -478,7 +479,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
       val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe 200
+      status(result) shouldBe Status.CREATED
     }
 
     "The following real postcodes should all pass:" in {
@@ -486,7 +487,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication with Mockito
         var jsonWithGoodPostcode = generateJson(Seq(("postcode", pc)))
         var fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
         var result = squidController.createAccount()(fakeRequest)
-        status(result) shouldBe 200
+        status(result) shouldBe Status.CREATED
       }
     }
 

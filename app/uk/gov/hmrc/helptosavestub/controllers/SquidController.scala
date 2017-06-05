@@ -248,7 +248,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
               case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
               case _ => {
                 validateCreateAccount(json) match {
-                  case Right(_) => Ok
+                  case Right(_) => Created
                   case Left(error) => {
                     val errJson = errorJson(error)
                     logger.error(errJson.toString())
