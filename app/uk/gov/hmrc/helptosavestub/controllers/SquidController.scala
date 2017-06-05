@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.Logger
 import java.time.temporal.TemporalAdjusters
 import javax.inject.{Inject, Singleton}
+
+import play.api.Logger
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsError, _}
 import play.api.mvc._
-import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.Constants._
-import uk.gov.hmrc.helptosavestub.models.{Wrapper, AccountCommand}
-import scala.util.{Failure, Try}
-
-case class Error(code: String, messageKey: String, messageDetailKey: String, additional: Option[String] = None)
+import uk.gov.hmrc.helptosavestub.models.{AccountCommand, Wrapper}
+import uk.gov.hmrc.play.microservice.controller.BaseController
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
+
+  import SquidController._
 
   private val logger = Logger("SquidController")
 
@@ -60,23 +60,15 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private def errorJson(error: Error): JsValue = {
     val errorMap =
-      error.additional match {
-        case None =>
-          Map("error" ->
-            Map("errorMessageId" -> error.code,
-              "errorMessage" -> messagesApi(error.messageKey),
-              "errorDetail" -> messagesApi(error.messageDetailKey)))
-        case Some(additional) =>
-          Map("error" ->
-            Map("errorMessageId" -> error.code,
-              "errorMessage" -> messagesApi(error.messageKey),
-              "errorDetail" -> additional))
-      }
+      Map("error" ->
+        Map("errorMessageId" -> error.code,
+          "errorMessage" -> messagesApi(error.messageKey),
+          "errorDetail" -> messagesApi(error.messageDetail)))
 
     Json.toJson(errorMap)
   }
 
-  private def hasNumericChars(str: String): Boolean = """.*\d.*""".r.pattern.matcher(str).matches
+  private def hasNumericChars(str: String): Boolean = str.exists(_.isDigit)
 
   private def hasDisallowedChars(str: String): Boolean = !"""^[a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
 
@@ -121,36 +113,36 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     !"""^\d{8}$""".r.pattern.matcher(str).matches()
   }
 
-  private def yearFromDate(date: String): Try[Int] = {
+  private def yearFromDate(date: String): Option[Int] = {
     if (unparsableLocalDate(date)) {
-      Failure(new IllegalArgumentException())
+      None
     } else {
-      Try(date.substring(0, 4).toInt)
+      Some(date.substring(0, 4).toInt)
     }
   }
 
-  private def monthFromDate(date: String): Try[Int] = {
+  private def monthFromDate(date: String): Option[Int] = {
     if (unparsableLocalDate(date)) {
-      Failure(new IllegalArgumentException())
+      None
     } else {
-      Try(date.substring(4, 6).toInt)
+      Some(date.substring(4, 6).toInt)
     }
   }
 
-  private def dayFromDate(date: String): Try[Int] = {
+  private def dayFromDate(date: String): Option[Int] = {
     if (unparsableLocalDate(date)) {
-      Failure(new IllegalArgumentException())
+      None
     } else {
-      Try(date.substring(6, 8).toInt)
+      Some(date.substring(6, 8).toInt)
     }
   }
 
   private def invalidDay(date: String): Boolean = {
-    val dayNumber: Try[Int] = dayFromDate(date)
+    val dayNumber = dayFromDate(date)
     val monthNumber = monthFromDate(date)
     val yearNumber = yearFromDate(date)
 
-    if (dayNumber.isSuccess && monthNumber.isSuccess && yearNumber.isSuccess) {
+    if (dayNumber.isDefined && monthNumber.isDefined && yearNumber.isDefined) {
       val day = dayNumber.getOrElse(0)
       val month = monthNumber.getOrElse(0)
       val year = yearNumber.getOrElse(0)
@@ -165,13 +157,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private def invalidCentury(date: String): Boolean = {
     val yearNumber = yearFromDate(date)
-
-    if (yearNumber.isSuccess) {
-      val year = yearNumber.getOrElse(0)
-      year < 1800 || year > 2099
-    } else {
-      true
-    }
+    yearNumber.fold(false) { year => year < 1800 || year > 2099 }
   }
 
   private def invalidNino(nino: String): Boolean = {
@@ -187,7 +173,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   }
 
   private def validateCreateAccount(json: JsValue): Either[Error, AccountCommand] = {
-    //Convert incoming json to a case class
     val parseResult = Json.fromJson[AccountCommand]((json \ "createAccount").get)
 
     logger.info(json.toString())
@@ -222,7 +207,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
           case ca if emailRequired(ca.communicationPreference, ca.emailAddress) => Left(Error(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
           case _ => Right(createAccount)
         }
-      case JsError(errors) => Left(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.unparsable-command", "", Some(errors.toString())))
+      case JsError(errors) => Left(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.unparsable-command", errors.toString()))
     }
   }
 
@@ -230,12 +215,12 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     request.body.asJson match {
       case None => BadRequest(Json.toJson(errorJson(Error(NO_JSON_ERROR_CODE, "site.no-json", "site.no-json-detail"))))
 
-      case Some(json: JsValue) => {
+      case Some(json: JsValue) =>
         val wrapper = Json.fromJson[Wrapper](json)
         wrapper match {
           case JsError(errors) => BadRequest(errorJson(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.no-create-account-key", "site.no-create-account-key-detail")))
 
-          case JsSuccess(wrappedCreateAccount, _) => {
+          case JsSuccess(wrappedCreateAccount, _) =>
             val nino = wrappedCreateAccount.createAccount.NINO
             nino match {
               case aNino if aNino.startsWith("ER400") => BadRequest(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
@@ -246,20 +231,17 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
               case aNino if aNino.startsWith("ER415") => UnsupportedMediaType(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
               case aNino if aNino.startsWith("ER500") => InternalServerError(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
               case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case _ => {
+              case _ =>
                 validateCreateAccount(json) match {
                   case Right(_) => Created
-                  case Left(error) => {
+                  case Left(error) =>
                     val errJson = errorJson(error)
                     logger.error(errJson.toString())
                     BadRequest(errJson)
-                  }
+
                 }
-              }
             }
-          }
         }
-      }
     }
   }
 
@@ -271,4 +253,10 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       case _ => UnsupportedMediaType
     }
   }
+}
+
+object SquidController {
+
+  private case class Error(code: String, messageKey: String, messageDetail: String)
+
 }

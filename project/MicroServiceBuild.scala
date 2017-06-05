@@ -8,7 +8,6 @@ import uk.gov.hmrc.versioning.SbtGitVersioning
 object MicroServiceBuild extends Build with MicroService {
 
   val appName = "help-to-save-stub"
-  private val mockitoAllVersion = "1.10.19"
 
   override lazy val appDependencies: Seq[ModuleID] = compile ++ test()
 
@@ -29,7 +28,6 @@ object MicroServiceBuild extends Build with MicroService {
     "uk.gov.hmrc" %% "hmrctest" % "2.3.0" % scope,
     "org.scalatest" %% "scalatest" % "2.2.6" % scope,
     "org.pegdown" % "pegdown" % "1.6.0" % scope,
-    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
-    "org.mockito" % "mockito-all" % mockitoAllVersion % scope
+    "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
   )
 }
