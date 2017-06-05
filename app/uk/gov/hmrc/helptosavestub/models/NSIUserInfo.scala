@@ -53,7 +53,7 @@ object NSIUserInfo {
   def apply(createAccount: CreateAccount): ValidatedNel[String, NSIUserInfo] =
     (forenameValidation(createAccount.forename) |@|
       surnameValidation(createAccount.surname) |@|
-      dateValidation(createAccount.birthdate) |@|
+      dateValidation(createAccount.birthDate) |@|
       addressLineValidation(Address(Some(createAccount.address1),Some(createAccount.address2),
         createAccount.address3,createAccount.address4,createAccount.address5)) |@|
       postcodeValidation(Some(createAccount.postcode)) |@|
