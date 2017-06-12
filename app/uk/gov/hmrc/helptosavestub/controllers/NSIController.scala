@@ -16,8 +16,10 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import com.google.common.base.Charsets
-import com.google.common.io.BaseEncoding
+
+import java.nio.charset.StandardCharsets
+import java.util.Base64
+
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{Action, Headers}
@@ -26,22 +28,30 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.controllers.SubmissionFailure._
 
 import scala.concurrent.Future
-import scala.util.{Success, Try}
+import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController {
 
-  val testAuthHeader = "test.user:test123"
-
-  /**
-    * Both HMRC and NS&I want a header wit the key "Authorisation". Try to decode
-    * all header values for the key "Authorisation" and see if any of them match the
-    * expected username/password combo
-    */
+  val authorizationHeaderKey = "Authorization1"
+  val authorizationValuePrefix = "Basic: "
+  val testAuthHeader = "user:password"
 
   def isAuthorised(headers: Headers): Boolean = {
-    val decoded = headers.headers.filter(_._1 == "Authorization1")
-      .map(h ⇒ Try(BaseEncoding.base64().decode(h._2)))
-      .collect { case Success(bytes) ⇒ new String(bytes, Charsets.UTF_8)}
+    val decoded: Option[String] =
+      headers.headers
+        .find(entry ⇒
+          entry._1 == authorizationHeaderKey && entry._2.startsWith(authorizationValuePrefix))
+        .flatMap{ case (_, h) ⇒
+          val decoded =  Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
+          decoded match {
+            case Success(bytes) ⇒
+              Some(new String(bytes, StandardCharsets.UTF_8))
+
+            case Failure(error) ⇒
+              Logger.error(s"Could not decode authorization details: header value was $h. ${error.getMessage}", error)
+              None
+          }
+        }
 
     decoded.contains(testAuthHeader)
   }

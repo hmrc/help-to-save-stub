@@ -1,5 +1,6 @@
 # Add all the application routes to the app.routes file
 GET        /citizen-details/:nino/designatory-details uk.gov.hmrc.helptosavestub.controllers.CitizenDetailsController.retrieveDetails(nino)
+POST       /nsihts/createaccount                      uk.gov.hmrc.helptosavestub.controllers.NSIController.createAccount()
 ->         /help-to-save-stub                         app.Routes
 ->         /                                          health.Routes
 

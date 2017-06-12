@@ -7,7 +7,5 @@ GET        /itmp/h2s/eligibility/:nino                uk.gov.hmrc.helptosavestub
 GET        /edh/uc/:nino                              uk.gov.hmrc.helptosavestub.controllers.EdhController.uc(nino)
 GET        /edh/wtc/:nino                             uk.gov.hmrc.helptosavestub.controllers.EdhController.wtc(nino)
 
-POST       /create-account                            uk.gov.hmrc.helptosavestub.controllers.NSIController.createAccount()
-
 POST       /squid/create-account                       @uk.gov.hmrc.helptosavestub.controllers.SquidController.createAccount
 
