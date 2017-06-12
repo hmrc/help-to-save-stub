@@ -16,11 +16,11 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+import java.util.Base64
 
-import com.google.common.base.Charsets
-import com.google.common.io.BaseEncoding
 import play.api.libs.json.{JsString, JsValue, Json, Writes}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -34,7 +34,10 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
     None, None, "BN124XH", Some("GB"), "AA999999A",
     "02",None, "online", Some("dduck@email.com"))
 
-  val authHeader =  ("Authorization1",  BaseEncoding.base64().encode("test.user:test123".getBytes(Charsets.UTF_8)))
+  val authHeader = {
+    val encoded = new String(Base64.getEncoder().encode("user:password".getBytes(StandardCharsets.UTF_8)))
+    "Authorization1" → s"Basic: $encoded"
+  }
 
   "Post /create-account  " should {
     "return a successful Create Account" in {
