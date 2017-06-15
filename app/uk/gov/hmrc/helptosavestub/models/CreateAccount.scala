@@ -16,19 +16,12 @@
 
 package uk.gov.hmrc.helptosavestub.models
 
-import play.api.libs.json._
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import cats.data.Validated.{Invalid, Valid}
-import cats.data.{NonEmptyList, Validated, ValidatedNel}
-import cats.syntax.cartesian._
-import play.api.libs.json.{JsString, JsValue, Json, Writes}
-import uk.gov.hmrc.helptosavestub.controllers.CitizenDetailsController.Address
+import play.api.libs.json.{JsString, JsValue, Json, Writes, _}
 
-import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
-import scala.util.matching.Regex
 
 case class CreateAccount(forename: String,
                          surname: String,
@@ -39,13 +32,14 @@ case class CreateAccount(forename: String,
                          address4: Option[String],
                          address5: Option[String],
                          postcode: String,
-                         countryCode: Option[String] ,
+                         countryCode: Option[String],
                          NINO: String,
                          communicationPreference: String,
                          phoneNumber: Option[String],
                          registrationChannel: String,
                          emailAddress: Option[String]
                         )
+
 object CreateAccount {
 
   val formatter = DateTimeFormatter.ofPattern("yyyyMMdd")
