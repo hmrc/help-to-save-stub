@@ -23,7 +23,6 @@ import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
 import hmrc.smartstub._
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.helptosavestub.models.NSIUserInfo.postcodeRegex
 
 object CitizenDetailsController extends BaseController {
 
@@ -52,13 +51,13 @@ object CitizenDetailsController extends BaseController {
     val personGen = for {
       fnameO <- Gen.forename.almostAlways
       snameO <- Gen.surname.almostAlways
-      dobO <- option(Gen.date(1940, 2017))
+      dobO <- some(Gen.date(1940, 2017))
     } yield Person( fnameO, snameO, dobO ) 
 
     val addressGen = for {
       address <- Gen.ukAddress.map{_.map{x => const(x).almostAlways}}
       initAdd = address.init ++ List.fill(3)(const(Option.empty[String]))
-      add1 <- initAdd(0)
+      add1 <- initAdd.head
       add2 <- initAdd(1)
       add3 <- initAdd(2)
       postcodeO <- address.last
