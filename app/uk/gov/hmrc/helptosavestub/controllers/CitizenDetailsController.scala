@@ -51,7 +51,7 @@ object CitizenDetailsController extends BaseController {
     val personGen = for {
       fnameO <- Gen.forename.almostAlways
       snameO <- Gen.surname.almostAlways
-      dobO <- Gen.date(1940, 2017).almostAlways
+      dobO <- some(Gen.date(1940, 2017))
     } yield Person( fnameO, snameO, dobO ) 
 
     val addressGen = for {
