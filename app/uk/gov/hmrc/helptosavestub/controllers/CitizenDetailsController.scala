@@ -57,7 +57,7 @@ object CitizenDetailsController extends BaseController {
     val addressGen = for {
       address <- Gen.ukAddress.map{_.map{x => const(x).almostAlways}}
       initAdd = address.init ++ List.fill(3)(const(Option.empty[String]))
-      add1 <- initAdd(0)
+      add1 <- initAdd.head
       add2 <- initAdd(1)
       add3 <- initAdd(2)
       postcodeO <- address.last
