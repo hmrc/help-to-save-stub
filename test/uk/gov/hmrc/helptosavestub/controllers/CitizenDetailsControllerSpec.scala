@@ -50,7 +50,7 @@ class CitizenDetailsControllerSpec extends UnitSpec with WithFakeApplication {
 
       val response = Json.fromJson[Response](contentAsJson(result))
 
-      Option(response.get.person.get.dateOfBirth) should be(defined)
+      response.get.person.get.dateOfBirth should be(defined)
     }
   }
 

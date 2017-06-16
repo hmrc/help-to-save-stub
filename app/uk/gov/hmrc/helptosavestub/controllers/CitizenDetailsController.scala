@@ -31,7 +31,7 @@ object CitizenDetailsController extends BaseController {
 
   case class Person(firstName: Option[String],
                     lastName: Option[String],
-                    dateOfBirth: LocalDate)
+                    dateOfBirth: Option[LocalDate])
 
   case class Address(line1: Option[String],
                      line2: Option[String],
@@ -52,7 +52,7 @@ object CitizenDetailsController extends BaseController {
     val personGen = for {
       fnameO <- Gen.forename.almostAlways
       snameO <- Gen.surname.almostAlways
-      dobO ← Gen.date(1940, 2017)
+      dobO ← some(Gen.date(1940, 2017))
 
   } yield Person( fnameO, snameO, dobO)
 
