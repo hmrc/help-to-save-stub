@@ -31,7 +31,7 @@ object CitizenDetailsController extends BaseController {
 
   case class Person(firstName: Option[String],
                     lastName: Option[String],
-                    dateOfBirth: Option[LocalDate])
+                    dateOfBirth: LocalDate)
 
   case class Address(line1: Option[String],
                      line2: Option[String],
@@ -52,8 +52,9 @@ object CitizenDetailsController extends BaseController {
     val personGen = for {
       fnameO <- Gen.forename.almostAlways
       snameO <- Gen.surname.almostAlways
-      dobO <- option(Gen.date(1940, 2017))
-    } yield Person( fnameO, snameO, dobO ) 
+      dobO ← Gen.date(1940, 2017)
+
+  } yield Person( fnameO, snameO, dobO)
 
     val addressGen = for {
       address <- Gen.ukAddress.map{_.map{x => const(x).almostAlways}}
@@ -63,6 +64,7 @@ object CitizenDetailsController extends BaseController {
       add3 <- initAdd(2)
       postcodeO <- address.last
       countryO <- const("UK").almostAlways
+
     } yield Address(add1, add2, add3, postcodeO, countryO)
 
     for {
