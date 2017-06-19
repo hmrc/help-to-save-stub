@@ -18,21 +18,23 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.nio.charset.StandardCharsets
 import java.time.LocalDate
-import java.time.format.DateTimeFormatter
 import java.util.Base64
 
-import play.api.libs.json.{JsString, JsValue, Json, Writes}
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.helptosavestub.models.CreateAccount
+import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo
+import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo.ContactDetails
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class NSIControllerSpec extends UnitSpec with WithFakeApplication {
 
-  val testCreateAccount = CreateAccount(
-    "Donald", "Duck", LocalDate.of(1990, 1, 1), "1", ",Test Street 2", None,
-    None, None, "BN124XH", Some("GB"), "AA999999A",
-    "02",None, "online", Some("dduck@email.com"))
+  import NSIUserInfo._
+
+  val testCreateAccount = NSIUserInfo(
+    "Donald", "Duck", LocalDate.of(1990, 1, 1), "AA999999A",
+    ContactDetails(List("1", ",Test Street 2"), "BN124XH", Some("GB"), "dduck@email.com", None, "02"),
+    "online")
 
   val authHeader = {
     val encoded = new String(Base64.getEncoder().encode("user:password".getBytes(StandardCharsets.UTF_8)))
@@ -46,6 +48,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
         .withJsonBody(Json.toJson(testCreateAccount))
 
       val result = NSIController.createAccount()(request)
+      println(contentAsString(result) + "\n\n")
       status(result) shouldBe CREATED
     }
 
@@ -59,7 +62,8 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
     "return a 400 for a bad request in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-        .withJsonBody(Json.toJson(testCreateAccount.copy(emailAddress = None)))
+        .withJsonBody(Json.toJson(testCreateAccount.copy(
+          contactDetails  = testCreateAccount.contactDetails.copy(email = ""))))
       val result = NSIController.createAccount()(request)
       status(result) shouldBe BAD_REQUEST
     }

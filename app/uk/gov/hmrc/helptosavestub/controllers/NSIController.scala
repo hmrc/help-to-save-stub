@@ -23,7 +23,7 @@ import java.util.Base64
 import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{Action, Headers}
-import uk.gov.hmrc.helptosavestub.models.{CreateAccount, NSIUserInfo}
+import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.controllers.SubmissionFailure._
 
@@ -60,7 +60,7 @@ object NSIController extends BaseController {
     if(isAuthorised(request.headers)) {
       lazy val requestBodyText = request.body.asText.getOrElse("")
 
-      request.body.asJson.map(_.validate[CreateAccount]) match {
+      request.body.asJson.map(_.validate[NSIUserInfo]) match {
         case None ⇒
           Logger.error(s"No JSON found for create-account request: $requestBodyText")
           Future.successful(BadRequest(
@@ -71,8 +71,8 @@ object NSIController extends BaseController {
           Future.successful(BadRequest(
             Json.toJson(SubmissionFailure(None,"Invalid Json", er.toString))))
 
-        case Some(JsSuccess(createAccount, _)) ⇒
-          NSIUserInfo(createAccount).fold(
+        case Some(JsSuccess(info, _)) ⇒
+          info.validate().fold(
             errors  ⇒ {
               Logger.error(s"User details not valid for create-account request: $requestBodyText")
               Future.successful(BadRequest(

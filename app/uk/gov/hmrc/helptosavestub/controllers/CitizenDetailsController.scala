@@ -23,7 +23,6 @@ import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
 import hmrc.smartstub._
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.helptosavestub.models.NSIUserInfo.postcodeRegex
 
 object CitizenDetailsController extends BaseController {
 
