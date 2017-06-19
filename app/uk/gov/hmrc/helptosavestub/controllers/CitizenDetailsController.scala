@@ -50,26 +50,26 @@ object CitizenDetailsController extends BaseController {
     import Gen._
 
     val personGen = for {
-      fnameO <- Gen.forename.almostAlways
-      snameO <- Gen.surname.almostAlways
+      fnameO <- some(Gen.forename)
+      snameO <- some(Gen.surname)
       dobO ← some(Gen.date(1940, 2017))
 
   } yield Person( fnameO, snameO, dobO)
 
     val addressGen = for {
-      address <- Gen.ukAddress.map{_.map{x => const(x).almostAlways}}
+      address <- Gen.ukAddress.map{_.map{x => some(const(x))}}
       initAdd = address.init ++ List.fill(3)(const(Option.empty[String]))
       add1 <- initAdd(0)
       add2 <- initAdd(1)
       add3 <- initAdd(2)
       postcodeO <- address.last
-      countryO <- const("UK").almostAlways
+      countryO <- some(const("UK"))
 
     } yield Address(add1, add2, add3, postcodeO, countryO)
 
     for {
-      personO <- personGen.almostAlways
-      addressO <- addressGen.almostAlways
+      personO <- some(personGen)
+      addressO <- some(addressGen)
     } yield Response( personO, addressO )
   }
 
