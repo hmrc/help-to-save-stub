@@ -24,7 +24,6 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo
-import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo.ContactDetails
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class NSIControllerSpec extends UnitSpec with WithFakeApplication {
@@ -48,7 +47,6 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
         .withJsonBody(Json.toJson(testCreateAccount))
 
       val result = NSIController.createAccount()(request)
-      println(contentAsString(result) + "\n\n")
       status(result) shouldBe CREATED
     }
 
