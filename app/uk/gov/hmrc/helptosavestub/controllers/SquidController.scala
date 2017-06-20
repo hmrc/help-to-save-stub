@@ -24,7 +24,7 @@ import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsError, _}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.Constants._
-import uk.gov.hmrc.helptosavestub.models.{AccountCommand, Wrapper}
+import uk.gov.hmrc.helptosavestub.models.SquidModels.AccountCommand
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 @Singleton
@@ -83,30 +83,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   private def hasTooManyConsecutiveSpecialChars(str: String) = """^.*[&\.-]{2}.*""".r.pattern.matcher(str).matches
 
   private def invalidPostcode(postcode: String): Boolean = {
-    val noSpacesPostcode = postcode.filter {
-      _ != ' '
-    }
-    val row2Expr = """^[A-P|R-U|WYZ]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row3Expr = """^[A-P|R-U|WYZ]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row4Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row5Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row6Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d[ABEHMNPR|V-Y]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row7Expr = """^[A-P|R-U|WYZ]\d[A-H|HJK|S-U|W]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row8Expr = "^[A-Z]1ZZ$".r
-    val row9Expr = "^[A-Z][A-Z]1ZZ$".r
-    val row10Expr = "^[A-Z][A-Z][A-Z]1ZZ$".r
-    val row11Expr = "^[A-Z][A-Z][A-Z][A-Z]1ZZ$".r
-    val row12Expr = """^BFPO\d$""".r
-    val row13Expr = """^BFPO\d\d$""".r
-    val row14Expr = """^BFPO\d\d\d$""".r
-    val row15Expr = """^BFPO\d\d\d\d$""".r
-
-    (noSpacesPostcode != "GIR0AA") &&
-      (noSpacesPostcode match {
-        case row2Expr() | row3Expr() | row4Expr() | row5Expr() | row6Expr() | row7Expr() | row8Expr() | row9Expr()
-             | row10Expr() | row11Expr() | row12Expr() | row13Expr() | row14Expr() | row15Expr() => false
-        case _ => true
-      })
+   !"""[a-zA-Z0-9\s]{3,10}$""".r.pattern.matcher(postcode).matches()
   }
 
   private def unparsableLocalDate(str: String) = {
@@ -172,56 +149,50 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     pref == "02" && emailAddress.isEmpty
   }
 
-  private def validateCreateAccount(json: JsValue): Either[Error, AccountCommand] = {
-    val parseResult = Json.fromJson[AccountCommand]((json \ "createAccount").get)
-
-    logger.info(json.toString())
-
-    parseResult match {
-      case JsSuccess(createAccount, _) =>
-        createAccount match {
-          case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
-          case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
-          case ca if hasDisallowedChars(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
-          case ca if hasSpecialInFirstPlace(ca.forename) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
-          case ca if hasSpecialInLastPlace(ca.forename) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-forename", "site.last-char-special-forename-detail"))
-          case ca if hasInsufficientAlphaCharsAtStart(ca.forename) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-forename", "site.too-few-initial-alpha-forename-detail"))
-          case ca if hasInsufficientConsecutiveAlphaChars(ca.forename) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-forename", "site.too-few-consecutive-alpha-forename-detail"))
-          case ca if hasTooManyConsecutiveSpecialChars(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
-          case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
-          case ca if hasNumericChars(ca.surname) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
-          case ca if hasDisallowedChars(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
-          case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
-          case ca if hasSpecialInLastPlace(ca.surname) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
-          case ca if hasInsufficientAlphaCharsAtStart(ca.surname) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
-          case ca if hasInsufficientConsecutiveAlphaChars(ca.surname) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
-          case ca if hasTooManyConsecutiveSpecialChars(ca.surname) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
-          case ca if invalidPostcode(ca.postcode) => Left(Error(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
-          case ca if unparsableLocalDate(ca.birthDate) => Left(Error(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
-          case ca if monthFromDate(ca.birthDate).exists(_ > 12) => Left(Error(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
-          case ca if invalidDay(ca.birthDate) => Left(Error(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
-          case ca if invalidCentury(ca.birthDate) => Left(Error(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
-          case ca if !ca.countryCode.exists(countryCodes.contains) => Left(Error(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
-          case ca if invalidNino(ca.NINO) => Left(Error(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
-          case ca if invalidCommunicationPreference(ca.communicationPreference) => Left(Error(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
-          case ca if emailRequired(ca.communicationPreference, ca.emailAddress) => Left(Error(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
-          case _ => Right(createAccount)
-        }
-      case JsError(errors) => Left(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.unparsable-command", errors.toString()))
+  private def validateCreateAccount(createAccount: AccountCommand): Either[Error, AccountCommand] = {
+    logger.info(createAccount.toString())
+    createAccount match {
+      case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
+      case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
+      case ca if hasDisallowedChars(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
+      case ca if hasSpecialInFirstPlace(ca.forename) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
+      case ca if hasSpecialInLastPlace(ca.forename) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-forename", "site.last-char-special-forename-detail"))
+      case ca if hasInsufficientAlphaCharsAtStart(ca.forename) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-forename", "site.too-few-initial-alpha-forename-detail"))
+      case ca if hasInsufficientConsecutiveAlphaChars(ca.forename) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-forename", "site.too-few-consecutive-alpha-forename-detail"))
+      case ca if hasTooManyConsecutiveSpecialChars(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
+      case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
+      case ca if hasNumericChars(ca.surname) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
+      case ca if hasDisallowedChars(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
+      case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
+      case ca if hasSpecialInLastPlace(ca.surname) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
+      case ca if hasInsufficientAlphaCharsAtStart(ca.surname) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
+      case ca if hasInsufficientConsecutiveAlphaChars(ca.surname) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
+      case ca if hasTooManyConsecutiveSpecialChars(ca.surname) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
+      case ca if invalidPostcode(ca.contactDetails.postcode) => Left(Error(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
+      case ca if unparsableLocalDate(ca.dateOfBirth) => Left(Error(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
+      case ca if monthFromDate(ca.dateOfBirth).exists(_ > 12) => Left(Error(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
+      case ca if invalidDay(ca.dateOfBirth) => Left(Error(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
+      case ca if invalidCentury(ca.dateOfBirth) => Left(Error(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
+      case ca if !ca.contactDetails.countryCode.exists(countryCodes.contains) => Left(Error(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
+      case ca if invalidNino(ca.nino) => Left(Error(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
+      case ca if invalidCommunicationPreference(ca.contactDetails.communicationPreference) => Left(Error(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
+      case ca if emailRequired(ca.contactDetails.communicationPreference, ca.contactDetails.email) => Left(Error(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
+      case _ => Right(createAccount)
     }
   }
 
   def processBody(request: Request[AnyContent]): Result = {
+    println(request.body.asJson)
     request.body.asJson match {
       case None => BadRequest(Json.toJson(errorJson(Error(NO_JSON_ERROR_CODE, "site.no-json", "site.no-json-detail"))))
 
       case Some(json: JsValue) =>
-        val wrapper = Json.fromJson[Wrapper](json)
-        wrapper match {
-          case JsError(errors) => BadRequest(errorJson(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.no-create-account-key", "site.no-create-account-key-detail")))
+        val createAccount = Json.fromJson[AccountCommand](json)
+        createAccount match {
+          case JsError(errors) => BadRequest(errorJson(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.no-json", "site.no-json-detail")))
 
           case JsSuccess(wrappedCreateAccount, _) =>
-            val nino = wrappedCreateAccount.createAccount.NINO
+            val nino = createAccount.get.nino
             nino match {
               case aNino if aNino.startsWith("ER400") => BadRequest(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
               case aNino if aNino.startsWith("ER401") => Unauthorized(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
@@ -232,7 +203,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
               case aNino if aNino.startsWith("ER500") => InternalServerError(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
               case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
               case _ =>
-                validateCreateAccount(json) match {
+                validateCreateAccount(createAccount.get) match {
                   case Right(_) => Created
                   case Left(error) =>
                     val errJson = errorJson(error)

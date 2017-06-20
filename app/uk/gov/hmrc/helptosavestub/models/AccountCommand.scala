@@ -24,28 +24,31 @@ import play.api.libs.json._
 // parsed into a date during the validation process rather than the JSON parsing period - the latter either succeeds or
 // fails.
 
-case class Wrapper (createAccount: AccountCommand)
+object SquidModels {
+  case class ContactDetails(address1: String,
+                            address2: String,
+                            address3: Option[String],
+                            address4: Option[String],
+                            address5: Option[String],
+                            postcode: String,
+                            countryCode: Option[String],
+                            email: Option[String],
+                            phoneNumber: Option[String],
+                            communicationPreference: String)
 
-object Wrapper {
-  implicit val wrapperFormat: Format[Wrapper] = Json.format[Wrapper]
-}
+  object ContactDetails {
+    implicit val contactDetailsFormat: Format[ContactDetails] = Json.format[ContactDetails]
+  }
 
-case class AccountCommand (forename: String,
-                           surname: String,
-                           birthDate: String,
-                           address1: String,
-                           address2: String,
-                           address3: Option[String],
-                           address4: Option[String],
-                           address5: Option[String],
-                           postcode: String,
-                           countryCode: Option[String] ,
-                           NINO: String,
-                           communicationPreference: String,
-                           phoneNumber: Option[String],
-                           registrationChannel: String,
-                           emailAddress: Option[String])
+  case class AccountCommand(forename: String,
+                            surname: String,
+                            dateOfBirth: String,
+                            nino: String,
+                            contactDetails: ContactDetails,
+                            registrationChannel: String)
 
-object AccountCommand {
-  implicit val accountCommandFormat: Format[AccountCommand] = Json.format[AccountCommand]
+  object AccountCommand {
+    implicit val accountCommandFormat: Format[AccountCommand] = Json.format[AccountCommand]
+  }
+
 }
