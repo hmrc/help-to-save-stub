@@ -22,7 +22,7 @@ import play.api.libs.json.{Format, Json}
 
 
 case class UserDetails(name: String,
-                       NINO: String,
+                       nino: String,
                        dateOfBirth: LocalDate,
                        email: String,
                        phoneNumber: String,
