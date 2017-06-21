@@ -111,6 +111,30 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     Json.toJson(goodAccount copy (contactDetails = cd))
   }
 
+  private def generateJsonWithAddress1(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address1 = a)
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress2(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address2 = a)
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress3(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address3 = Some(a))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress4(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address4 = Some(a))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress5(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address5 = Some(a))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
 
   private val fakeRequest = FakeRequest().withJsonBody(Json.toJson(goodAccount)).withHeaders((CONTENT_TYPE, "application/json"))
 
@@ -782,53 +806,6 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-//
-//    "if the stub is sent JSON with a surname with too few alphabetic characters at the begining, a bad request is returned with:" +
-//      "TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-surname and " +
-//      "site.too-few-initial-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
-//      //TODO: Find out what this number should actually be - initially setting it to 3
-//      val badJson = generateJsonWithSurname("D&&uckchesky")
-//
-//      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-//
-//      val result = squidController.createAccount()(fakeRequestWithBadContent)
-//      status(result) shouldBe Status.BAD_REQUEST
-//
-//      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-//      wrapper match {
-//        case JsSuccess(w, _) =>
-//          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
-//          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname"))
-//          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-surname")
-//          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname-detail"))
-//          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-surname-detail")
-//        case JsError(_) => fail
-//      }
-//    }
-//
-//    "if the stub is sent JSON with a surname with too few consecutive alphabetic characters, a bad request is returned with:" +
-//      "TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE (ZYRA0715) as the error code and site.too-few-consecutive-alpha-surname and " +
-//      "site.too-few-consecutive-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
-//      //TODO: Find out what this number should actually be - initially setting it to 4
-//      val badJson = generateJsonWithSurname("Don&ch")
-//
-//      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-//
-//      val result = squidController.createAccount()(fakeRequestWithBadContent)
-//      status(result) shouldBe Status.BAD_REQUEST
-//
-//      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-//      wrapper match {
-//        case JsSuccess(w, _) =>
-//          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
-//          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname"))
-//          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-surname")
-//          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname-detail"))
-//          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-surname-detail")
-//        case JsError(_) => fail
-//      }
-//    }
-
     "if the stub is sent JSON with a surname with too many consecutive special characters, a bad request is returned with:" +
       "TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE (ZYRA0716) as the error code and site.too-many-consecutive-special-surname and " +
       "site.too-many-consecutive-special-surname-detail are returned in the error JSON and the appropriate message." in {
@@ -1025,6 +1002,153 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
           w.error.errorMessage shouldBe messagesApi("site.email-needed")
           assert(messagesApi.isDefinedAt("site.email-needed-detail"))
           w.error.errorDetail shouldBe messagesApi("site.email-needed-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address1 with an empty string then an object is returned" +
+      "with a code ADDRESS_ONE_TOO_SHORT_ERROR_CODE (AAAA0012) and" +
+      "the message site.address1-empty, and the detail site.address1-empty-detail" in {
+      val badJson = generateJsonWithAddress1("")
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_ONE_TOO_SHORT_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address1-empty"))
+          w.error.errorMessage shouldBe messagesApi("site.address1-empty")
+          assert(messagesApi.isDefinedAt("site.address1-empty-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address1-empty-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address1 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_ONE_TOO_LONG_ERROR_CODE (AAAA0013) and" +
+      "the message site.address1-too-long, and the detail site.address1-too-long-detail" in {
+      val badJson = generateJsonWithAddress1("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_ONE_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address1-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address1-too-long")
+          assert(messagesApi.isDefinedAt("site.address1-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address1-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address2 with an empty string then an object is returned" +
+      "with a code ADDRESS_TWO_TOO_SHORT_ERROR_CODE (AAAA0014) and" +
+      "the message site.address2-empty, and the detail site.address2-empty-detail" in {
+      val badJson = generateJsonWithAddress2("")
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_TWO_TOO_SHORT_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address2-empty"))
+          w.error.errorMessage shouldBe messagesApi("site.address2-empty")
+          assert(messagesApi.isDefinedAt("site.address2-empty-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address2-empty-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address2 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_TWO_TOO_LONG_ERROR_CODE (AAAA0015) and" +
+      "the message site.address2-too-long, and the detail site.address2-too-long-detail" in {
+      val badJson = generateJsonWithAddress2("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_TWO_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address2-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address2-too-long")
+          assert(messagesApi.isDefinedAt("site.address2-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address2-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address3 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_THREE_TOO_LONG_ERROR_CODE (AAAA0016) and" +
+      "the message site.address3-too-long, and the detail site.address3-too-long-detail" in {
+      val badJson = generateJsonWithAddress3("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_THREE_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address3-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address3-too-long")
+          assert(messagesApi.isDefinedAt("site.address3-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address3-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address4 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_FOUR_TOO_LONG_ERROR_CODE (AAAA0017) and" +
+      "the message site.address4-too-long, and the detail site.address4-too-long-detail" in {
+      val badJson = generateJsonWithAddress4("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_FOUR_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address4-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address4-too-long")
+          assert(messagesApi.isDefinedAt("site.address4-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address4-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address5 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_FIVE_TOO_LONG_ERROR_CODE (AAAA0018) and" +
+      "the message site.address5-too-long, and the detail site.address4-too-long-detail" in {
+      val badJson = generateJsonWithAddress5("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_FIVE_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address5-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address5-too-long")
+          assert(messagesApi.isDefinedAt("site.address5-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address5-too-long-detail")
         case JsError(_) => fail
       }
     }

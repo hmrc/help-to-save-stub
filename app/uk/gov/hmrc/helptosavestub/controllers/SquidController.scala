@@ -157,17 +157,17 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   }
 
   private def validateCreateAccount(createAccount: AccountCommand): Either[Error, AccountCommand] = {
-    logger.info(createAccount.toString())
+    logger.info(createAccount.toString)
     createAccount match {
-      case ca if ca.forename.size == 0 => Left(Error(FORENAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-forename", "site.too-few-chars-forename-detail"))
-      case ca if ca.forename.size > 26 => Left(Error(FORENAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-forename", "site.too-many-chars-forename-detail"))
+      case ca if ca.forename.isEmpty => Left(Error(FORENAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-forename", "site.too-few-chars-forename-detail"))
+      case ca if ca.forename.length > 26 => Left(Error(FORENAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-forename", "site.too-many-chars-forename-detail"))
       case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
       case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
       case ca if hasDisallowedChars(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
       case ca if hasTooManyConsecutiveSpecialChars(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
       case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
-      case ca if ca.surname.size == 0 => Left(Error(SURNAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-surname", "site.too-few-chars-surname-detail"))
-      case ca if ca.surname.size > 300 => Left(Error(SURNAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-surname", "site.too-many-chars-surname-detail"))
+      case ca if ca.surname.isEmpty => Left(Error(SURNAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-surname", "site.too-few-chars-surname-detail"))
+      case ca if ca.surname.length > 300 => Left(Error(SURNAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-surname", "site.too-many-chars-surname-detail"))
       case ca if hasNumericChars(ca.surname) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
       case ca if hasDisallowedChars(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
       case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
@@ -181,6 +181,13 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       case ca if invalidNino(ca.nino) => Left(Error(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
       case ca if invalidCommunicationPreference(ca.contactDetails.communicationPreference) => Left(Error(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
       case ca if emailRequired(ca.contactDetails.communicationPreference, ca.contactDetails.email) => Left(Error(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
+      case ca if ca.contactDetails.address1.isEmpty => Left(Error(ADDRESS_ONE_TOO_SHORT_ERROR_CODE, "site.address1-empty", "site.address1-empty-detail"))
+      case ca if ca.contactDetails.address1.length > 35 => Left(Error(ADDRESS_ONE_TOO_LONG_ERROR_CODE, "site.address1-too-long", "site.address1-too-long-detail"))
+      case ca if ca.contactDetails.address2.isEmpty => Left(Error(ADDRESS_TWO_TOO_SHORT_ERROR_CODE, "site.address2-empty", "site.address2-empty-detail"))
+      case ca if ca.contactDetails.address2.length > 35 => Left(Error(ADDRESS_TWO_TOO_LONG_ERROR_CODE, "site.address2-too-long", "site.address2-too-long-detail"))
+      case ca if ca.contactDetails.address3.getOrElse("").length > 35 => Left(Error(ADDRESS_THREE_TOO_LONG_ERROR_CODE, "site.address3-too-long", "site.address3-too-long-detail"))
+      case ca if ca.contactDetails.address4.getOrElse("").length > 35 => Left(Error(ADDRESS_FOUR_TOO_LONG_ERROR_CODE, "site.address4-too-long", "site.address4-too-long-detail"))
+      case ca if ca.contactDetails.address5.getOrElse("").length > 35 => Left(Error(ADDRESS_FIVE_TOO_LONG_ERROR_CODE, "site.address5-too-long", "site.address5-too-long-detail"))
       case _ => Right(createAccount)
     }
   }

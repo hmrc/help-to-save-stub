@@ -1,3 +1,17 @@
+site.address1-empty = "The first line of the address must not be an empty string."
+site.address1-empty-detail = "The first line of the address must not be an empty string. See ICD001 v 1.2 Section 4.3.1 for more detail."
+site.address1-too-long = "The first line of the address must have fewer than 36 chars."
+site.address1-too-long-detail = "The first line of the address must have fewer than 36 chars. See ICD001 v 1.2 Section 4.3.1 for more detail."
+site.address2-empty = "The second line of the address must not be an empty string."
+site.address2-empty-detail = "The second line of the address must not be an empty string. See ICD001 v 1.2 Section 4.3.1 for more detail."
+site.address2-too-long = "The second line of the address must have fewer than 36 chars."
+site.address2-too-long-detail = "The second line of the address must have fewer than 36 chars. See ICD001 v 1.2 Section 4.3.1 for more detail."
+site.address3-too-long = "The third line of the address must have fewer than 36 chars."
+site.address3-too-long-detail = "The third line of the address must have fewer than 36 chars. See ICD001 v 1.2 Section 4.3.1 for more detail."
+site.address4-too-long = "The fourth line of the address must have fewer than 36 chars."
+site.address4-too-long-detail = "The fourth line of the address must have fewer than 36 chars. See ICD001 v 1.2 Section 4.3.1 for more detail."
+site.address5-too-long = "The fifth line of the address must have fewer than 36 chars."
+site.address5-too-long-detail = "The fifth line of the address must have fewer than 36 chars. See ICD001 v 1.2 Section 4.3.1 for more detail."
 site.bad-century-date = The century must be 19th 20th, or 21st.
 site.bad-comm-pref = The communications preference must be 00 or 02.
 site.bad-comm-pref-detail = The communications preference must be 00 or 02. Undocumented but enforced in schema.

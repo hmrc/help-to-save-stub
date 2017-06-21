@@ -18,7 +18,6 @@ package uk.gov.hmrc.helptosavestub
 
 object Constants {
   val NO_JSON_ERROR_CODE = "AAAA0002"                    //Unofficial
-  //val NO_CREATEACCOUNTKEY_ERROR_CODE = "AAAA0003"      //Unofficial
   val PRECANNED_RESPONSE_ERROR_CODE = "AAAA0004"         //Unofficial
   val UNABLE_TO_PARSE_COMMAND_ERROR_CODE = "AAAAA0005"   //Unofficial
   val FORENAME_TOO_FEW_CHARS_ERROR_CODE = "AAAA0006"     //Unofficial
@@ -26,7 +25,14 @@ object Constants {
   val SURNAME_TOO_FEW_CHARS_ERROR_CODE = "AAAA0008"      //Unofficial
   val SURNAME_TOO_MANY_CHARS_ERROR_CODE = "AAAA0009"     //Unofficial
   val BAD_DATE_TOO_EARLY_ERROR_CODE = "AAAA0010"         //Unofficial
-  val BAD_DATE_TOO_LATE_ERROR_CODE = "AAAA0011"         //Unofficial
+  val BAD_DATE_TOO_LATE_ERROR_CODE = "AAAA0011"          //Unofficial
+  val ADDRESS_ONE_TOO_SHORT_ERROR_CODE = "AAAA0012"      //Unofficial
+  val ADDRESS_ONE_TOO_LONG_ERROR_CODE = "AAAA0013"       //Unofficial
+  val ADDRESS_TWO_TOO_SHORT_ERROR_CODE = "AAAA0014"      //Unofficial
+  val ADDRESS_TWO_TOO_LONG_ERROR_CODE = "AAAA0015"       //Unofficial
+  val ADDRESS_THREE_TOO_LONG_ERROR_CODE = "AAAA0016"     //Unofficial
+  val ADDRESS_FOUR_TOO_LONG_ERROR_CODE = "AAAA0017"      //Unofficial
+  val ADDRESS_FIVE_TOO_LONG_ERROR_CODE = "AAAA0018"      //Unofficial
   val INVALID_POSTCODE_ERROR_CODE = "ZYRC0506"
   val LEADING_SPACES_ERROR_CODE = "ZYRA0703"
   val NUMERIC_CHARS_ERROR_CODE = "ZYRA0705"
@@ -42,6 +48,6 @@ object Constants {
   val BAD_CENTURY_DATE_ERROR_CODE = "CWDAT06"
   val UNKNOWN_COUNTRY_CODE_ERROR_CODE = "TAR10005"
   val BAD_NINO_ERROR_CODE = "ZYRC0508"
-  val BAD_COMM_PREF_ERROR_CODE = "AAAA0005"              //Unofficial
+  val BAD_COMM_PREF_ERROR_CODE = "AAAA0003"              //Unofficial
   val EMAIL_NEEDED_ERROR_CODE = "ZYMC0004"
 }
