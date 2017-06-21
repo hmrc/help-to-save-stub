@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import javax.inject.{Inject, Singleton}
 
@@ -76,8 +77,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private def hasSpecialInLastPlace(str: String): Boolean = """.*[&\.-]$""".r.pattern.matcher(str).matches
 
-  //private def hasInsufficientAlphaCharsAtStart(str: String) = !"^[a-zA-Z]{3}.*".r.pattern.matcher(str).matches
-
   private def hasInsufficientConsecutiveAlphaChars(str: String) = !"^.*[a-zA-Z]{4}.*".r.pattern.matcher(str).matches
 
   private def hasTooManyConsecutiveSpecialChars(str: String) = """^.*[&\.-]{2}.*""".r.pattern.matcher(str).matches
@@ -96,6 +95,14 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     } else {
       Some(date.substring(0, 4).toInt)
     }
+  }
+
+  private def before1800(date: String): Boolean = yearFromDate(date).fold(false) {_ < 1800}
+
+  private def futureDate(date: String): Boolean = {
+    val d = java.time.LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE)
+    val today = java.time.LocalDate.now()
+    d.isAfter(today)
   }
 
   private def monthFromDate(date: String): Option[Int] = {
@@ -157,7 +164,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
       case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
       case ca if hasDisallowedChars(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
-      //case ca if hasSpecialInFirstPlace(ca.forename) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
       case ca if hasTooManyConsecutiveSpecialChars(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
       case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
       case ca if ca.surname.size == 0 => Left(Error(SURNAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-surname", "site.too-few-chars-surname-detail"))
@@ -166,14 +172,11 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       case ca if hasDisallowedChars(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
       case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
       case ca if hasSpecialInLastPlace(ca.surname) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
-      //case ca if hasInsufficientAlphaCharsAtStart(ca.surname) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
-      //case ca if hasInsufficientConsecutiveAlphaChars(ca.surname) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
       case ca if hasTooManyConsecutiveSpecialChars(ca.surname) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
       case ca if invalidPostcode(ca.contactDetails.postcode) => Left(Error(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
       case ca if unparsableLocalDate(ca.dateOfBirth) => Left(Error(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
-      case ca if monthFromDate(ca.dateOfBirth).exists(_ > 12) => Left(Error(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
-      case ca if invalidDay(ca.dateOfBirth) => Left(Error(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
-      case ca if invalidCentury(ca.dateOfBirth) => Left(Error(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
+      case ca if before1800(ca.dateOfBirth) => Left(Error(BAD_DATE_TOO_EARLY_ERROR_CODE, "site.bad-date-too-early", "site.bad-date-too-early-detail"))
+      case ca if futureDate(ca.dateOfBirth) => Left(Error(BAD_DATE_TOO_LATE_ERROR_CODE, "site.bad-date-too-late", "site.bad-date-too-late-detail"))
       case ca if !ca.contactDetails.countryCode.exists(countryCodes.contains) => Left(Error(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
       case ca if invalidNino(ca.nino) => Left(Error(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
       case ca if invalidCommunicationPreference(ca.contactDetails.communicationPreference) => Left(Error(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
@@ -183,7 +186,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   }
 
   def processBody(request: Request[AnyContent]): Result = {
-    println(request.body.asJson)
     request.body.asJson match {
       case None => BadRequest(Json.toJson(errorJson(Error(NO_JSON_ERROR_CODE, "site.no-json", "site.no-json-detail"))))
 

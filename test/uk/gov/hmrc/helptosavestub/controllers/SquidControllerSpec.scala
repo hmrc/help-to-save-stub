@@ -781,6 +781,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
         case JsError(_) => fail
       }
     }
+
 //
 //    "if the stub is sent JSON with a surname with too few alphabetic characters at the begining, a bad request is returned with:" +
 //      "TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-surname and " +
@@ -892,10 +893,11 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent JSON with a numeric string of length 8 and the month is not between 01 and 12, an object is " +
-      "returned with code set to BAD_MONTH_DATE_ERROR_CODE, (CWFDAT04) " +
-      " the message site.bad-month-date, and the detail site.bad-month-date-detail" in {
-      val badJson = generateJsonWithDateOfBirth("20011305")
+    "if the stub is sent JSON with a numeric string of length 8 representing a date before 1st Jan 1800, an object is " +
+      "returned with code set to BAD_DATE_TOO_EARLY_ERROR_CODE, (AAAA0010) " +
+      " the message site.bad-date-too-early, and the detail site.bad-too-early-detail" in {
+      val badJson = generateJsonWithDateOfBirth("17991231")
+
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -904,19 +906,28 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
         case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe BAD_MONTH_DATE_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.bad-month-date"))
-          w.error.errorMessage shouldBe messagesApi("site.bad-month-date")
-          assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.bad-month-date-detail")
+          w.error.errorMessageId shouldBe BAD_DATE_TOO_EARLY_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-date-too-early"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-date-too-early")
+          assert(messagesApi.isDefinedAt("site.bad-date-too-early-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-date-too-early-detail")
         case JsError(_) => fail
       }
     }
 
-    "if the stub is sent JSON with a numeric string of length 8 and the day is not valid for the date and year, an object is " +
-      "returned with code set to BAD_DAY_DATE_ERROR_CODE, (CWFDAT03) " +
-      " the message site.bad-day-date, and the detail site.bad-day-date-detail" in {
-      val badJson = generateJsonWithDateOfBirth("20020229")
+    "if the stub is sent JSON with a numeric string of length 8 representing a date in the future, an object is " +
+      "returned with code set to BAD_DATE_TOO_LATE_ERROR_CODE, (AAAA0011) " +
+      " the message site.bad-date-too-late, and the detail site.bad-too-late-detail" in {
+
+      val today = java.time.LocalDate.now()
+      val tomorrow = today.plus(1, java.time.temporal.ChronoUnit.DAYS)
+      val year = tomorrow.getYear
+      val month = tomorrow.getMonthValue
+      val monthStr = if (month < 10) "0" + month else month
+      val day = tomorrow.getDayOfMonth
+      val dayStr = if (day < 10) "0" + day else day
+      val badJson = generateJsonWithDateOfBirth(s"$year$monthStr$dayStr")
+
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -925,32 +936,11 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
         case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe BAD_DAY_DATE_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.bad-day-date"))
-          w.error.errorMessage shouldBe messagesApi("site.bad-day-date")
-          assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.bad-day-date-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a numeric string of but the century is before 1800 or after 2099, an object is " +
-      "returned with code set to BAD_DAY_CENTURY_ERROR_CODE, (CWFDAT06) " +
-      " the message site.bad-century-date, and the detail site.bad-century-date-detail" in {
-      val badJson = generateJsonWithDateOfBirth("21050215")
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe BAD_CENTURY_DATE_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.bad-century-date"))
-          w.error.errorMessage shouldBe messagesApi("site.bad-century-date")
-          assert(messagesApi.isDefinedAt("site.bad-century-date-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.bad-century-date-detail")
+          w.error.errorMessageId shouldBe BAD_DATE_TOO_LATE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-date-too-late"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-date-too-late")
+          assert(messagesApi.isDefinedAt("site.bad-date-too-late-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-date-too-late-detail")
         case JsError(_) => fail
       }
     }
