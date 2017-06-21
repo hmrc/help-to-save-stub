@@ -136,6 +136,12 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     Json.toJson(goodAccount copy (contactDetails = cd))
   }
 
+  private def generateJsonWithPhoneNumber(p: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (phoneNumber = Some(p))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+
   private val fakeRequest = FakeRequest().withJsonBody(Json.toJson(goodAccount)).withHeaders((CONTENT_TYPE, "application/json"))
 
   private def makeFakeRequest(json: JsValue) = FakeRequest().withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
@@ -1149,6 +1155,27 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
           w.error.errorMessage shouldBe messagesApi("site.address5-too-long")
           assert(messagesApi.isDefinedAt("site.address5-too-long-detail"))
           w.error.errorDetail shouldBe messagesApi("site.address5-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an phone number with a string longer than 15 then an object is returned" +
+      "with a code PHONE_NUMBER_TOO_LONG_ERROR_CODE (AAAA0019) and" +
+      "the message site.phone-number-too-long, and the detail site.phone-number-too-long-detail" in {
+      val badJson = generateJsonWithPhoneNumber("A" * 16)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PHONE_NUMBER_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.phone-number-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.phone-number-too-long")
+          assert(messagesApi.isDefinedAt("site.phone-number-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.phone-number-too-long-detail")
         case JsError(_) => fail
       }
     }

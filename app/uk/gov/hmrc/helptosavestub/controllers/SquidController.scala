@@ -188,6 +188,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       case ca if ca.contactDetails.address3.getOrElse("").length > 35 => Left(Error(ADDRESS_THREE_TOO_LONG_ERROR_CODE, "site.address3-too-long", "site.address3-too-long-detail"))
       case ca if ca.contactDetails.address4.getOrElse("").length > 35 => Left(Error(ADDRESS_FOUR_TOO_LONG_ERROR_CODE, "site.address4-too-long", "site.address4-too-long-detail"))
       case ca if ca.contactDetails.address5.getOrElse("").length > 35 => Left(Error(ADDRESS_FIVE_TOO_LONG_ERROR_CODE, "site.address5-too-long", "site.address5-too-long-detail"))
+      case ca if ca.contactDetails.phoneNumber.getOrElse("").length > 15 => Left(Error(PHONE_NUMBER_TOO_LONG_ERROR_CODE, "site.phone-number-too-long", "site.phone-number-too-long-detail"))
       case _ => Right(createAccount)
     }
   }
