@@ -76,7 +76,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private def hasSpecialInLastPlace(str: String): Boolean = """.*[&\.-]$""".r.pattern.matcher(str).matches
 
-  private def hasInsufficientAlphaCharsAtStart(str: String) = !"^[a-zA-Z]{3}.*".r.pattern.matcher(str).matches
+  //private def hasInsufficientAlphaCharsAtStart(str: String) = !"^[a-zA-Z]{3}.*".r.pattern.matcher(str).matches
 
   private def hasInsufficientConsecutiveAlphaChars(str: String) = !"^.*[a-zA-Z]{4}.*".r.pattern.matcher(str).matches
 
@@ -152,21 +152,22 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   private def validateCreateAccount(createAccount: AccountCommand): Either[Error, AccountCommand] = {
     logger.info(createAccount.toString())
     createAccount match {
+      case ca if ca.forename.size == 0 => Left(Error(FORENAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-forename", "site.too-few-chars-forename-detail"))
+      case ca if ca.forename.size > 26 => Left(Error(FORENAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-forename", "site.too-many-chars-forename-detail"))
       case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
       case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
       case ca if hasDisallowedChars(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
-      case ca if hasSpecialInFirstPlace(ca.forename) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
-      case ca if hasSpecialInLastPlace(ca.forename) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-forename", "site.last-char-special-forename-detail"))
-      case ca if hasInsufficientAlphaCharsAtStart(ca.forename) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-forename", "site.too-few-initial-alpha-forename-detail"))
-      case ca if hasInsufficientConsecutiveAlphaChars(ca.forename) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-forename", "site.too-few-consecutive-alpha-forename-detail"))
+      //case ca if hasSpecialInFirstPlace(ca.forename) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
       case ca if hasTooManyConsecutiveSpecialChars(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
       case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
+      case ca if ca.surname.size == 0 => Left(Error(SURNAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-surname", "site.too-few-chars-surname-detail"))
+      case ca if ca.surname.size > 300 => Left(Error(SURNAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-surname", "site.too-many-chars-surname-detail"))
       case ca if hasNumericChars(ca.surname) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
       case ca if hasDisallowedChars(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
       case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
       case ca if hasSpecialInLastPlace(ca.surname) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
-      case ca if hasInsufficientAlphaCharsAtStart(ca.surname) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
-      case ca if hasInsufficientConsecutiveAlphaChars(ca.surname) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
+      //case ca if hasInsufficientAlphaCharsAtStart(ca.surname) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
+      //case ca if hasInsufficientConsecutiveAlphaChars(ca.surname) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
       case ca if hasTooManyConsecutiveSpecialChars(ca.surname) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
       case ca if invalidPostcode(ca.contactDetails.postcode) => Left(Error(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
       case ca if unparsableLocalDate(ca.dateOfBirth) => Left(Error(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))

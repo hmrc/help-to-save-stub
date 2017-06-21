@@ -18,9 +18,13 @@ package uk.gov.hmrc.helptosavestub
 
 object Constants {
   val NO_JSON_ERROR_CODE = "AAAA0002"                    //Unofficial
-  //val NO_CREATEACCOUNTKEY_ERROR_CODE = "AAAA0003"        //Unofficial
+  //val NO_CREATEACCOUNTKEY_ERROR_CODE = "AAAA0003"      //Unofficial
   val PRECANNED_RESPONSE_ERROR_CODE = "AAAA0004"         //Unofficial
-  val UNABLE_TO_PARSE_COMMAND_ERROR_CODE = "AAAAA0005"
+  val UNABLE_TO_PARSE_COMMAND_ERROR_CODE = "AAAAA0005"   //Unofficial
+  val FORENAME_TOO_FEW_CHARS_ERROR_CODE = "AAAA0006"     //Unofficial
+  val FORENAME_TOO_MANY_CHARS_ERROR_CODE = "AAAA0007"    //Unofficial
+  val SURNAME_TOO_FEW_CHARS_ERROR_CODE = "AAAA0008"      //Unofficial
+  val SURNAME_TOO_MANY_CHARS_ERROR_CODE = "AAAA0009"     //Unofficial
   val INVALID_POSTCODE_ERROR_CODE = "ZYRC0506"
   val LEADING_SPACES_ERROR_CODE = "ZYRA0703"
   val NUMERIC_CHARS_ERROR_CODE = "ZYRA0705"

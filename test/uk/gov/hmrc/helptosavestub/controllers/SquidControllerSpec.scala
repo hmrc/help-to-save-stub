@@ -484,6 +484,52 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
+    "if the stub is sent JSON with a forename with zero characters, a bad request is returned with:" +
+      "FFORENAME_TOO_FEW_CHARS_ERROR_CODE (AAAA0006) as the error code and site.too-few-chars-forename and " +
+      "site.too-few-chars-forename-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithForename("")
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe FORENAME_TOO_FEW_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-chars-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-chars-forename")
+          assert(messagesApi.isDefinedAt("site.too-few-chars-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-chars-forename-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent JSON with a forename with more than 26 characters, a bad request is returned with:" +
+      "FFORENAME_TOO_MANY_CHARS_ERROR_CODE (AAAA0007) as the error code and site.too-many-chars-forename and " +
+      "site.too-many-chars-forename-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithForename("A" * 27)
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe FORENAME_TOO_MANY_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-many-chars-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.too-many-chars-forename")
+          assert(messagesApi.isDefinedAt("site.too-many-chars-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-many-chars-forename-detail")
+        case JsError(_) => fail
+      }
+    }
+
     "if the stub is sent JSON with a forename with leading spaces, a bad request is returned with:" +
       "LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-forename and " +
       "site.leading-spaces-forename-detail are returned in the error JSON" +
@@ -553,98 +599,6 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent JSON with a forename with disallowed special characters in the first position, a bad request is returned with:" +
-      "FIRST_CHAR_SPECIAL_ERROR_CODE (ZYRA0712) as the error code and site.first-char-special-forename and " +
-      "site.first-char-special-forename-detail are returned in the error JSON" +
-      "and the appropriate message" in {
-      val badJson = generateJsonWithForename("&Donald")
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe FIRST_CHAR_SPECIAL_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.first-char-special-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.first-char-special-forename")
-          assert(messagesApi.isDefinedAt("site.first-char-special-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.first-char-special-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a forename with disallowed special characters in the last position, a bad request is returned with:" +
-      "LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
-      "site.first-char-special-forename-detail are returned in the error JSON" +
-      "and the appropriate message" in {
-      val badJson = generateJsonWithForename("Donald-")
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe LAST_CHAR_SPECIAL_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.last-char-special-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.last-char-special-forename")
-          assert(messagesApi.isDefinedAt("site.last-char-special-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.last-char-special-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a forename with too few alphabetic characters at the begining, a bad request is returned with:" +
-      "TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-forename and " +
-      "site.too-few-initial-alpha-forename-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 3
-      val badJson = generateJsonWithForename("D&&onald")
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-forename")
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a forename with too few consecutive alphabetic characters, a bad request is returned with:" +
-      "TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE (ZYRA0715) as the error code and site.too-few-consecutive-alpha-forename and " +
-      "site.too-few-consecutive-alpha-forename-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 4
-      val badJson = generateJsonWithForename("Don&l")
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-forename")
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
     "if the stub is sent JSON with a forename with too many consecutive special characters, a bad request is returned with:" +
       "TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE (ZYRA0716) as the error code and site.too-many-consecutive-special-forename and " +
       "site.too-many-consecutive-special-forename-detail are returned in the error JSON and the appropriate message." in {
@@ -664,6 +618,52 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
           w.error.errorMessage shouldBe messagesApi("site.too-many-consecutive-special-forename")
           assert(messagesApi.isDefinedAt("site.too-many-consecutive-special-forename-detail"))
           w.error.errorDetail shouldBe messagesApi("site.too-many-consecutive-special-forename-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent JSON with a surname with zero characters, a bad request is returned with:" +
+      "SURNAME_TOO_FEW_CHARS_ERROR_CODE (AAAA0008) as the error code and site.too-few-chars-surname and " +
+      "site.too-few-chars-surname-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithSurname("")
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe SURNAME_TOO_FEW_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-chars-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-chars-surname")
+          assert(messagesApi.isDefinedAt("site.too-few-chars-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-chars-surname-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent JSON with a forename with more than 300 characters, a bad request is returned with:" +
+      "SURNAME_TOO_MANY_CHARS_ERROR_CODE (AAAA0009) as the error code and site.too-many-chars-surname and " +
+      "site.too-many-chars-surname-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithSurname("A" * 301)
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe SURNAME_TOO_MANY_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-many-chars-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.too-many-chars-surname")
+          assert(messagesApi.isDefinedAt("site.too-many-chars-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-many-chars-surname-detail")
         case JsError(_) => fail
       }
     }
@@ -781,52 +781,52 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
         case JsError(_) => fail
       }
     }
-
-    "if the stub is sent JSON with a surname with too few alphabetic characters at the begining, a bad request is returned with:" +
-      "TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-surname and " +
-      "site.too-few-initial-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 3
-      val badJson = generateJsonWithSurname("D&&uckchesky")
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-surname")
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-surname-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a surname with too few consecutive alphabetic characters, a bad request is returned with:" +
-      "TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE (ZYRA0715) as the error code and site.too-few-consecutive-alpha-surname and " +
-      "site.too-few-consecutive-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 4
-      val badJson = generateJsonWithSurname("Don&ch")
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-surname")
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-surname-detail")
-        case JsError(_) => fail
-      }
-    }
+//
+//    "if the stub is sent JSON with a surname with too few alphabetic characters at the begining, a bad request is returned with:" +
+//      "TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-surname and " +
+//      "site.too-few-initial-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
+//      //TODO: Find out what this number should actually be - initially setting it to 3
+//      val badJson = generateJsonWithSurname("D&&uckchesky")
+//
+//      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+//
+//      val result = squidController.createAccount()(fakeRequestWithBadContent)
+//      status(result) shouldBe Status.BAD_REQUEST
+//
+//      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+//      wrapper match {
+//        case JsSuccess(w, _) =>
+//          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
+//          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname"))
+//          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-surname")
+//          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname-detail"))
+//          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-surname-detail")
+//        case JsError(_) => fail
+//      }
+//    }
+//
+//    "if the stub is sent JSON with a surname with too few consecutive alphabetic characters, a bad request is returned with:" +
+//      "TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE (ZYRA0715) as the error code and site.too-few-consecutive-alpha-surname and " +
+//      "site.too-few-consecutive-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
+//      //TODO: Find out what this number should actually be - initially setting it to 4
+//      val badJson = generateJsonWithSurname("Don&ch")
+//
+//      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+//
+//      val result = squidController.createAccount()(fakeRequestWithBadContent)
+//      status(result) shouldBe Status.BAD_REQUEST
+//
+//      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+//      wrapper match {
+//        case JsSuccess(w, _) =>
+//          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
+//          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname"))
+//          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-surname")
+//          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname-detail"))
+//          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-surname-detail")
+//        case JsError(_) => fail
+//      }
+//    }
 
     "if the stub is sent JSON with a surname with too many consecutive special characters, a bad request is returned with:" +
       "TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE (ZYRA0716) as the error code and site.too-many-consecutive-special-surname and " +
