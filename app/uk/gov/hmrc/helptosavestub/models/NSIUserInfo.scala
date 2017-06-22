@@ -50,7 +50,7 @@ case class NSIUserInfo (forename: String,
       ).map { case _ ⇒ this }
 
 
-  private val allowedNameSpecialCharacters = List('-', '&', '.')
+  private val allowedNameSpecialCharacters = List('-', '&', '.', ''')
 
   private def forenameValidation(name: String): ValidatedNel[String, String] = {
     val characterCountUpperBoundCheck = validatedFromBoolean(name)(_.length <= 26, s"forename was larger than 26 characters")
