@@ -139,11 +139,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     }
   }
 
-  private def invalidCentury(date: String): Boolean = {
-    val yearNumber = yearFromDate(date)
-    yearNumber.fold(false) { year => year < 1800 || year > 2099 }
-  }
-
   private def invalidNino(nino: String): Boolean = {
     !ninoRegex.pattern.matcher(nino).matches()
   }
@@ -154,6 +149,10 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private def emailRequired(pref: String, emailAddress: Option[String]) = {
     pref == "02" && emailAddress.isEmpty
+  }
+
+  private def invalidEmail(email: String): Boolean = {
+    !".{1,64}@.{1,252}".r.pattern.matcher(email).matches()
   }
 
   private def validateCreateAccount(createAccount: AccountCommand): Either[Error, AccountCommand] = {
@@ -189,6 +188,8 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       case ca if ca.contactDetails.address4.getOrElse("").length > 35 => Left(Error(ADDRESS_FOUR_TOO_LONG_ERROR_CODE, "site.address4-too-long", "site.address4-too-long-detail"))
       case ca if ca.contactDetails.address5.getOrElse("").length > 35 => Left(Error(ADDRESS_FIVE_TOO_LONG_ERROR_CODE, "site.address5-too-long", "site.address5-too-long-detail"))
       case ca if ca.contactDetails.phoneNumber.getOrElse("").length > 15 => Left(Error(PHONE_NUMBER_TOO_LONG_ERROR_CODE, "site.phone-number-too-long", "site.phone-number-too-long-detail"))
+      case ca if ca.contactDetails.email.getOrElse("").length > 254 => Left(Error(EMAIL_ADDRESS_TOO_LONG_ERROR_CODE, "site.email-address-too-long", "site.email-address-too-long-detail"))
+      case ca if invalidEmail(ca.contactDetails.email.getOrElse("")) => Left(Error(EMAIL_ADDRESS_INVALID_ERROR_CODE, "site.email-address-invalid", "site.email-address-invalid-detail"))
       case _ => Right(createAccount)
     }
   }

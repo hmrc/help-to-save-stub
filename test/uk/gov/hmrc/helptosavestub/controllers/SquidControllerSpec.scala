@@ -141,6 +141,10 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     Json.toJson(goodAccount copy (contactDetails = cd))
   }
 
+  private def generateJsonWithEmailAddress(e: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (email = Some(e))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
 
   private val fakeRequest = FakeRequest().withJsonBody(Json.toJson(goodAccount)).withHeaders((CONTENT_TYPE, "application/json"))
 
@@ -1176,6 +1180,48 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
           w.error.errorMessage shouldBe messagesApi("site.phone-number-too-long")
           assert(messagesApi.isDefinedAt("site.phone-number-too-long-detail"))
           w.error.errorDetail shouldBe messagesApi("site.phone-number-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an email address with a string longer than 254 then an object is returned" +
+      "with a code EMAIL_ADDRESS_TOO_LONG_ERROR_CODE (AAAA0020) and" +
+      "the message site.email-address-too-long, and the detail site.email-address-too-long-detail" in {
+      val badJson = generateJsonWithEmailAddress(("A" * 64) + "@" + ("A" * 252))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe EMAIL_ADDRESS_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.email-address-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.email-address-too-long")
+          assert(messagesApi.isDefinedAt("site.email-address-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.email-address-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an email address with a string that doesn't match the validation expression then an object is returned" +
+      "with a code EMAIL_ADDRESS_INVALID_ERROR_CODE (AAAA0021) and" +
+      "the message site.email-address-invalid, and the detail site.email-address-invalid-detail" in {
+      val badJson = generateJsonWithEmailAddress(("A" * 65) + "@" + ("A" * 100))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe EMAIL_ADDRESS_INVALID_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.email-address-invalid"))
+          w.error.errorMessage shouldBe messagesApi("site.email-address-invalid")
+          assert(messagesApi.isDefinedAt("site.email-address-invalid-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.email-address-invalid-detail")
         case JsError(_) => fail
       }
     }
