@@ -702,6 +702,15 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
+    "allow surnames with apostrophes in them" in {
+      val goodJson = generateJsonWithSurname("O'Connor")
+
+      def fakeRequestWithBadContent = makeFakeRequest(goodJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.CREATED
+    }
+
     "if the stub is sent JSON with a surname with leading spaces, a bad request is returned with:" +
       "LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-surname and " +
       "site.leading-spaces-surname-detail are returned in the error JSON" +
@@ -797,7 +806,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
       "site.first-char-special-forename-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJsonWithSurname("Duckchesky-")
+      val badJson = generateJsonWithSurname("Du'ck.chesky-")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
