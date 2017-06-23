@@ -91,7 +91,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     !"""^\d{8}$""".r.pattern.matcher(str).matches()
   }
 
-  private def yearFromDate(date: String): Option[Int] = {
+  private[controllers] def yearFromDate(date: String): Option[Int] = {
     if (unparsableLocalDate(date)) {
       None
     } else {
@@ -99,7 +99,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     }
   }
 
-  private def before1800(date: String): Boolean = yearFromDate(date).fold(false) {_ < 1800}
+  private[controllers] def before1800(date: String): Boolean = yearFromDate(date).fold(false) {_ < 1800}
 
   private def futureDate(date: String): Boolean = {
     val d = java.time.LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE)

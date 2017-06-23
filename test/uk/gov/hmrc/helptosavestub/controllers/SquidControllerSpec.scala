@@ -1234,5 +1234,15 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
         case JsError(_) => fail
       }
     }
+
+    "Year from date function must return None when given an unparsable date" in {
+      val result = squidController.yearFromDate("Not a valid date")
+      result shouldBe None
+    }
+
+    "before1800 function must return false when given an unparsable date" in {
+      val result = squidController.before1800("Not a valid date")
+      result shouldBe false
+    }
   }
 }
