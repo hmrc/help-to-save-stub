@@ -107,40 +107,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     d.isAfter(today)
   }
 
-  private def monthFromDate(date: String): Option[Int] = {
-    if (unparsableLocalDate(date)) {
-      None
-    } else {
-      Some(date.substring(4, 6).toInt)
-    }
-  }
-
-  private def dayFromDate(date: String): Option[Int] = {
-    if (unparsableLocalDate(date)) {
-      None
-    } else {
-      Some(date.substring(6, 8).toInt)
-    }
-  }
-
-  private def invalidDay(date: String): Boolean = {
-    val dayNumber = dayFromDate(date)
-    val monthNumber = monthFromDate(date)
-    val yearNumber = yearFromDate(date)
-
-    if (dayNumber.isDefined && monthNumber.isDefined && yearNumber.isDefined) {
-      val day = dayNumber.getOrElse(0)
-      val month = monthNumber.getOrElse(0)
-      val year = yearNumber.getOrElse(0)
-      val firstDayOfMonthDate = java.time.LocalDate.of(year, month, 1)
-      val lastDayOfMonthDate = firstDayOfMonthDate.`with`(TemporalAdjusters.lastDayOfMonth())
-      val lastDay = lastDayOfMonthDate
-      day < 1 || day > lastDay.getDayOfMonth
-    } else {
-      true
-    }
-  }
-
   private def invalidNino(nino: String): Boolean = {
     !ninoRegex.pattern.matcher(nino).matches()
   }
