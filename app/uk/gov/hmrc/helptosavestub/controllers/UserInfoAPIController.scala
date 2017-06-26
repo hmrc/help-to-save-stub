@@ -54,18 +54,27 @@ class UserInfoAPIController extends BaseController {
 
   def getUserInfo = Action { implicit request ⇒
     Logger.info("Received request to get user info")
-    request.headers.toSimpleMap.get("Authorization").map(_.stripPrefix("Bearer ")).fold{
-      val message = "Could not find 'Authorization' in header"
-      Logger.error(message)
-      Unauthorized(message)
-  }{ token ⇒
-      userInfoGen.seeded(token).fold(
-        InternalServerError("Could not generate user info")
-      ){info ⇒
-        Logger.info(s"Returning $info to request")
-        Ok(Json.toJson(info))
+
+    val headers = request.headers.toSimpleMap
+    val validAuthorisationHeaderKeys = List("Authorization1", "Authorization")
+
+    validAuthorisationHeaderKeys
+      .map(headers.get)
+      .find(_.nonEmpty)
+      .flatten
+      .map(_.stripPrefix("Bearer "))
+      .fold {
+        val message = "Could not find Authorization in header"
+        Logger.error(message)
+        Unauthorized(message)
+      } { token ⇒
+        userInfoGen.seeded(token).fold(
+          InternalServerError("Could not generate user info")
+        ) { info ⇒
+          Logger.info(s"Returning $info to request")
+          Ok(Json.toJson(info))
+        }
       }
-    }
   }
 
 
@@ -85,13 +94,13 @@ object UserInfoAPIController {
                        state: String)
 
   case class UserInfo(given_name: Option[String],
-                                   family_name: Option[String],
-                                   middle_name: Option[String],
-                                   address: Option[Address],
-                                   birthdate: Option[LocalDate],
-                                   uk_gov_nino: Option[String],
-                                   hmrc_enrolments: Option[Seq[Enrolment]],
-                                   email: Option[String])
+                      family_name: Option[String],
+                      middle_name: Option[String],
+                      address: Option[Address],
+                      birthdate: Option[LocalDate],
+                      uk_gov_nino: Option[String],
+                      hmrc_enrolments: Option[Seq[Enrolment]],
+                      email: Option[String])
 
 
   implicit val addressFormat: Format[Address] = Json.format[Address]
