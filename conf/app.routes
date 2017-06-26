@@ -11,3 +11,5 @@ POST       /squid/create-account                      @uk.gov.hmrc.helptosavestu
 
 GET        /oauth/authorize                           @uk.gov.hmrc.helptosavestub.controllers.OAuthController.getAuthorisationCode(client_id: String, scope: List[String], response_type: String, redirect_uri: String)
 POST       /oauth/token                               @uk.gov.hmrc.helptosavestub.controllers.OAuthController.createOrRefreshToken
+
+GET        /user-info-api                               @uk.gov.hmrc.helptosavestub.controllers.UserInfoAPIController.getUserInfo
