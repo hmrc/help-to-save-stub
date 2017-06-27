@@ -23,7 +23,9 @@ import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import play.api.test._
 import uk.gov.hmrc.helptosavestub.Constants._
+import uk.gov.hmrc.helptosavestub.models.SquidModels.{AccountCommand, ContactDetails}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
+
 import scala.concurrent.Future
 
 object SquidControllerSpec {
@@ -51,34 +53,100 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
 
   private val noCAKeyJson = Json.toJson(noCAKeyMap)
 
-  private val goodCreateAccountMap: Map[String, String] =
-    Map("forename" -> "Donald",
-      "surname" -> "Duck",
-      "address1" -> "1",
-      "address2" -> "Test Street 2",
-      "address3" -> "Test Place 3",
-      "address4" -> "Test Place 4",
-      "address5" -> "Test Place 5",
-      "postcode" -> "GIR 0AA",
-      "countryCode" -> "GB",
-      "NINO" -> "WM123456C",
-      "birthDate" -> "19920509",
-      "communicationPreference" -> "02",
-      "phoneNumber" -> "+44111 111 111",
-      "emailAddress" -> "dduck@email.com",
-      "registrationChannel" -> "online")
+  private val goodAccount = {
+    val contactDetails = ContactDetails(
+      "1",
+      "Test Street 2",
+      Some("Test Place 3"),
+      Some("Test Place 4"),
+      Some("Test Place 5"),
+      "GIR 0AA", Some("GB"),
+      Some("dduck@email.com"),
+      Some("+44111 111 111"),
+     "02")
+
+    AccountCommand("Donald",
+      "Duck",
+      "19920509",
+      "WM123456C",
+      contactDetails,
+      "online")
+  }
 
   private val squidController = new SquidController(messagesApi)
 
-  private def generateJson(variants: Seq[(String, String)] = Seq()): JsValue = {
-    Json.toJson(Map("createAccount" -> (goodCreateAccountMap ++ variants)))
+  private def generateJsonWithNino(n: String): JsValue = {
+    Json.toJson(goodAccount copy (nino = n))
   }
 
-  private def generateJsonFromMap(m: Map[String, String]): JsValue = {
-    Json.toJson(Map("createAccount" -> m))
+  private def generateJsonWithForename(f: String): JsValue = {
+    Json.toJson(goodAccount copy (forename = f))
   }
 
-  private val fakeRequest = FakeRequest().withJsonBody(generateJson()).withHeaders((CONTENT_TYPE, "application/json"))
+  private def generateJsonWithSurname(s: String): JsValue = {
+    Json.toJson(goodAccount copy (surname = s))
+  }
+
+  private def generateJsonWithDateOfBirth(b: String): JsValue = {
+    Json.toJson(goodAccount copy (dateOfBirth = b))
+  }
+
+  private def generateJsonWithPostcode(p: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (postcode = p)
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithCountryCode(cc: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (countryCode = Some(cc))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithCommsPreference(cp: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (communicationPreference = cp)
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithNoEmail(): JsValue = {
+    val cd = goodAccount.contactDetails copy (email = None)
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress1(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address1 = a)
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress2(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address2 = a)
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress3(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address3 = Some(a))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress4(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address4 = Some(a))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithAddress5(a: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (address5 = Some(a))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithPhoneNumber(p: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (phoneNumber = Some(p))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private def generateJsonWithEmailAddress(e: String): JsValue = {
+    val cd = goodAccount.contactDetails copy (email = Some(e))
+    Json.toJson(goodAccount copy (contactDetails = cd))
+  }
+
+  private val fakeRequest = FakeRequest().withJsonBody(Json.toJson(goodAccount)).withHeaders((CONTENT_TYPE, "application/json"))
 
   private def makeFakeRequest(json: JsValue) = FakeRequest().withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
 
@@ -146,38 +214,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that does not contain a createAccount key at the top level it should Return a 400" in {
-      def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-      val result = new SquidController(messagesApi).createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-    }
-
-    "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
-      "object in the response with the Error message set to message site.no-create-account-key" in {
-      def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-      val result: Future[Result] = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result)
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) => w.error.errorMessage shouldBe messagesApi("site.no-create-account-key")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent with JSon that does not contain a createAccount key at the top level it should have an Error " +
-      "object in the response with the Error detail set to message site.no-create-account-key-detail" in {
-      def fakeRequestWithBadContent = makeFakeRequest(noCAKeyJson)
-      val result: Future[Result] = squidController.createAccount()(fakeRequestWithBadContent)
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) => w.error.errorDetail shouldBe messagesApi("site.no-create-account-key-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER400NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER400NNNL (where N is" +
       "number and L is letter, generate a bad request" in {
-      val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER400456M")))
+      val jsonBeginningWithER400 = generateJsonWithNino("ER400456M")
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER400)
 
@@ -195,9 +234,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER401NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER401NNNL (where N is" +
       "number and L is letter, generate an Unauthorized" in {
-      val jsonBeginningWithER400 = generateJson(Seq(("NINO", "ER401456M")))
+      val jsonBeginningWithER400 = generateJsonWithNino("ER401456M")
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER400)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -214,9 +253,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER403NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER403NNNL (where N is" +
       "number and L is letter, generate an Unauthorized" in {
-      val jsonBeginningWithER403 = generateJson(Seq(("NINO", "ER403456M")))
+      val jsonBeginningWithER403 = generateJsonWithNino("ER403456M")
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER403)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -234,9 +273,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER404NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER404NNNL (where N is" +
       "number and L is letter, generate an Not Found" in {
-      val jsonBeginningWithER404 = generateJson(Seq(("NINO", "ER404456M")))
+      val jsonBeginningWithER404 = generateJsonWithNino("ER404456M")
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER404)
 
@@ -255,9 +294,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER405NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER405NNNL (where N is" +
       "number and L is letter, generate an Method Not Allowed" in {
-      val jsonBeginningWithER405 = generateJson(Seq(("NINO", "ER405456M")))
+      val jsonBeginningWithER405 = generateJsonWithNino("ER405456M")
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER405)
 
@@ -275,9 +314,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER415NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER415NNNL (where N is" +
       "number and L is letter, generate an Unsupported Media Type" in {
-      val jsonBeginningWithER415 = generateJson(Seq(("NINO", "ER415456M")))
+      val jsonBeginningWithER415 = generateJsonWithNino("ER415456M")
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER415)
 
@@ -295,9 +334,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER500NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER500NNNL (where N is" +
       "number and L is letter, generate an Internal Server Error" in {
-      val jsonBeginningWithER500 = generateJson(Seq(("NINO", "ER500456M")))
+      val jsonBeginningWithER500 = generateJsonWithNino("ER500456M")
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER500)
 
@@ -315,9 +354,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent with JSon that contains a good createAccount command and has a NINO matching ER503NNNL (where N is" +
+    "if the stub is sent with JSon that contains a NINO matching ER503NNNL (where N is" +
       "number and L is letter, generate an Service Unavailable" in {
-      val jsonBeginningWithER503 = generateJson(Seq(("NINO", "ER503456M")))
+      val jsonBeginningWithER503 = generateJsonWithNino("ER503456M")
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonBeginningWithER503)
 
@@ -335,21 +374,8 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent some good JSON that can not be parsed into a CreateAccount case class then return an" +
-      " UNABLE_TO_PARSE_COMMAND_ERROR_CODE error code" in {
-      val mapWithoutForename = goodCreateAccountMap - "forename"
-
-      def fakeRequest = makeFakeRequest(generateJsonFromMap(mapWithoutForename))
-
-      val result = squidController.createAccount()(fakeRequest)
-      status(result) shouldBe Status.BAD_REQUEST
-      val json: JsValue = contentAsJson(result)
-      val errorMessageId = (json \ "error" \ "errorMessageId").get.asOpt[String]
-      errorMessageId shouldBe Some(UNABLE_TO_PARSE_COMMAND_ERROR_CODE)
-    }
-
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 1)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "GIR 0AA")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("GIR 0AA")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -358,7 +384,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 2)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "P09 WW")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("P09 WW")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -367,7 +393,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 3)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "U009 DD")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("U009 DD")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -376,7 +402,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 4)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB99 HH")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BB99 HH")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -385,7 +411,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 5)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB990 HH")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BB990 HH")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -394,7 +420,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 6)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB9E9 HH")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BB9E9 HH")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -403,7 +429,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 7)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BB9E9 HH")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BB9E9 HH")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -412,7 +438,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 8)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "Z1 ZZ")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("Z1 ZZ")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -421,7 +447,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 9)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "AA1 ZZ")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("AA1 ZZ")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -430,7 +456,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 10)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "ZZZ1 ZZ")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("ZZZ1 ZZ")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -439,7 +465,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 11)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "ZZZZ1 ZZ")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("ZZZZ1 ZZ")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -448,7 +474,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 12)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 9")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BFPO 9")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -457,7 +483,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 13)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 99")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BFPO 99")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -466,7 +492,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 14)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 999")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BFPO 999")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -475,7 +501,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "if the stub is sent JSON with a valid postcode a 200 is returned (Appendix A row 15)" in {
-      val jsonWithGoodPostcode = generateJson(Seq(("postcode", "BFPO 9999")))
+      val jsonWithGoodPostcode = generateJsonWithPostcode("BFPO 9999")
 
       def fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
 
@@ -485,19 +511,56 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
 
     "The following real postcodes should all pass:" in {
       for (pc <- Seq("BFPO 9999", "BN44 1ST", "E98 1SN", "EH99 1SP", "BS98 1TL")) {
-        var jsonWithGoodPostcode = generateJson(Seq(("postcode", pc)))
+        var jsonWithGoodPostcode = generateJsonWithPostcode(pc)
         var fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
         var result = squidController.createAccount()(fakeRequest)
         status(result) shouldBe Status.CREATED
       }
     }
 
-    "None of the following strings are postcodes" in {
-      for (pc <- Seq("wibble", "DOG", "bn44 3dh", "Q99 MM")) {
-        var jsonWithGoodPostcode = generateJson(Seq(("postcode", pc)))
-        var fakeRequest = makeFakeRequest(jsonWithGoodPostcode)
-        var result = squidController.createAccount()(fakeRequest)
-        status(result) shouldBe Status.BAD_REQUEST
+    "if the stub is sent JSON with a forename with zero characters, a bad request is returned with:" +
+      "FFORENAME_TOO_FEW_CHARS_ERROR_CODE (AAAA0006) as the error code and site.too-few-chars-forename and " +
+      "site.too-few-chars-forename-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithForename("")
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe FORENAME_TOO_FEW_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-chars-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-chars-forename")
+          assert(messagesApi.isDefinedAt("site.too-few-chars-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-chars-forename-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent JSON with a forename with more than 26 characters, a bad request is returned with:" +
+      "FFORENAME_TOO_MANY_CHARS_ERROR_CODE (AAAA0007) as the error code and site.too-many-chars-forename and " +
+      "site.too-many-chars-forename-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithForename("A" * 27)
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe FORENAME_TOO_MANY_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-many-chars-forename"))
+          w.error.errorMessage shouldBe messagesApi("site.too-many-chars-forename")
+          assert(messagesApi.isDefinedAt("site.too-many-chars-forename-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-many-chars-forename-detail")
+        case JsError(_) => fail
       }
     }
 
@@ -505,7 +568,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-forename and " +
       "site.leading-spaces-forename-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("forename", "    The Donald")))
+      val badJson = generateJsonWithForename("    The Donald")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -528,7 +591,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "NUMERIC_CHARS_ERROR_CODE (ZYRA0705) as the error code and site.numeric-chars-forename and " +
       "site.numeric-chars-forename-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("forename", "D0n4ld")))
+      val badJson = generateJsonWithForename("D0n4ld")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -551,7 +614,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "DISSALLOWED_CHARS_ERROR_CODE (ZYRA0711) as the error code and site.disallowed-chars-forename and " +
       "site.disallowed-chars-forename-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("forename", "Dona$%#d")))
+      val badJson = generateJsonWithForename("Dona$%#d")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -570,103 +633,11 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent JSON with a forename with disallowed special characters in the first position, a bad request is returned with:" +
-      "FIRST_CHAR_SPECIAL_ERROR_CODE (ZYRA0712) as the error code and site.first-char-special-forename and " +
-      "site.first-char-special-forename-detail are returned in the error JSON" +
-      "and the appropriate message" in {
-      val badJson = generateJson(Seq(("forename", "&Donald")))
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe FIRST_CHAR_SPECIAL_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.first-char-special-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.first-char-special-forename")
-          assert(messagesApi.isDefinedAt("site.first-char-special-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.first-char-special-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a forename with disallowed special characters in the last position, a bad request is returned with:" +
-      "LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
-      "site.first-char-special-forename-detail are returned in the error JSON" +
-      "and the appropriate message" in {
-      val badJson = generateJson(Seq(("forename", "Donald-")))
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe LAST_CHAR_SPECIAL_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.last-char-special-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.last-char-special-forename")
-          assert(messagesApi.isDefinedAt("site.last-char-special-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.last-char-special-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a forename with too few alphabetic characters at the begining, a bad request is returned with:" +
-      "TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-forename and " +
-      "site.too-few-initial-alpha-forename-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 3
-      val badJson = generateJson(Seq(("forename", "D&&onald")))
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-forename")
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a forename with too few consecutive alphabetic characters, a bad request is returned with:" +
-      "TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE (ZYRA0715) as the error code and site.too-few-consecutive-alpha-forename and " +
-      "site.too-few-consecutive-alpha-forename-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 4
-      val badJson = generateJson(Seq(("forename", "Don&l")))
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-forename")
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-forename-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-forename-detail")
-        case JsError(_) => fail
-      }
-    }
-
     "if the stub is sent JSON with a forename with too many consecutive special characters, a bad request is returned with:" +
       "TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE (ZYRA0716) as the error code and site.too-many-consecutive-special-forename and " +
       "site.too-many-consecutive-special-forename-detail are returned in the error JSON and the appropriate message." in {
 
-      val badJson = generateJson(Seq(("forename", "Don--aldddd")))
+      val badJson = generateJsonWithForename("Don--aldddd")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -685,11 +656,66 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
+    "if the stub is sent JSON with a surname with zero characters, a bad request is returned with:" +
+      "SURNAME_TOO_FEW_CHARS_ERROR_CODE (AAAA0008) as the error code and site.too-few-chars-surname and " +
+      "site.too-few-chars-surname-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithSurname("")
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe SURNAME_TOO_FEW_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-few-chars-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.too-few-chars-surname")
+          assert(messagesApi.isDefinedAt("site.too-few-chars-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-few-chars-surname-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent JSON with a forename with more than 300 characters, a bad request is returned with:" +
+      "SURNAME_TOO_MANY_CHARS_ERROR_CODE (AAAA0009) as the error code and site.too-many-chars-surname and " +
+      "site.too-many-chars-surname-detail are returned in the error JSON" +
+      "and the appropriate message" in {
+      val badJson = generateJsonWithSurname("A" * 301)
+
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe SURNAME_TOO_MANY_CHARS_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.too-many-chars-surname"))
+          w.error.errorMessage shouldBe messagesApi("site.too-many-chars-surname")
+          assert(messagesApi.isDefinedAt("site.too-many-chars-surname-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.too-many-chars-surname-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "allow surnames with apostrophes in them" in {
+      val goodJson = generateJsonWithSurname("O'Connor")
+
+      def fakeRequestWithBadContent = makeFakeRequest(goodJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.CREATED
+    }
+
     "if the stub is sent JSON with a surname with leading spaces, a bad request is returned with:" +
       "LEADING_SPACES_ERROR_CODE (ZYRA0703) as the error code and site.leading-spaces-surname and " +
       "site.leading-spaces-surname-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("surname", "     Duck")))
+      val badJson = generateJsonWithSurname("     Duck")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -712,7 +738,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "NUMERIC_CHARS_ERROR_CODE (ZYRA0705) as the error code and site.numeric-chars-surname and " +
       "site.numeric-chars-surname-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("surname", "D0n4ld")))
+      val badJson = generateJsonWithSurname("D0n4ld")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -735,7 +761,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "DISSALLOWED_CHARS_ERROR_CODE (ZYRA0711) as the error code and site.disallowed-chars-surname and " +
       "site.disallowed-chars-surname-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("surname", "Duck$%#chesky")))
+      val badJson = generateJsonWithSurname("Duck$%#chesky")
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -757,7 +783,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "FIRST_CHAR_SPECIAL_ERROR_CODE (ZYRA0712) as the error code and site.first-char-special-surname and " +
       "site.first-char-special-surname-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("surname", "&Duckchesky")))
+      val badJson = generateJsonWithSurname("&Duckchesky")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -780,7 +806,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       "LAST_CHAR_SPECIAL_ERROR_CODE (ZYRA0713) as the error code and site.first-char-special-forename and " +
       "site.first-char-special-forename-detail are returned in the error JSON" +
       "and the appropriate message" in {
-      val badJson = generateJson(Seq(("surname", "Duckchesky-")))
+      val badJson = generateJsonWithSurname("Du'ck.chesky-")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -799,57 +825,11 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent JSON with a surname with too few alphabetic characters at the begining, a bad request is returned with:" +
-      "TOO_FEW_INITIAL_ALPHA_ERROR_CODE (ZYRA0714) as the error code and site.too-few-initial-alpha-surname and " +
-      "site.too-few-initial-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 3
-      val badJson = generateJson(Seq(("surname", "D&&uckchesky")))
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_INITIAL_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-initial-alpha-surname")
-          assert(messagesApi.isDefinedAt("site.too-few-initial-alpha-surname-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-initial-alpha-surname-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a surname with too few consecutive alphabetic characters, a bad request is returned with:" +
-      "TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE (ZYRA0715) as the error code and site.too-few-consecutive-alpha-surname and " +
-      "site.too-few-consecutive-alpha-surname-detail are returned in the error JSON and the appropriate message." in {
-      //TODO: Find out what this number should actually be - initially setting it to 4
-      val badJson = generateJson(Seq(("surname", "Don&ch")))
-
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname"))
-          w.error.errorMessage shouldBe messagesApi("site.too-few-consecutive-alpha-surname")
-          assert(messagesApi.isDefinedAt("site.too-few-consecutive-alpha-surname-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.too-few-consecutive-alpha-surname-detail")
-        case JsError(_) => fail
-      }
-    }
-
     "if the stub is sent JSON with a surname with too many consecutive special characters, a bad request is returned with:" +
       "TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE (ZYRA0716) as the error code and site.too-many-consecutive-special-surname and " +
       "site.too-many-consecutive-special-surname-detail are returned in the error JSON and the appropriate message." in {
       //TODO: Find out what this number should actually be - initially setting it to 2
-      val badJson = generateJson(Seq(("surname", "duc--achesy")))
+      val badJson = generateJsonWithSurname("duc--achesy")
 
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
@@ -870,7 +850,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
 
     "if the stub is sent JSON with invalid formatted postcode an error object is returned with code set to INVALID_POSTCODE_ERROR_CODE," +
       " the message site.invalid-postcode, and the detail site.invalid-postcode-detail" in {
-      val jsonWithBadPostCode = generateJson(Seq(("postcode", "678889098")))
+      val jsonWithBadPostCode = generateJsonWithPostcode("HHHHHHHHHHHHHH678889098")
 
       def fakeRequestWithBadContent = makeFakeRequest(jsonWithBadPostCode)
 
@@ -891,7 +871,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
 
     "if the stub is sent JSON with an unparseable or badly formatted date and error object is returned with code set to UNPARSABLE_DATE_ERROR_CODE, (CWFDAT02) " +
       " the message site.unparsable-date, and the detail site.unparseable-date-detail" in {
-      val badJson = generateJson(Seq(("birthDate", "YYYY1336")))
+      val badJson = generateJsonWithDateOfBirth("YYYY1336")
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -909,10 +889,11 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent JSON with a numeric string of length 8 and the month is not between 01 and 12, an object is " +
-      "returned with code set to BAD_MONTH_DATE_ERROR_CODE, (CWFDAT04) " +
-      " the message site.bad-month-date, and the detail site.bad-month-date-detail" in {
-      val badJson = generateJson(Seq(("birthDate", "20011305")))
+    "if the stub is sent JSON with a numeric string of length 8 representing a date before 1st Jan 1800, an object is " +
+      "returned with code set to BAD_DATE_TOO_EARLY_ERROR_CODE, (AAAA0010) " +
+      " the message site.bad-date-too-early, and the detail site.bad-too-early-detail" in {
+      val badJson = generateJsonWithDateOfBirth("17991231")
+
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -921,19 +902,28 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
         case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe BAD_MONTH_DATE_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.bad-month-date"))
-          w.error.errorMessage shouldBe messagesApi("site.bad-month-date")
-          assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.bad-month-date-detail")
+          w.error.errorMessageId shouldBe BAD_DATE_TOO_EARLY_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-date-too-early"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-date-too-early")
+          assert(messagesApi.isDefinedAt("site.bad-date-too-early-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-date-too-early-detail")
         case JsError(_) => fail
       }
     }
 
-    "if the stub is sent JSON with a numeric string of length 8 and the day is not valid for the date and year, an object is " +
-      "returned with code set to BAD_DAY_DATE_ERROR_CODE, (CWFDAT03) " +
-      " the message site.bad-day-date, and the detail site.bad-day-date-detail" in {
-      val badJson = generateJson(Seq(("birthDate", "20020229")))
+    "if the stub is sent JSON with a numeric string of length 8 representing a date in the future, an object is " +
+      "returned with code set to BAD_DATE_TOO_LATE_ERROR_CODE, (AAAA0011) " +
+      " the message site.bad-date-too-late, and the detail site.bad-too-late-detail" in {
+
+      val today = java.time.LocalDate.now()
+      val tomorrow = today.plus(1, java.time.temporal.ChronoUnit.DAYS)
+      val year = tomorrow.getYear
+      val month = tomorrow.getMonthValue
+      val monthStr = if (month < 10) "0" + month else month
+      val day = tomorrow.getDayOfMonth
+      val dayStr = if (day < 10) "0" + day else day
+      val badJson = generateJsonWithDateOfBirth(s"$year$monthStr$dayStr")
+
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -942,32 +932,11 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
       wrapper match {
         case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe BAD_DAY_DATE_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.bad-day-date"))
-          w.error.errorMessage shouldBe messagesApi("site.bad-day-date")
-          assert(messagesApi.isDefinedAt("site.bad-month-date-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.bad-day-date-detail")
-        case JsError(_) => fail
-      }
-    }
-
-    "if the stub is sent JSON with a numeric string of but the century is before 1800 or after 2099, an object is " +
-      "returned with code set to BAD_DAY_CENTURY_ERROR_CODE, (CWFDAT06) " +
-      " the message site.bad-century-date, and the detail site.bad-century-date-detail" in {
-      val badJson = generateJson(Seq(("birthDate", "21050215")))
-      def fakeRequestWithBadContent = makeFakeRequest(badJson)
-
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
-      status(result) shouldBe Status.BAD_REQUEST
-
-      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
-      wrapper match {
-        case JsSuccess(w, _) =>
-          w.error.errorMessageId shouldBe BAD_CENTURY_DATE_ERROR_CODE
-          assert(messagesApi.isDefinedAt("site.bad-century-date"))
-          w.error.errorMessage shouldBe messagesApi("site.bad-century-date")
-          assert(messagesApi.isDefinedAt("site.bad-century-date-detail"))
-          w.error.errorDetail shouldBe messagesApi("site.bad-century-date-detail")
+          w.error.errorMessageId shouldBe BAD_DATE_TOO_LATE_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.bad-date-too-late"))
+          w.error.errorMessage shouldBe messagesApi("site.bad-date-too-late")
+          assert(messagesApi.isDefinedAt("site.bad-date-too-late-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.bad-date-too-late-detail")
         case JsError(_) => fail
       }
     }
@@ -975,7 +944,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     "if the stub is sent JSON with an unrecognized country code an object is " +
       "returned with code set to UNKNOWN_COUNTRY_CODE_ERROR_CODE, (TAR10005) " +
       " the message site.unknown-country-code, and the detail site.unknown-country-code-detail" in {
-      val badJson = generateJson(Seq(("countryCode", "MJ")))
+      val badJson = generateJsonWithCountryCode("MJ")
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -996,7 +965,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     "if the stub is sent JSON with an badly formatted NINO an object is " +
       "returned with code set to BAD_NINO_ERROR_CODE, (ZYRC0508) " +
       " the message site.bad-nino, and the detail site.bad-nino-detail" in {
-      val badJson = generateJson(Seq(("NINO", "THIS-IS-NOT-A-NINO")))
+      val badJson = generateJsonWithNino("THIS-IS-NOT-A-NINO")
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -1017,7 +986,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     "if the stub is sent JSON with a communicationPreference that is not one of 00, 02, then an object is " +
       "returned with code set to BAD_COMM_PREF_ERROR_CODE, (AAAA0005) " +
       " the message site.bad-comm-pref, and the detail site.bad-comm-pref-detail" in {
-      val badJson = generateJson(Seq(("communicationPreference", "01")))
+      val badJson = generateJsonWithCommsPreference("01")
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -1038,7 +1007,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     "if the stub is sent JSON with a communicationPreference that is 02 but without an email then an object is " +
       "returned with code set to EMAIL_NEEDED_ERROR_CODE, (ZYMC0004) " +
       " the message site.email-needed, and the detail site.email-needed-detail" in {
-      val badJson = generateJsonFromMap(goodCreateAccountMap - "emailAddress")
+      val badJson = generateJsonWithNoEmail()
       def fakeRequestWithBadContent = makeFakeRequest(badJson)
 
       val result = squidController.createAccount()(fakeRequestWithBadContent)
@@ -1054,6 +1023,226 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
           w.error.errorDetail shouldBe messagesApi("site.email-needed-detail")
         case JsError(_) => fail
       }
+    }
+
+    "if the stub is sent an address1 with an empty string then an object is returned" +
+      "with a code ADDRESS_ONE_TOO_SHORT_ERROR_CODE (AAAA0012) and" +
+      "the message site.address1-empty, and the detail site.address1-empty-detail" in {
+      val badJson = generateJsonWithAddress1("")
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_ONE_TOO_SHORT_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address1-empty"))
+          w.error.errorMessage shouldBe messagesApi("site.address1-empty")
+          assert(messagesApi.isDefinedAt("site.address1-empty-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address1-empty-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address1 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_ONE_TOO_LONG_ERROR_CODE (AAAA0013) and" +
+      "the message site.address1-too-long, and the detail site.address1-too-long-detail" in {
+      val badJson = generateJsonWithAddress1("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_ONE_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address1-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address1-too-long")
+          assert(messagesApi.isDefinedAt("site.address1-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address1-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address2 with an empty string then an object is returned" +
+      "with a code ADDRESS_TWO_TOO_SHORT_ERROR_CODE (AAAA0014) and" +
+      "the message site.address2-empty, and the detail site.address2-empty-detail" in {
+      val badJson = generateJsonWithAddress2("")
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_TWO_TOO_SHORT_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address2-empty"))
+          w.error.errorMessage shouldBe messagesApi("site.address2-empty")
+          assert(messagesApi.isDefinedAt("site.address2-empty-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address2-empty-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address2 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_TWO_TOO_LONG_ERROR_CODE (AAAA0015) and" +
+      "the message site.address2-too-long, and the detail site.address2-too-long-detail" in {
+      val badJson = generateJsonWithAddress2("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_TWO_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address2-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address2-too-long")
+          assert(messagesApi.isDefinedAt("site.address2-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address2-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address3 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_THREE_TOO_LONG_ERROR_CODE (AAAA0016) and" +
+      "the message site.address3-too-long, and the detail site.address3-too-long-detail" in {
+      val badJson = generateJsonWithAddress3("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_THREE_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address3-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address3-too-long")
+          assert(messagesApi.isDefinedAt("site.address3-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address3-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address4 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_FOUR_TOO_LONG_ERROR_CODE (AAAA0017) and" +
+      "the message site.address4-too-long, and the detail site.address4-too-long-detail" in {
+      val badJson = generateJsonWithAddress4("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_FOUR_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address4-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address4-too-long")
+          assert(messagesApi.isDefinedAt("site.address4-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address4-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an address5 with a string longer than 35 then an object is returned" +
+      "with a code ADDRESS_FIVE_TOO_LONG_ERROR_CODE (AAAA0018) and" +
+      "the message site.address5-too-long, and the detail site.address4-too-long-detail" in {
+      val badJson = generateJsonWithAddress5("A" * 36)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe ADDRESS_FIVE_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.address5-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.address5-too-long")
+          assert(messagesApi.isDefinedAt("site.address5-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.address5-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an phone number with a string longer than 15 then an object is returned" +
+      "with a code PHONE_NUMBER_TOO_LONG_ERROR_CODE (AAAA0019) and" +
+      "the message site.phone-number-too-long, and the detail site.phone-number-too-long-detail" in {
+      val badJson = generateJsonWithPhoneNumber("A" * 16)
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe PHONE_NUMBER_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.phone-number-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.phone-number-too-long")
+          assert(messagesApi.isDefinedAt("site.phone-number-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.phone-number-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an email address with a string longer than 254 then an object is returned" +
+      "with a code EMAIL_ADDRESS_TOO_LONG_ERROR_CODE (AAAA0020) and" +
+      "the message site.email-address-too-long, and the detail site.email-address-too-long-detail" in {
+      val badJson = generateJsonWithEmailAddress(("A" * 64) + "@" + ("A" * 252))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe EMAIL_ADDRESS_TOO_LONG_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.email-address-too-long"))
+          w.error.errorMessage shouldBe messagesApi("site.email-address-too-long")
+          assert(messagesApi.isDefinedAt("site.email-address-too-long-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.email-address-too-long-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "if the stub is sent an email address with a string that doesn't match the validation expression then an object is returned" +
+      "with a code EMAIL_ADDRESS_INVALID_ERROR_CODE (AAAA0021) and" +
+      "the message site.email-address-invalid, and the detail site.email-address-invalid-detail" in {
+      val badJson = generateJsonWithEmailAddress(("A" * 65) + "@" + ("A" * 100))
+      def fakeRequestWithBadContent = makeFakeRequest(badJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.BAD_REQUEST
+
+      val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
+      wrapper match {
+        case JsSuccess(w, _) =>
+          w.error.errorMessageId shouldBe EMAIL_ADDRESS_INVALID_ERROR_CODE
+          assert(messagesApi.isDefinedAt("site.email-address-invalid"))
+          w.error.errorMessage shouldBe messagesApi("site.email-address-invalid")
+          assert(messagesApi.isDefinedAt("site.email-address-invalid-detail"))
+          w.error.errorDetail shouldBe messagesApi("site.email-address-invalid-detail")
+        case JsError(_) => fail
+      }
+    }
+
+    "Year from date function must return None when given an unparsable date" in {
+      val result = squidController.yearFromDate("Not a valid date")
+      result shouldBe None
+    }
+
+    "before1800 function must return false when given an unparsable date" in {
+      val result = squidController.before1800("Not a valid date")
+      result shouldBe false
     }
   }
 }

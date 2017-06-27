@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.time.format.DateTimeFormatter
 import java.time.temporal.TemporalAdjusters
 import javax.inject.{Inject, Singleton}
 
@@ -24,7 +25,7 @@ import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsError, _}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.Constants._
-import uk.gov.hmrc.helptosavestub.models.{AccountCommand, Wrapper}
+import uk.gov.hmrc.helptosavestub.models.SquidModels.AccountCommand
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 @Singleton
@@ -70,50 +71,27 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private def hasNumericChars(str: String): Boolean = str.exists(_.isDigit)
 
-  private def hasDisallowedChars(str: String): Boolean = !"""^[a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
+  private def hasDisallowedCharsForename(str: String): Boolean = !"""^[a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
 
-  private def hasSpecialInFirstPlace(str: String): Boolean = """^[&\.-].*""".r.pattern.matcher(str).matches
+  private def hasTooManyConsecutiveSpecialCharsForename(str: String) = """^.*[&\.-]{2}.*""".r.pattern.matcher(str).matches
 
-  private def hasSpecialInLastPlace(str: String): Boolean = """.*[&\.-]$""".r.pattern.matcher(str).matches
+  private def hasDisallowedCharsSurname(str: String): Boolean = !"""^['a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
 
-  private def hasInsufficientAlphaCharsAtStart(str: String) = !"^[a-zA-Z]{3}.*".r.pattern.matcher(str).matches
+  private def hasTooManyConsecutiveSpecialCharsSurname(str: String) = """^.*['&\.-]{2}.*""".r.pattern.matcher(str).matches
 
-  private def hasInsufficientConsecutiveAlphaChars(str: String) = !"^.*[a-zA-Z]{4}.*".r.pattern.matcher(str).matches
+  private def hasSpecialInFirstPlace(str: String): Boolean = """^['&\.-].*""".r.pattern.matcher(str).matches
 
-  private def hasTooManyConsecutiveSpecialChars(str: String) = """^.*[&\.-]{2}.*""".r.pattern.matcher(str).matches
+  private def hasSpecialInLastPlace(str: String): Boolean = """.*['&\.-]$""".r.pattern.matcher(str).matches
 
   private def invalidPostcode(postcode: String): Boolean = {
-    val noSpacesPostcode = postcode.filter {
-      _ != ' '
-    }
-    val row2Expr = """^[A-P|R-U|WYZ]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row3Expr = """^[A-P|R-U|WYZ]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row4Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row5Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d\d\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row6Expr = """^[A-P|R-U|WYZ][A-H|K-Y]\d[ABEHMNPR|V-Y]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row7Expr = """^[A-P|R-U|WYZ]\d[A-H|HJK|S-U|W]\d[AB|D-H|JLN|P-U|W-Z][AB|D-H|JLN|P-U|W-Z]$""".r
-    val row8Expr = "^[A-Z]1ZZ$".r
-    val row9Expr = "^[A-Z][A-Z]1ZZ$".r
-    val row10Expr = "^[A-Z][A-Z][A-Z]1ZZ$".r
-    val row11Expr = "^[A-Z][A-Z][A-Z][A-Z]1ZZ$".r
-    val row12Expr = """^BFPO\d$""".r
-    val row13Expr = """^BFPO\d\d$""".r
-    val row14Expr = """^BFPO\d\d\d$""".r
-    val row15Expr = """^BFPO\d\d\d\d$""".r
-
-    (noSpacesPostcode != "GIR0AA") &&
-      (noSpacesPostcode match {
-        case row2Expr() | row3Expr() | row4Expr() | row5Expr() | row6Expr() | row7Expr() | row8Expr() | row9Expr()
-             | row10Expr() | row11Expr() | row12Expr() | row13Expr() | row14Expr() | row15Expr() => false
-        case _ => true
-      })
+   !"""[a-zA-Z0-9\s]{3,10}$""".r.pattern.matcher(postcode).matches()
   }
 
   private def unparsableLocalDate(str: String) = {
     !"""^\d{8}$""".r.pattern.matcher(str).matches()
   }
 
-  private def yearFromDate(date: String): Option[Int] = {
+  private[controllers] def yearFromDate(date: String): Option[Int] = {
     if (unparsableLocalDate(date)) {
       None
     } else {
@@ -121,43 +99,12 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     }
   }
 
-  private def monthFromDate(date: String): Option[Int] = {
-    if (unparsableLocalDate(date)) {
-      None
-    } else {
-      Some(date.substring(4, 6).toInt)
-    }
-  }
+  private[controllers] def before1800(date: String): Boolean = yearFromDate(date).fold(false) {_ < 1800}
 
-  private def dayFromDate(date: String): Option[Int] = {
-    if (unparsableLocalDate(date)) {
-      None
-    } else {
-      Some(date.substring(6, 8).toInt)
-    }
-  }
-
-  private def invalidDay(date: String): Boolean = {
-    val dayNumber = dayFromDate(date)
-    val monthNumber = monthFromDate(date)
-    val yearNumber = yearFromDate(date)
-
-    if (dayNumber.isDefined && monthNumber.isDefined && yearNumber.isDefined) {
-      val day = dayNumber.getOrElse(0)
-      val month = monthNumber.getOrElse(0)
-      val year = yearNumber.getOrElse(0)
-      val firstDayOfMonthDate = java.time.LocalDate.of(year, month, 1)
-      val lastDayOfMonthDate = firstDayOfMonthDate.`with`(TemporalAdjusters.lastDayOfMonth())
-      val lastDay = lastDayOfMonthDate
-      day < 1 || day > lastDay.getDayOfMonth
-    } else {
-      true
-    }
-  }
-
-  private def invalidCentury(date: String): Boolean = {
-    val yearNumber = yearFromDate(date)
-    yearNumber.fold(false) { year => year < 1800 || year > 2099 }
+  private def futureDate(date: String): Boolean = {
+    val d = java.time.LocalDate.parse(date, DateTimeFormatter.BASIC_ISO_DATE)
+    val today = java.time.LocalDate.now()
+    d.isAfter(today)
   }
 
   private def invalidNino(nino: String): Boolean = {
@@ -172,42 +119,46 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     pref == "02" && emailAddress.isEmpty
   }
 
-  private def validateCreateAccount(json: JsValue): Either[Error, AccountCommand] = {
-    val parseResult = Json.fromJson[AccountCommand]((json \ "createAccount").get)
+  private def invalidEmail(email: String): Boolean = {
+    !".{1,64}@.{1,252}".r.pattern.matcher(email).matches()
+  }
 
-    logger.info(json.toString())
-
-    parseResult match {
-      case JsSuccess(createAccount, _) =>
-        createAccount match {
-          case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
-          case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
-          case ca if hasDisallowedChars(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
-          case ca if hasSpecialInFirstPlace(ca.forename) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-forename", "site.first-char-special-forename-detail"))
-          case ca if hasSpecialInLastPlace(ca.forename) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-forename", "site.last-char-special-forename-detail"))
-          case ca if hasInsufficientAlphaCharsAtStart(ca.forename) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-forename", "site.too-few-initial-alpha-forename-detail"))
-          case ca if hasInsufficientConsecutiveAlphaChars(ca.forename) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-forename", "site.too-few-consecutive-alpha-forename-detail"))
-          case ca if hasTooManyConsecutiveSpecialChars(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
-          case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
-          case ca if hasNumericChars(ca.surname) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
-          case ca if hasDisallowedChars(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
-          case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
-          case ca if hasSpecialInLastPlace(ca.surname) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
-          case ca if hasInsufficientAlphaCharsAtStart(ca.surname) => Left(Error(TOO_FEW_INITIAL_ALPHA_ERROR_CODE, "site.too-few-initial-alpha-surname", "site.too-few-initial-alpha-surname-detail"))
-          case ca if hasInsufficientConsecutiveAlphaChars(ca.surname) => Left(Error(TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE, "site.too-few-consecutive-alpha-surname", "site.too-few-consecutive-alpha-surname-detail"))
-          case ca if hasTooManyConsecutiveSpecialChars(ca.surname) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
-          case ca if invalidPostcode(ca.postcode) => Left(Error(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
-          case ca if unparsableLocalDate(ca.birthDate) => Left(Error(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
-          case ca if monthFromDate(ca.birthDate).exists(_ > 12) => Left(Error(BAD_MONTH_DATE_ERROR_CODE, "site.bad-month-date", "site.bad-month-date-detail"))
-          case ca if invalidDay(ca.birthDate) => Left(Error(BAD_DAY_DATE_ERROR_CODE, "site.bad-day-date", "site.bad-day-date-detail"))
-          case ca if invalidCentury(ca.birthDate) => Left(Error(BAD_CENTURY_DATE_ERROR_CODE, "site.bad-century-date", "site.bad-century-date-detail"))
-          case ca if !ca.countryCode.exists(countryCodes.contains) => Left(Error(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
-          case ca if invalidNino(ca.NINO) => Left(Error(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
-          case ca if invalidCommunicationPreference(ca.communicationPreference) => Left(Error(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
-          case ca if emailRequired(ca.communicationPreference, ca.emailAddress) => Left(Error(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
-          case _ => Right(createAccount)
-        }
-      case JsError(errors) => Left(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.unparsable-command", errors.toString()))
+  private def validateCreateAccount(createAccount: AccountCommand): Either[Error, AccountCommand] = {
+    logger.info(createAccount.toString)
+    createAccount match {
+      case ca if ca.forename.isEmpty => Left(Error(FORENAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-forename", "site.too-few-chars-forename-detail"))
+      case ca if ca.forename.length > 26 => Left(Error(FORENAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-forename", "site.too-many-chars-forename-detail"))
+      case ca if ca.forename.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-forename", "site.leading-spaces-forename-detail"))
+      case ca if hasNumericChars(ca.forename) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-forename", "site.numeric-chars-forename-detail"))
+      case ca if hasDisallowedCharsForename(ca.forename) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-forename", "site.disallowed-chars-forename-detail"))
+      case ca if hasTooManyConsecutiveSpecialCharsForename(ca.forename) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-forename", "site.too-many-consecutive-special-forename-detail"))
+      case ca if ca.surname.startsWith(" ") => Left(Error(LEADING_SPACES_ERROR_CODE, "site.leading-spaces-surname", "site.leading-spaces-surname-detail"))
+      case ca if ca.surname.isEmpty => Left(Error(SURNAME_TOO_FEW_CHARS_ERROR_CODE, "site.too-few-chars-surname", "site.too-few-chars-surname-detail"))
+      case ca if ca.surname.length > 300 => Left(Error(SURNAME_TOO_MANY_CHARS_ERROR_CODE, "site.too-many-chars-surname", "site.too-many-chars-surname-detail"))
+      case ca if hasNumericChars(ca.surname) => Left(Error(NUMERIC_CHARS_ERROR_CODE, "site.numeric-chars-surname", "site.numeric-chars-surname-detail"))
+      case ca if hasDisallowedCharsSurname(ca.surname) => Left(Error(DISALLOWED_CHARS_ERROR_CODE, "site.disallowed-chars-surname", "site.disallowed-chars-surname-detail"))
+      case ca if hasSpecialInFirstPlace(ca.surname) => Left(Error(FIRST_CHAR_SPECIAL_ERROR_CODE, "site.first-char-special-surname", "site.first-char-special-surname-detail"))
+      case ca if hasSpecialInLastPlace(ca.surname) => Left(Error(LAST_CHAR_SPECIAL_ERROR_CODE, "site.last-char-special-surname", "site.last-char-special-surname-detail"))
+      case ca if hasTooManyConsecutiveSpecialCharsSurname(ca.surname) => Left(Error(TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE, "site.too-many-consecutive-special-surname", "site.too-many-consecutive-special-surname-detail"))
+      case ca if invalidPostcode(ca.contactDetails.postcode) => Left(Error(INVALID_POSTCODE_ERROR_CODE, "site.invalid-postcode", "site.invalid-postcode-detail"))
+      case ca if unparsableLocalDate(ca.dateOfBirth) => Left(Error(UNPARSABLE_DATE_ERROR_CODE, "site.unparsable-date", "site.unparsable-date-detail"))
+      case ca if before1800(ca.dateOfBirth) => Left(Error(BAD_DATE_TOO_EARLY_ERROR_CODE, "site.bad-date-too-early", "site.bad-date-too-early-detail"))
+      case ca if futureDate(ca.dateOfBirth) => Left(Error(BAD_DATE_TOO_LATE_ERROR_CODE, "site.bad-date-too-late", "site.bad-date-too-late-detail"))
+      case ca if !ca.contactDetails.countryCode.exists(countryCodes.contains) => Left(Error(UNKNOWN_COUNTRY_CODE_ERROR_CODE, "site.unknown-country-code", "site.unknown-country-code-detail"))
+      case ca if invalidNino(ca.nino) => Left(Error(BAD_NINO_ERROR_CODE, "site.bad-nino", "site.bad-nino-detail"))
+      case ca if invalidCommunicationPreference(ca.contactDetails.communicationPreference) => Left(Error(BAD_COMM_PREF_ERROR_CODE, "site.bad-comm-pref", "site.bad-comm-pref-detail"))
+      case ca if emailRequired(ca.contactDetails.communicationPreference, ca.contactDetails.email) => Left(Error(EMAIL_NEEDED_ERROR_CODE, "site.email-needed", "site.email-needed-detail"))
+      case ca if ca.contactDetails.address1.isEmpty => Left(Error(ADDRESS_ONE_TOO_SHORT_ERROR_CODE, "site.address1-empty", "site.address1-empty-detail"))
+      case ca if ca.contactDetails.address1.length > 35 => Left(Error(ADDRESS_ONE_TOO_LONG_ERROR_CODE, "site.address1-too-long", "site.address1-too-long-detail"))
+      case ca if ca.contactDetails.address2.isEmpty => Left(Error(ADDRESS_TWO_TOO_SHORT_ERROR_CODE, "site.address2-empty", "site.address2-empty-detail"))
+      case ca if ca.contactDetails.address2.length > 35 => Left(Error(ADDRESS_TWO_TOO_LONG_ERROR_CODE, "site.address2-too-long", "site.address2-too-long-detail"))
+      case ca if ca.contactDetails.address3.exists(_.length > 35) => Left(Error(ADDRESS_THREE_TOO_LONG_ERROR_CODE, "site.address3-too-long", "site.address3-too-long-detail"))
+      case ca if ca.contactDetails.address4.exists(_.length > 35) => Left(Error(ADDRESS_FOUR_TOO_LONG_ERROR_CODE, "site.address4-too-long", "site.address4-too-long-detail"))
+      case ca if ca.contactDetails.address5.exists(_.length > 35) => Left(Error(ADDRESS_FIVE_TOO_LONG_ERROR_CODE, "site.address5-too-long", "site.address5-too-long-detail"))
+      case ca if ca.contactDetails.phoneNumber.exists(_.length > 15) => Left(Error(PHONE_NUMBER_TOO_LONG_ERROR_CODE, "site.phone-number-too-long", "site.phone-number-too-long-detail"))
+      case ca if ca.contactDetails.email.exists(_.length > 254) => Left(Error(EMAIL_ADDRESS_TOO_LONG_ERROR_CODE, "site.email-address-too-long", "site.email-address-too-long-detail"))
+      case ca if invalidEmail(ca.contactDetails.email.getOrElse("")) => Left(Error(EMAIL_ADDRESS_INVALID_ERROR_CODE, "site.email-address-invalid", "site.email-address-invalid-detail"))
+      case _ => Right(createAccount)
     }
   }
 
@@ -216,23 +167,24 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
       case None => BadRequest(Json.toJson(errorJson(Error(NO_JSON_ERROR_CODE, "site.no-json", "site.no-json-detail"))))
 
       case Some(json: JsValue) =>
-        val wrapper = Json.fromJson[Wrapper](json)
-        wrapper match {
-          case JsError(errors) => BadRequest(errorJson(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.no-create-account-key", "site.no-create-account-key-detail")))
+        val createAccount = Json.fromJson[AccountCommand](json)
+        createAccount match {
+          case JsError(errors) => BadRequest(errorJson(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.no-json", "site.no-json-detail")))
 
-          case JsSuccess(wrappedCreateAccount, _) =>
-            val nino = wrappedCreateAccount.createAccount.NINO
+          case JsSuccess(parsedCreateAccount, _) =>
+            val nino = parsedCreateAccount.nino
+            lazy val errorJsonVal = errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
             nino match {
-              case aNino if aNino.startsWith("ER400") => BadRequest(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER401") => Unauthorized(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER403") => Forbidden(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER404") => NotFound(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER405") => MethodNotAllowed(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER415") => UnsupportedMediaType(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER500") => InternalServerError(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER400") => BadRequest(errorJsonVal)
+              case aNino if aNino.startsWith("ER401") => Unauthorized(errorJsonVal)
+              case aNino if aNino.startsWith("ER403") => Forbidden(errorJsonVal)
+              case aNino if aNino.startsWith("ER404") => NotFound(errorJsonVal)
+              case aNino if aNino.startsWith("ER405") => MethodNotAllowed(errorJsonVal)
+              case aNino if aNino.startsWith("ER415") => UnsupportedMediaType(errorJsonVal)
+              case aNino if aNino.startsWith("ER500") => InternalServerError(errorJsonVal)
+              case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJsonVal)
               case _ =>
-                validateCreateAccount(json) match {
+                validateCreateAccount(parsedCreateAccount) match {
                   case Right(_) => Created
                   case Left(error) =>
                     val errJson = errorJson(error)
