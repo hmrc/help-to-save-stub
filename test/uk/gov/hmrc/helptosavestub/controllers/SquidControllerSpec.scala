@@ -1244,5 +1244,22 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       val result = squidController.before1800("Not a valid date")
       result shouldBe false
     }
+
+    "Forenames with commas are allowed" in {
+      val goodJson = generateJsonWithForename("Bruce,David")
+      def fakeRequestWithBadContent = makeFakeRequest(goodJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.CREATED
+    }
+
+    "Surname with commas are allowed" in {
+      val goodJson = generateJsonWithSurname("Bruce,David")
+      def fakeRequestWithBadContent = makeFakeRequest(goodJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.CREATED
+    }
+
   }
 }
