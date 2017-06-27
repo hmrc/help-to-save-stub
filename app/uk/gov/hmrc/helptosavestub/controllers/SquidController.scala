@@ -171,19 +171,20 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
         createAccount match {
           case JsError(errors) => BadRequest(errorJson(Error(UNABLE_TO_PARSE_COMMAND_ERROR_CODE, "site.no-json", "site.no-json-detail")))
 
-          case JsSuccess(wrappedCreateAccount, _) =>
-            val nino = createAccount.get.nino
+          case JsSuccess(parsedCreateAccount, _) =>
+            val nino = parsedCreateAccount.nino
+            lazy val errorJsonVal = errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail"))
             nino match {
-              case aNino if aNino.startsWith("ER400") => BadRequest(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER401") => Unauthorized(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER403") => Forbidden(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER404") => NotFound(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER405") => MethodNotAllowed(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER415") => UnsupportedMediaType(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER500") => InternalServerError(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
-              case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJson(Error(PRECANNED_RESPONSE_ERROR_CODE, "site.pre-canned-error", "site.pre-canned-error-detail")))
+              case aNino if aNino.startsWith("ER400") => BadRequest(errorJsonVal)
+              case aNino if aNino.startsWith("ER401") => Unauthorized(errorJsonVal)
+              case aNino if aNino.startsWith("ER403") => Forbidden(errorJsonVal)
+              case aNino if aNino.startsWith("ER404") => NotFound(errorJsonVal)
+              case aNino if aNino.startsWith("ER405") => MethodNotAllowed(errorJsonVal)
+              case aNino if aNino.startsWith("ER415") => UnsupportedMediaType(errorJsonVal)
+              case aNino if aNino.startsWith("ER500") => InternalServerError(errorJsonVal)
+              case aNino if aNino.startsWith("ER503") => ServiceUnavailable(errorJsonVal)
               case _ =>
-                validateCreateAccount(createAccount.get) match {
+                validateCreateAccount(parsedCreateAccount) match {
                   case Right(_) => Created
                   case Left(error) =>
                     val errJson = errorJson(error)
