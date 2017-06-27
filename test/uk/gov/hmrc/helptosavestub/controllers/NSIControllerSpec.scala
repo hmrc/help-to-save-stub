@@ -31,7 +31,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
   import NSIUserInfo._
 
   val testCreateAccount = NSIUserInfo(
-    "Donald", "Duck", LocalDate.of(1990, 1, 1), "AA999999A",
+    "Donald", "Duck", LocalDate.of(1990, 1, 1), "AA999999A", // scalastyle:ignore magic.number
     ContactDetails(List("1", ",Test Street 2"), "BN124XH", Some("GB"), "dduck@email.com", None, "02"),
     "online")
 

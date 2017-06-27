@@ -62,7 +62,7 @@ object CitizenDetailsController extends BaseController {
       add2 <- initAdd(1)
       add3 <- initAdd(2)
       postcodeO <- address.last
-      countryO <- some(const("UK"))
+      countryO <- some(const("GB"))
 
     } yield Address(add1, add2, add3, postcodeO, countryO)
 

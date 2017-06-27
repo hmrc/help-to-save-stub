@@ -72,7 +72,7 @@ trait MicroserviceEligibilityCheck extends BaseController {
 
   def eligibilityCheck(ninoIn:String) = Action { implicit request =>
     store.get(ninoIn).map { x => 
-      Ok(Json.toJson(x.copy(NINO = ninoIn)))
+      Ok(Json.toJson(x.copy(nino = ninoIn)))
     }.getOrElse{
       NotFound
     }
