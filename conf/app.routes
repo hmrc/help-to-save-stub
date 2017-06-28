@@ -1,6 +1,6 @@
 # microservice specific routes
 
-GET        /eligibilitycheck/:nino                    uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.eligibilityCheck(nino)
+GET        /eligibilitycheck/:nino                    @uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.eligibilityCheck(nino)
 
 POST       /squid/create-account                      @uk.gov.hmrc.helptosavestub.controllers.SquidController.createAccount
 
@@ -8,4 +8,4 @@ GET        /oauth/authorize                           @uk.gov.hmrc.helptosavestu
 
 POST       /oauth/token                               @uk.gov.hmrc.helptosavestub.controllers.OAuthController.createOrRefreshToken
 
-GET        /user-info-api                               @uk.gov.hmrc.helptosavestub.controllers.UserInfoAPIController.getUserInfo
+GET        /user-info-api                             @uk.gov.hmrc.helptosavestub.controllers.UserInfoAPIController.getUserInfo

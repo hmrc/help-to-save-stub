@@ -21,15 +21,10 @@ import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.models.EligibilityResult
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
-object EligibilityCheckController extends EligibilityCheckController
-
-trait EligibilityCheckController extends BaseController {
+class EligibilityCheckController extends BaseController {
 
   def eligibilityCheck(nino: String) = Action { implicit request =>
-    val isEligible = nino match {
-      case s if s.startsWith("AE") ⇒ true
-      case _ ⇒ false
-    }
+    val isEligible = !nino.toUpperCase().startsWith("NA")
     Ok(Json.toJson(EligibilityResult(isEligible)))
   }
 }

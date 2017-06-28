@@ -27,6 +27,8 @@ class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
 
   val fakeRequest = FakeRequest("GET", "/")
 
+  val eligCheckController = new EligibilityCheckController
+
   "GET /" should {
 
     "returns true when user is eligible" in {
@@ -34,12 +36,12 @@ class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "returns false when user is not eligible" in {
-      verifyEligibility("QQ123456C", isEligible = false)
+      verifyEligibility("NA123456C", isEligible = false)
     }
 
     def verifyEligibility(nino: String, isEligible: Boolean) = {
 
-      val result = EligibilityCheckController.eligibilityCheck(nino)(fakeRequest)
+      val result = eligCheckController.eligibilityCheck(nino)(fakeRequest)
       status(result) shouldBe Status.OK
       val json = contentAsString(result)
 
