@@ -71,11 +71,11 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 
   private def hasNumericChars(str: String): Boolean = str.exists(_.isDigit)
 
-  private def hasDisallowedCharsForename(str: String): Boolean = !"""^[,a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
+  private def hasDisallowedCharsForename(str: String): Boolean = !"""^[ ,a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
 
   private def hasTooManyConsecutiveSpecialCharsForename(str: String) = """^.*[,&\.-]{2}.*""".r.pattern.matcher(str).matches
 
-  private def hasDisallowedCharsSurname(str: String): Boolean = !"""^[,'a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
+  private def hasDisallowedCharsSurname(str: String): Boolean = !"""^[ ,'a-zA-Z&\.-]*$""".r.pattern.matcher(str).matches
 
   private def hasTooManyConsecutiveSpecialCharsSurname(str: String) = """^.*[,'&\.-]{2}.*""".r.pattern.matcher(str).matches
 

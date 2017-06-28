@@ -587,6 +587,15 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
+    "forenames with spaces that are not leading spaces are allowed" in {
+      val goodJson = generateJsonWithForename("Aleksander Haakon")
+
+      def fakeRequestWithBadContent = makeFakeRequest(goodJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.CREATED
+    }
+
     "if the stub is sent JSON with a forename with numeric characters, a bad request is returned with:" +
       "NUMERIC_CHARS_ERROR_CODE (ZYRA0705) as the error code and site.numeric-chars-forename and " +
       "site.numeric-chars-forename-detail are returned in the error JSON" +
@@ -679,7 +688,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
       }
     }
 
-    "if the stub is sent JSON with a forename with more than 300 characters, a bad request is returned with:" +
+    "if the stub is sent JSON with a surname with more than 300 characters, a bad request is returned with:" +
       "SURNAME_TOO_MANY_CHARS_ERROR_CODE (AAAA0009) as the error code and site.too-many-chars-surname and " +
       "site.too-many-chars-surname-detail are returned in the error JSON" +
       "and the appropriate message" in {
@@ -732,6 +741,15 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
           w.error.errorDetail shouldBe messagesApi("site.leading-spaces-surname-detail")
         case JsError(_) => fail
       }
+    }
+
+    "surnames with spaces that are not leading spaces are allowed" in {
+      val goodJson = generateJsonWithSurname("Duck Smithe")
+
+      def fakeRequestWithBadContent = makeFakeRequest(goodJson)
+
+      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      status(result) shouldBe Status.CREATED
     }
 
     "if the stub is sent JSON with a surname with numeric characters, a bad request is returned with:" +
