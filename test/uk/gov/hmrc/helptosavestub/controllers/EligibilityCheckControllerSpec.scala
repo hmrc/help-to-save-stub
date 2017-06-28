@@ -17,26 +17,35 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.http.Status
-import play.api.libs.json.{JsSuccess, Json}
+import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
 import uk.gov.hmrc.helptosavestub.models.EligibilityResult
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-class MicroserviceEligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication{
+class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
 
   val fakeRequest = FakeRequest("GET", "/")
 
+  val eligCheckController = new EligibilityCheckController
+
   "GET /" should {
-    "return a successful EligibilityResult" in {
-      val result = MicroserviceEligibilityCheck.eligibilityCheck("QQ123456C")(fakeRequest)
+
+    "returns true when user is eligible" in {
+      verifyEligibility("AE123456C", isEligible = true)
+    }
+
+    "returns false when user is not eligible" in {
+      verifyEligibility("NA123456C", isEligible = false)
+    }
+
+    def verifyEligibility(nino: String, isEligible: Boolean) = {
+
+      val result = eligCheckController.eligibilityCheck(nino)(fakeRequest)
       status(result) shouldBe Status.OK
       val json = contentAsString(result)
 
-      Json.fromJson[EligibilityResult](Json.parse(json)) shouldBe JsSuccess(
-        EligibilityResult(Some(MicroserviceEligibilityCheck.user)))
+      Json.fromJson[EligibilityResult](Json.parse(json)).get shouldBe EligibilityResult(isEligible)
     }
   }
-
-
 }

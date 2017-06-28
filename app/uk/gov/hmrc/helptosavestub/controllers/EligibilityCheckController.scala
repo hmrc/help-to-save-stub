@@ -14,12 +14,17 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helptosavestub.models
+package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.Json
+import play.api.mvc._
+import uk.gov.hmrc.helptosavestub.models.EligibilityResult
+import uk.gov.hmrc.play.microservice.controller.BaseController
 
-case class EligibilityResult(isEligible: Boolean) extends AnyVal
+class EligibilityCheckController extends BaseController {
 
-object EligibilityResult {
-  implicit val format: Format[EligibilityResult] = Json.format[EligibilityResult]
+  def eligibilityCheck(nino: String) = Action { implicit request =>
+    val isEligible = !nino.toUpperCase().startsWith("NA")
+    Ok(Json.toJson(EligibilityResult(isEligible)))
+  }
 }
