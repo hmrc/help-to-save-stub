@@ -84,28 +84,28 @@ object EdhController extends BaseController {
   // )
 
   case class NtpAward(
-    aw_award_status: String, // OFTPCZ
-    aw_tax_credit_period_startdate: String,
-    aw_tax_credit_period_end_date: String,
-    av_total_taper_household_award: Int,
-    // av_total_childcare_incurred: Int,
-    // av_py_income: Int,
-    // av_cy_income: Int,
-    ae_etc1_wtc_entitlement: String, // YN
-    // ae_icc1_childcare_entitlement: String,
-    // ae_icc2_child_entitlement: String,
-    // ae_icc3_family_entitlement: String,
-    // ae_icc4_baby_entitlement: String,
-    av_end_date: String
-  )
+                       aw_award_status: String, // OFTPCZ
+                       aw_tax_credit_period_startdate: String,
+                       aw_tax_credit_period_end_date: String,
+                       av_total_taper_household_award: Int,
+                       // av_total_childcare_incurred: Int,
+                       // av_py_income: Int,
+                       // av_cy_income: Int,
+                       ae_etc1_wtc_entitlement: String, // YN
+                       // ae_icc1_childcare_entitlement: String,
+                       // ae_icc2_child_entitlement: String,
+                       // ae_icc3_family_entitlement: String,
+                       // ae_icc4_baby_entitlement: String,
+                       av_end_date: String
+                     )
 
   case class NtpOutputSchema(
-    nino: String,
-    // applicantId: Option[Int],
-    // application: Option[NtpApplication],
-    awards: List[NtpAward]
-    // children: List[NtpChild]
-  )
+                              nino: String,
+                              // applicantId: Option[Int],
+                              // application: Option[NtpApplication],
+                              awards: List[NtpAward]
+                              // children: List[NtpChild]
+                            )
 
 
   implicit def toDateString(d: LocalDate): Date =
@@ -127,7 +127,7 @@ object EdhController extends BaseController {
     endDate
   )
 
-  val alwaysEligibleForAward =  for {
+  val alwaysEligible =  for {
     status <- oneOf("PF".toList.map(_.toString))
     household <- choose(1,2000)
     endDate <-  LocalDate.now()
@@ -158,12 +158,14 @@ object EdhController extends BaseController {
   )
 
   def generator(nino: String) = for {
-    noAwards <- choose(1,8)
-    awards <- listOfN(noAwards, nino.take(2).toUpperCase() match {
-      case "AE" => alwaysEligibleForAward
-      case "AC" => alwaysEligibleForAward
-      case _ =>   genAward
-    })
+    noAwards <- choose(1,8) // scalastyle:ignore magic.number
+    awards <- listOfN(noAwards,
+      if(nino.toUpperCase.startsWith("NA")){
+        alwaysIneligible
+      } else {
+        alwaysEligible
+      }
+    )
   } yield NtpOutputSchema(nino, awards)
 
   def uc(nino:String) = Action { implicit request =>
@@ -182,7 +184,7 @@ object EdhController extends BaseController {
     implicit val ntpAwardFormat: Format[NtpAward] = Json.format[NtpAward]
     implicit val ntpOutputSchemaFormat: Format[NtpOutputSchema] =
       Json.format[NtpOutputSchema]
-    
+
     generator(nino).seeded(nino).map { x =>
       Ok(Json.toJson(x))
     }.getOrElse{
