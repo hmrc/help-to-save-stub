@@ -714,9 +714,18 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     "allow surnames with apostrophes in them" in {
       val goodJson = generateJsonWithSurname("O'Connor")
 
-      def fakeRequestWithBadContent = makeFakeRequest(goodJson)
+      def fakeRequestWithGoodContent = makeFakeRequest(goodJson)
 
-      val result = squidController.createAccount()(fakeRequestWithBadContent)
+      val result = squidController.createAccount()(fakeRequestWithGoodContent)
+      status(result) shouldBe Status.CREATED
+    }
+
+    "allow surnames with apostrophes represented by backtics (ASCII 96 decimal) in them" in {
+      val goodJson = generateJsonWithSurname("O`Connor")
+
+      def fakeRequestWithGoodContent = makeFakeRequest(goodJson)
+
+      val result = squidController.createAccount()(fakeRequestWithGoodContent)
       status(result) shouldBe Status.CREATED
     }
 
