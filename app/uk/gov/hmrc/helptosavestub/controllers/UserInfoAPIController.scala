@@ -37,7 +37,8 @@ class UserInfoAPIController extends BaseController {
     for{
       lines <- Gen.ukAddress
       postcode ← Gen.postcode
-    } yield Address(lines.mkString("\n"), Some(postcode), None)
+      countryCode ← Gen.option(Gen.oneOf(SquidController.countryCodes.toSeq))
+    } yield Address(lines.mkString("\n"), Some(postcode), None, countryCode)
 
   val ninoGen = new domain.Generator
 
@@ -85,7 +86,8 @@ object UserInfoAPIController {
 
   case class Address(formatted: String,
                      postal_code: Option[String],
-                     country: Option[String])
+                     country: Option[String],
+                     code: Option[String])
 
   case class EnrolmentIdentifier(key: String, value: String)
 

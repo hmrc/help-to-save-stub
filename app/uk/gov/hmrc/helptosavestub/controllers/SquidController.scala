@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.format.DateTimeFormatter
-import java.time.temporal.TemporalAdjusters
 import javax.inject.{Inject, Singleton}
 
 import play.api.Logger
@@ -34,28 +33,6 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   import SquidController._
 
   private val logger = Logger("SquidController")
-
-  private val countryCodes = Set[String](
-    "GM", "CZ", "VA", "BS", "ZW", "ZM", "YE", "VN", "VE", "VU",
-    "UZ", "UY", "US", "AE", "UA", "UG", "TV", "TM", "TR", "TN",
-    "TT", "TO", "TG", "TH", "TZ", "TJ", "SY", "CH", "SE", "SZ",
-    "SR", "SD", "LK", "ES", "SS", "ZA", "SO", "SB", "SI", "SK",
-    "SG", "SL", "SC", "RS", "SN", "SA", "ST", "SM", "WS", "VC",
-    "LC", "KN", "RW", "RU", "RO", "QA", "PT", "PL", "PH", "PE",
-    "PY", "PG", "PA", "PW", "PK", "OM", "NO", "NG", "NE", "NI",
-    "NZ", "NL", "NP", "NR", "NA", "MZ", "MA", "ME", "MN", "MC",
-    "MD", "FM", "MX", "MU", "MR", "MH", "MT", "ML", "MV", "MY",
-    "MW", "MG", "MK", "LU", "LT", "LI", "LY", "LR", "LS", "LB",
-    "LV", "LA", "KG", "KW", "XK", "KR", "KP", "KI", "KE", "KZ",
-    "JO", "JP", "JM", "CI", "IT", "IL", "IE", "IQ", "IR", "ID",
-    "IN", "IS", "HU", "HN", "HT", "GY", "GW", "GN", "GT", "GD",
-    "GR", "GH", "DE", "GE", "GA", "FR", "FI", "FJ", "ET", "EE",
-    "ER", "GQ", "SV", "EG", "EC", "TL", "DO", "DM", "DJ", "DK",
-    "CY", "CU", "HR", "CR", "CD", "CG", "KM", "CO", "CN", "CL",
-    "TD", "CF", "CV", "CA", "CM", "KH", "BI", "MM", "BF", "BG",
-    "BN", "BR", "BW", "BA", "BO", "BT", "BJ", "BZ", "BE", "BY",
-    "BB", "BD", "BH", "AZ", "AT", "AU", "AM", "AR", "AG", "AO",
-    "AD", "DZ", "AL", "AF", "GB", "CS", "YU", "DD", "SU")
 
   private val ninoRegex = """^(([A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z])([0-9]{2})([0-9]{2})([0-9]{2})([A-D]{1})|((XX)(99)(99)(99)(X)))$""".r
 
@@ -210,5 +187,27 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
 object SquidController {
 
   private case class Error(code: String, messageKey: String, messageDetail: String)
+
+  val countryCodes = Set[String](
+    "GM", "CZ", "VA", "BS", "ZW", "ZM", "YE", "VN", "VE", "VU",
+    "UZ", "UY", "US", "AE", "UA", "UG", "TV", "TM", "TR", "TN",
+    "TT", "TO", "TG", "TH", "TZ", "TJ", "SY", "CH", "SE", "SZ",
+    "SR", "SD", "LK", "ES", "SS", "ZA", "SO", "SB", "SI", "SK",
+    "SG", "SL", "SC", "RS", "SN", "SA", "ST", "SM", "WS", "VC",
+    "LC", "KN", "RW", "RU", "RO", "QA", "PT", "PL", "PH", "PE",
+    "PY", "PG", "PA", "PW", "PK", "OM", "NO", "NG", "NE", "NI",
+    "NZ", "NL", "NP", "NR", "NA", "MZ", "MA", "ME", "MN", "MC",
+    "MD", "FM", "MX", "MU", "MR", "MH", "MT", "ML", "MV", "MY",
+    "MW", "MG", "MK", "LU", "LT", "LI", "LY", "LR", "LS", "LB",
+    "LV", "LA", "KG", "KW", "XK", "KR", "KP", "KI", "KE", "KZ",
+    "JO", "JP", "JM", "CI", "IT", "IL", "IE", "IQ", "IR", "ID",
+    "IN", "IS", "HU", "HN", "HT", "GY", "GW", "GN", "GT", "GD",
+    "GR", "GH", "DE", "GE", "GA", "FR", "FI", "FJ", "ET", "EE",
+    "ER", "GQ", "SV", "EG", "EC", "TL", "DO", "DM", "DJ", "DK",
+    "CY", "CU", "HR", "CR", "CD", "CG", "KM", "CO", "CN", "CL",
+    "TD", "CF", "CV", "CA", "CM", "KH", "BI", "MM", "BF", "BG",
+    "BN", "BR", "BW", "BA", "BO", "BT", "BJ", "BZ", "BE", "BY",
+    "BB", "BD", "BH", "AZ", "AT", "AU", "AM", "AR", "AG", "AO",
+    "AD", "DZ", "AL", "AF", "GB", "CS", "YU", "DD", "SU")
 
 }
