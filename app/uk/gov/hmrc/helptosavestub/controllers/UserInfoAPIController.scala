@@ -83,12 +83,36 @@ class UserInfoAPIController extends BaseController {
   }
 
 
+
+  //AIR GAP TESTING
   type Token = String
 
+  val scenario1User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street/n the place/n the town/n line 4/n, line 5/n", Some("BN43 5QP"),
+  Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), Some("AG010123C"), None, Some("sarah@smith.com"))
+
+  val scenerio2User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street/n the place", Some("BN43 5QP"),
+    Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), Some("AG020123C"), None, Some("sarah@smith.com"))
+
+  val scenerio3User = UserInfo(Some("Sarahjacquelinefredricktom"), Some("SmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmi"),
+    None, Some(Address("10 the street this is 35 characters/n100 the place this is 35 characters/n100 the place this is 35 characters/n100 the place this is 35 characters/n100 the place this is 35 characters", Some("BN43 5QP"),
+    Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), Some("AG030123C"), None, Some("sarah@smith.com"))
+
+
+
   val hardCodedData: Map[Token,UserInfo] = Map(
-    // "AE123456"
-    "token" ⇒ UserInfo("")
+    // "AG010123C"
+    "rvvcjuoZatpkmrolydvufvmxphlrceNdsgNHoBiwtoglrqenlkpqlxzakeKpmDizscmqepbaxphxbqvcvotlzff" → scenario1User,
+
+    // "AG020123C"
+    "EgnebofytKPVcsjirlxpvgcsnvghtdGxx" → scenerio2User,
+
+    // "AG030123C"
+    "kwwigeyGsakfrskugvawwjnitxibsyzouytkvrcgqzclDdfkE" → scenerio3User
+
+    // "AG040123C"
+
   )
+
 
 
 
