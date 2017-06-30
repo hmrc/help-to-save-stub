@@ -69,7 +69,11 @@ class UserInfoAPIController extends BaseController {
         Logger.error(message)
         Unauthorized(message)
       } { token ⇒
-        userInfoGen.seeded(token).fold(
+
+        val userInfo: Option[UserInfo] =
+          hardCodedData.get(token).orElse(userInfoGen.seeded(token))
+
+          userInfo.fold(
           InternalServerError("Could not generate user info")
         ) { info ⇒
           Logger.info(s"Returning $info to request")
@@ -79,10 +83,18 @@ class UserInfoAPIController extends BaseController {
   }
 
 
+  type Token = String
+
+  val hardCodedData: Map[Token,UserInfo] = Map(
+    // "AE123456"
+    "token" ⇒ UserInfo("")
+  )
+
+
+
 }
 
 object UserInfoAPIController {
-
 
   case class Address(formatted: String,
                      postal_code: Option[String],
