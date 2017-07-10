@@ -78,7 +78,10 @@ object NSIController extends BaseController {
               Future.successful(BadRequest(
                 Json.toJson(SubmissionFailure(None, "Invalid user details", errors.toList.mkString(",")))))
             },
-            _ ⇒ Future.successful(Created)
+            _ ⇒ {
+              Logger.info("Responding to createAccount with 201")
+              Future.successful(Created)
+            }
           )
       }
     } else {
