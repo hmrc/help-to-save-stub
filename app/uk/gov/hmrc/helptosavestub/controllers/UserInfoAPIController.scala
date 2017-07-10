@@ -70,10 +70,9 @@ class UserInfoAPIController extends BaseController {
         Logger.error(message)
         Unauthorized(message)
       }{ token ⇒
-        val headerToken = headers.get("token")
         val userInfo: Option[UserInfo] =
-          hardCodedData.get(headerToken.get).orElse(userInfoGen.seeded(token))
-          userInfo.fold(
+        AirGapTesting.hardCodedData.get(token).orElse(userInfoGen.seeded(token))
+        userInfo.fold(
           InternalServerError("Could not generate user info")
         ) { info ⇒
           Logger.info(s"Returning $info to request")
@@ -84,45 +83,48 @@ class UserInfoAPIController extends BaseController {
 
 
   //DATA FOR AIR GAP TESTING
-  type Token = String
+  object AirGapTesting {
+    type Token = String
 
-  val scenario1User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n line 5\n", Some("BN43 5QP"),
-  Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
+    val scenario1User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n line 5\n", Some("BN43 5QP"),
+      Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
-  val scenerio2User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place", Some("BN43 5QP"),
-    Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
+    val scenerio2User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place", Some("BN43 5QP"),
+      Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
-  val email = Random.alphanumeric.take(64).mkString("") + "@" + Random.alphanumeric.take(189).mkString("")
-  def randomString(length: Int): String = Random.alphanumeric.take(length).mkString("")
+    val email = Random.alphanumeric.take(64).mkString("") + "@" + Random.alphanumeric.take(189).mkString("")
 
-  val scenerio3User = UserInfo(Some("Sarahjacquelinefredricktom"), Some("SmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmi"),
-    None, Some(Address(randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35),
-      Some("BN435QPABC"), Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some(email))
+    def randomString(length: Int): String = Random.alphanumeric.take(length).mkString("")
 
-  val scenario4User = UserInfo(Some("a"), Some("b"), None, Some(Address("a\nb\nc\nd\ne", Some("B"), Some("United Kingdom"), Some("GB"))),
-    Some(LocalDate.of(1999, 12, 12)), None, None, Some("a@a.co"))
+    val scenerio3User = UserInfo(Some("Sarahjacquelinefredricktom"), Some("SmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmi"),
+      None, Some(Address(randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35),
+        Some("BN435QPABC"), Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some(email))
 
-  val scenario6User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n, line 5\n", Some("BN43 5QP"),
-    Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, None)
+    val scenario4User = UserInfo(Some("a"), Some("b"), None, Some(Address("a\nb\nc\nd\ne", Some("B"), Some("United Kingdom"), Some("GB"))),
+      Some(LocalDate.of(1999, 12, 12)), None, None, Some("a@a.co"))
 
-  val scenario7User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("C/O Fish 'n' Chips Ltd.\nThe Tate & Lyle Building\nCarisbrooke Rd.\nBarton-under-Needwood\nDerbyshire", Some("W1J 7NT"),
-    Some("Greece"), Some("GR"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
+    val scenario6User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n, line 5\n", Some("BN43 5QP"),
+      Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, None)
+
+    val scenario7User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("C/O Fish 'n' Chips Ltd.\nThe Tate & Lyle Building\nCarisbrooke Rd.\nBarton-under-Needwood\nDerbyshire", Some("W1J 7NT"),
+      Some("Greece"), Some("GR"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
 
+    val hardCodedData: Map[Token, UserInfo] = Map(
+      "rvvcjuoZatpkmrolydvufvmxphlrceNdsgNHoBiwtoglrqenlkpqlxzakeKpmDizscmqepbaxphxbqvcvotlzff" → scenario1User,
 
-  val hardCodedData: Map[Token,UserInfo] = Map(
-    "rvvcjuoZatpkmrolydvufvmxphlrceNdsgNHoBiwtoglrqenlkpqlxzakeKpmDizscmqepbaxphxbqvcvotlzff" → scenario1User,
+      "EgnebofytKPVcsjirlxpvgcsnvghtdGxx" → scenerio2User,
 
-    "EgnebofytKPVcsjirlxpvgcsnvghtdGxx" → scenerio2User,
+      "kwwigeyGsakfrskugvawwjnitxibsyzouytkvrcgqzclDdfkE" → scenerio3User,
 
-    "kwwigeyGsakfrskugvawwjnitxibsyzouytkvrcgqzclDdfkE" → scenerio3User,
+      "FttygwwkxczolvuCtjjynuhwqfguxozTzyqdbKTsdqrc" → scenario4User,
 
-    "FttygwwkxczolvuCtjjynuhwqfguxozTzyqdbKTsdqrc" → scenario4User,
+      "gvlnrtvoPdnqbsPyqfztrtyztteezxgixrlAdvhoQtrzd" → scenario6User,
 
-    "gvlnrtvoPdnqbsPyqfztrtyztteezxgixrlAdvhoQtrzd" → scenario6User,
+      "uMupuqobsqxp" → scenario7User
+    )
 
-    "uMupuqobsqxp" → scenario7User
-  )
+  }
 }
 
 object UserInfoAPIController {
