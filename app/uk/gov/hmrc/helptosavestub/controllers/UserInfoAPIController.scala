@@ -78,11 +78,9 @@ class UserInfoAPIController extends BaseController {
         ) { info ⇒
           Logger.info(s"Returning $info to request")
           Ok(Json.toJson(info))
-
         }
       }
   }
-
 
 
   //DATA FOR AIR GAP TESTING
@@ -112,8 +110,6 @@ class UserInfoAPIController extends BaseController {
 
 
 
-
-
   val hardCodedData: Map[Token,UserInfo] = Map(
     "rvvcjuoZatpkmrolydvufvmxphlrceNdsgNHoBiwtoglrqenlkpqlxzakeKpmDizscmqepbaxphxbqvcvotlzff" → scenario1User,
 
@@ -127,7 +123,6 @@ class UserInfoAPIController extends BaseController {
 
     "uMupuqobsqxp" → scenario7User
   )
-
 }
 
 object UserInfoAPIController {

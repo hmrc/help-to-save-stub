@@ -18,13 +18,11 @@ package uk.gov.hmrc.helptosavefrontend.models
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
-
 import cats.data.Validated.Invalid
 import cats.data.{NonEmptyList, Validated, ValidatedNel}
 import cats.syntax.cartesian._
 import play.api.libs.json._
 import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo.{ContactDetails, Email}
-
 import scala.annotation.tailrec
 import scala.util.{Failure, Success, Try}
 import scala.util.matching.Regex
@@ -283,8 +281,6 @@ object NSIUserInfo {
   private case class Email(local: String, domain: String)
 
   private case class AddressLines(line1: String, line2: String, line3: Option[String], line4: Option[String], line5: Option[String])
-
-
 
 }
 
