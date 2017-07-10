@@ -70,6 +70,7 @@ class UserInfoAPIController extends BaseController {
         Logger.error(message)
         Unauthorized(message)
       }{ token ⇒
+        Logger.info(s"Received request to get user info for token $token")
         val userInfo: Option[UserInfo] =
         AirGapTesting.hardCodedData.get(token).orElse(userInfoGen.seeded(token))
         userInfo.fold(
@@ -86,17 +87,18 @@ class UserInfoAPIController extends BaseController {
   object AirGapTesting {
     type Token = String
 
+    def randomString(length: Int): String = Random.alphanumeric.take(length).mkString("")
+    def randomAlphaString(length: Int): String = Random.alphanumeric.filter(_.isLetter).take(length).mkString("")
+
+    val email = randomString(64) + "@" + randomString(189)
+
     val scenario1User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n line 5\n", Some("BN43 5QP"),
       Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
     val scenerio2User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place", Some("BN43 5QP"),
       Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
-    val email = Random.alphanumeric.take(64).mkString("") + "@" + Random.alphanumeric.take(189).mkString("")
-
-    def randomString(length: Int): String = Random.alphanumeric.take(length).mkString("")
-
-    val scenerio3User = UserInfo(Some("Sarahjacquelinefredricktom"), Some("SmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithsmithSmiththissurnameisthreehundredcharacterslongsmithsmithsmithsmithsmithsmi"),
+    val scenerio3User = UserInfo(Some(randomAlphaString(26)), Some(randomAlphaString(300)),
       None, Some(Address(randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35),
         Some("BN435QPABC"), Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some(email))
 
