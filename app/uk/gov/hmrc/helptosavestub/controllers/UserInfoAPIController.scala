@@ -96,14 +96,14 @@ class UserInfoAPIController extends BaseController {
       Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
     val scenerio2User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place", Some("BN43 5QP"),
-      Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
+      Some("United Kingdom"), None)), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
     val scenerio3User = UserInfo(Some(randomAlphaString(26)), Some(randomAlphaString(300)),
       None, Some(Address(randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35),
         Some("BN435QPABC"), Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some(email))
 
     val scenario4User = UserInfo(Some("a"), Some("b"), None, Some(Address("a\nb\nc\nd\ne", Some("B"), Some("United Kingdom"), Some("GB"))),
-      Some(LocalDate.of(1999, 12, 12)), None, None, Some("a@a.co"))
+      Some(LocalDate.of(1999, 12, 12)), None, None, Some("a@a"))
 
     val scenario6User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n, line 5\n", Some("BN43 5QP"),
       Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, None)
