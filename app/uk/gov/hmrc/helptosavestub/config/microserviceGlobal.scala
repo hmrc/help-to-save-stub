@@ -29,8 +29,7 @@ import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
 
 object ControllerConfiguration extends ControllerConfig {
   lazy val controllerConfigs = Play.current.configuration.underlying.as[Config]("controllers")
-  val nsiConfigs = Play.current.configuration.underlying.as[Config]("nsi")
-  val nsiHeaderKey = nsiConfigs.getString("authorization.header-key")
+  val nsiHeaderKey = Play.current.configuration.underlying.as[Config]("nsi").getString("authorization.header-key")
 }
 
 object AuthParamsControllerConfiguration extends AuthParamsControllerConfig {
@@ -63,6 +62,4 @@ object MicroserviceGlobal extends DefaultMicroserviceGlobal with RunMode with Mi
   override val microserviceAuditFilter = MicroserviceAuditFilter
 
   override val authFilter = Some(MicroserviceAuthFilter)
-
-
 }
