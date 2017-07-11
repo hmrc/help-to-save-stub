@@ -26,6 +26,7 @@ import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.Constants._
 import uk.gov.hmrc.helptosavestub.models.SquidModels.AccountCommand
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.helptosavestub.config.ControllerConfiguration._
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
@@ -175,10 +176,14 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   }
 
   def createAccount(): Action[AnyContent] = Action { request =>
-    val mimeType = request.headers.toSimpleMap.get(CONTENT_TYPE)
+    val headerMap = request.headers.toSimpleMap
+    val mimeType = headerMap.get(CONTENT_TYPE)
+    val authKey = headerMap.get(nsiHeaderKey)
 
     mimeType match {
-      case Some("application/json") => processBody(request)
+      case Some("application/json") =>
+        val headers = request.headers.toMap
+        if (authKey.isDefined) processBody(request) else Unauthorized
       case _ => UnsupportedMediaType
     }
   }
