@@ -178,7 +178,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
   def createAccount(): Action[AnyContent] = Action { request =>
     val headerMap = request.headers.toSimpleMap
     val mimeType = headerMap.get(CONTENT_TYPE)
-    val authKey = headerMap.get(nsiHeaderKey)
+    lazy val authKey = headerMap.get(nsiHeaderKey)
 
     mimeType match {
       case Some("application/json") => if (authKey.isDefined) processBody(request) else Unauthorized
