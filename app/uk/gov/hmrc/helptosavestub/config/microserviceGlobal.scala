@@ -29,7 +29,7 @@ import uk.gov.hmrc.play.filters.MicroserviceFilterSupport
 
 object ControllerConfiguration extends ControllerConfig {
   lazy val controllerConfigs = Play.current.configuration.underlying.as[Config]("controllers")
-  val nsiHeaderKey = Play.current.configuration.underlying.as[Config]("nsi").getString("authorization.header-key")
+  val nsiHeaderKey = Play.current.configuration.underlying.getString("nsi.authorization.header-key")
 }
 
 object AuthParamsControllerConfiguration extends AuthParamsControllerConfig {
