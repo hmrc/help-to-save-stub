@@ -181,9 +181,7 @@ class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseContro
     val authKey = headerMap.get(nsiHeaderKey)
 
     mimeType match {
-      case Some("application/json") =>
-        val headers = request.headers.toMap
-        if (authKey.isDefined) processBody(request) else Unauthorized
+      case Some("application/json") => if (authKey.isDefined) processBody(request) else Unauthorized
       case _ => UnsupportedMediaType
     }
   }
