@@ -25,6 +25,7 @@ import hmrc.smartstub._
 import org.scalacheck.Gen
 import play.api.Logger
 import uk.gov.hmrc.domain
+import scala.util.Random
 
 class UserInfoAPIController extends BaseController {
   import uk.gov.hmrc.helptosavestub.controllers.UserInfoAPIController._
@@ -68,8 +69,11 @@ class UserInfoAPIController extends BaseController {
         val message = "Could not find Authorization in header"
         Logger.error(message)
         Unauthorized(message)
-      } { token ⇒
-        userInfoGen.seeded(token).fold(
+      }{ token ⇒
+        Logger.info(s"Received request to get user info for token $token")
+        val userInfo: Option[UserInfo] =
+        AirGapTesting.hardCodedData.get(token).orElse(userInfoGen.seeded(token))
+        userInfo.fold(
           InternalServerError("Could not generate user info")
         ) { info ⇒
           Logger.info(s"Returning $info to request")
@@ -79,10 +83,53 @@ class UserInfoAPIController extends BaseController {
   }
 
 
+  //DATA FOR AIR GAP TESTING
+  object AirGapTesting {
+    type Token = String
+
+    def randomString(length: Int): String = Random.alphanumeric.take(length).mkString("")
+    def randomAlphaString(length: Int): String = Random.alphanumeric.filter(_.isLetter).take(length).mkString("")
+
+    val email = randomString(64) + "@" + randomString(189)
+
+    val scenario1User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n line 5\n", Some("BN43 5QP"),
+      Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
+
+    val scenerio2User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place", Some("BN43 5QP"),
+      Some("United Kingdom"), None)), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
+
+    val scenerio3User = UserInfo(Some(randomAlphaString(26)), Some(randomAlphaString(300)),
+      None, Some(Address(randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35),
+        Some("BN435QPABC"), Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some(email))
+
+    val scenario4User = UserInfo(Some("a"), Some("b"), None, Some(Address("a\nb\nc\nd\ne", Some("B"), Some("United Kingdom"), Some("GB"))),
+      Some(LocalDate.of(1999, 12, 12)), None, None, Some("a@a"))
+
+    val scenario6User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("1 the street\n the place\n the town\n line 4\n, line 5\n", Some("BN43 5QP"),
+      Some("United Kingdom"), Some("GB"))), Some(LocalDate.of(1999, 12, 12)), None, None, None)
+
+    val scenario7User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("C/O Fish 'n' Chips Ltd.\nThe Tate & Lyle Building\nCarisbrooke Rd.\nBarton-under-Needwood\nDerbyshire", Some("W1J 7NT"),
+      Some("Greece"), Some("GR"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
+
+
+    val hardCodedData: Map[Token, UserInfo] = Map(
+      "rvvcjuoZatpkmrolydvufvmxphlrceNdsgNHoBiwtoglrqenlkpqlxzakeKpmDizscmqepbaxphxbqvcvotlzff" → scenario1User,
+
+      "EgnebofytKPVcsjirlxpvgcsnvghtdGxx" → scenerio2User,
+
+      "kwwigeyGsakfrskugvawwjnitxibsyzouytkvrcgqzclDdfkE" → scenerio3User,
+
+      "FttygwwkxczolvuCtjjynuhwqfguxozTzyqdbKTsdqrc" → scenario4User,
+
+      "gvlnrtvoPdnqbsPyqfztrtyztteezxgixrlAdvhoQtrzd" → scenario6User,
+
+      "uMupuqobsqxp" → scenario7User
+    )
+
+  }
 }
 
 object UserInfoAPIController {
-
 
   case class Address(formatted: String,
                      postal_code: Option[String],
