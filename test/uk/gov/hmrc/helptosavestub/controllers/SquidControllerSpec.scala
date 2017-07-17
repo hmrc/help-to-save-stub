@@ -49,6 +49,8 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
 
   private val messagesApi = injector.instanceOf[MessagesApi]
 
+  private val headerKey = fakeApplication.configuration.underlying.getString("nsi.authorization.header-key")
+
   private val noCAKeyMap = Map[String, Map[String, String]]("wibble" -> Map())
 
   private val noCAKeyJson = Json.toJson(noCAKeyMap)
@@ -146,18 +148,24 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     Json.toJson(goodAccount copy (contactDetails = cd))
   }
 
-  private val fakeRequest = FakeRequest().withJsonBody(Json.toJson(goodAccount)).withHeaders((CONTENT_TYPE, "application/json"))
+  private val fakeRequest = FakeRequest().withJsonBody(Json.toJson(goodAccount)).withHeaders((CONTENT_TYPE, "application/json"), headerKey -> "someValue")
 
-  private def makeFakeRequest(json: JsValue) = FakeRequest().withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"))
+  private def makeFakeRequest(json: JsValue) = FakeRequest().withJsonBody(json).withHeaders((CONTENT_TYPE, "application/json"), headerKey -> "someValue")
 
   private def buildRequest(json: JsValue) = FakeRequest("", "", FakeHeaders(), json.toString())
 
   "Squid Controller" must {
 
-    "return 415 if the mime type is not application/json" in {
+    "return 415 if the mime type is not application/json but there is authorization" in {
       val fakeRequestWithoutJson = FakeRequest()
       val result = squidController.createAccount()(fakeRequestWithoutJson)
       status(result) shouldBe Status.UNSUPPORTED_MEDIA_TYPE
+    }
+
+    "return Unauthorized if there is a mime type but no authorization" in {
+      val fakeRequestWithoutJson = FakeRequest()withHeaders((CONTENT_TYPE, "application/json"))
+      val result = squidController.createAccount()(fakeRequestWithoutJson)
+      status(result) shouldBe Status.UNAUTHORIZED
     }
 
     "return Status.CREATED when requested" in {
@@ -174,13 +182,13 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
     }
 
     "If the stub is sent a request with no JSON content it should return a 400" in {
-      val fakeRequestWithoutJson = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"))
+      val fakeRequestWithoutJson = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"), headerKey -> "someValue")
       val result = squidController.createAccount()(fakeRequestWithoutJson)
       status(result) shouldBe Status.BAD_REQUEST
     }
 
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the errorMessageId set as AAAA0002" in {
-      val fakeRequestWithoutJson = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"))
+      val fakeRequestWithoutJson = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"), headerKey -> "someValue")
       val result: Future[Result] = squidController.createAccount()(fakeRequestWithoutJson)
       status(result)
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -192,7 +200,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
 
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
       "error message set to message site.no-json" in {
-      val fakeRequestWithoutJson = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"))
+      val fakeRequestWithoutJson = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"), headerKey -> "someValue")
       val result: Future[Result] = squidController.createAccount()(fakeRequestWithoutJson)
       status(result)
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
@@ -204,7 +212,7 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
 
     "If the stub is sent a request with no JSON content it should have an Error object in the response with the " +
       "error detail set to message site.no-json-detail" in {
-      val fakeRequestWithoutJson: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"))
+      val fakeRequestWithoutJson: FakeRequest[AnyContentAsEmpty.type] = FakeRequest().withHeaders((CONTENT_TYPE, "application/json"), headerKey -> "someValue")
       val result: Future[Result] = squidController.createAccount()(fakeRequestWithoutJson)
       status(result)
       val wrapper = Json.fromJson[TestErrorWrapper](contentAsJson(result))
