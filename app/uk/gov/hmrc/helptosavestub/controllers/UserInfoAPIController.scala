@@ -111,6 +111,9 @@ class UserInfoAPIController extends BaseController {
     val scenario7User = UserInfo(Some("Sarah"), Some("Smith"), None, Some(Address("C/O Fish 'n' Chips Ltd.\nThe Tate & Lyle Building\nCarisbrooke Rd.\nBarton-under-Needwood\nDerbyshire", Some("W1J 7NT"),
       Some("Greece"), Some("GR"))), Some(LocalDate.of(1999, 12, 12)), None, None, Some("sarah@smith.com"))
 
+    val scenario11User = UserInfo(Some("René Chloë"), Some("O'Connor-Jørgensen"), None, Some(Address("17 Ålfotbreen\nGrünerløkka\nBodø", Some("19023"),
+      Some("Ireland"), Some("IR"))), Some(LocalDate.of(1980, 2, 29)), None, None, Some("rené.chloë@jørgensen.com"))
+
 
     val hardCodedData: Map[Token, UserInfo] = Map(
       "rvvcjuoZatpkmrolydvufvmxphlrceNdsgNHoBiwtoglrqenlkpqlxzakeKpmDizscmqepbaxphxbqvcvotlzff" → scenario1User,
@@ -123,7 +126,9 @@ class UserInfoAPIController extends BaseController {
 
       "gvlnrtvoPdnqbsPyqfztrtyztteezxgixrlAdvhoQtrzd" → scenario6User,
 
-      "uMupuqobsqxp" → scenario7User
+      "uMupuqobsqxp" → scenario7User,
+
+      "uqfeptjgnpjkjAzcykLpgjluZhUlugGqNmxudvfXSAoqrnyrqhqpmisqBZaeGzfsiajgvSgzf" → scenario11User
     )
 
   }
