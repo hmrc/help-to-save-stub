@@ -60,8 +60,6 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
     "return a 400 for a bad request in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-        .withJsonBody(Json.toJson(testCreateAccount.copy(
-          contactDetails  = testCreateAccount.contactDetails.copy(email = ""))))
       val result = NSIController.createAccount()(request)
       status(result) shouldBe BAD_REQUEST
     }

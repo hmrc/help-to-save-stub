@@ -72,17 +72,8 @@ object NSIController extends BaseController {
             Json.toJson(SubmissionFailure(None,"Invalid Json", er.toString))))
 
         case Some(JsSuccess(info, _)) ⇒
-          info.validate().fold(
-            errors  ⇒ {
-              Logger.error(s"User details not valid for create-account request: $requestBodyText")
-              Future.successful(BadRequest(
-                Json.toJson(SubmissionFailure(None, "Invalid user details", errors.toList.mkString(",")))))
-            },
-            _ ⇒ {
               Logger.info("Responding to createAccount with 201")
               Future.successful(Created)
-            }
-          )
       }
     } else {
       Logger.error("No authorisation data found in header")
