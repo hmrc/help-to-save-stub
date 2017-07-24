@@ -4,7 +4,7 @@
 
 Run the help-to-save-stub service on port 7002, e.g.:
 
-sbt "run 7002".
+sbt "run 7002"
 
 ### License 
 
