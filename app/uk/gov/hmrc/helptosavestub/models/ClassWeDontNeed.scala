@@ -16,4 +16,4 @@
 
 package uk.gov.hmrc.helptosavestub.models
 
-case class ClassWeDontNeed(name: String, number: Int, price: Int)
+case class ClassWeDontNeed(name: String, number: Int, price: Int, address: String)
