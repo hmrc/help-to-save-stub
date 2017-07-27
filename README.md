@@ -6,6 +6,6 @@ Run the help-to-save-stub service on port 7002, e.g.:
 
 sbt "run 7002"
 
-### License 
+### License
 
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html") 
