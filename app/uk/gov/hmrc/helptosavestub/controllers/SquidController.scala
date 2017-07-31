@@ -22,15 +22,14 @@ import play.api.Logger
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsError, _}
 import play.api.mvc._
-import uk.gov.hmrc.helptosavestub.Constants._
 import uk.gov.hmrc.helptosavestub.models.SquidModels.AccountCommand
+import SquidController._
+import SquidController.Constants._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.config.ControllerConfiguration._
 
 @Singleton
 class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
-
-  import SquidController._
 
   private val logger = Logger("SquidController")
 
@@ -211,5 +210,44 @@ object SquidController {
     "BN", "BR", "BW", "BA", "BO", "BT", "BJ", "BZ", "BE", "BY",
     "BB", "BD", "BH", "AZ", "AT", "AU", "AM", "AR", "AG", "AO",
     "AD", "DZ", "AL", "AF", "GB", "CS", "YU", "DD", "SU")
+
+  object Constants {
+    val NO_JSON_ERROR_CODE = "AAAA0002"                    //Unofficial
+    val PRECANNED_RESPONSE_ERROR_CODE = "AAAA0004"         //Unofficial
+    val UNABLE_TO_PARSE_COMMAND_ERROR_CODE = "AAAAA0005"   //Unofficial
+    val FORENAME_TOO_FEW_CHARS_ERROR_CODE = "AAAA0006"     //Unofficial
+    val FORENAME_TOO_MANY_CHARS_ERROR_CODE = "AAAA0007"    //Unofficial
+    val SURNAME_TOO_FEW_CHARS_ERROR_CODE = "AAAA0008"      //Unofficial
+    val SURNAME_TOO_MANY_CHARS_ERROR_CODE = "AAAA0009"     //Unofficial
+    val BAD_DATE_TOO_EARLY_ERROR_CODE = "AAAA0010"         //Unofficial
+    val BAD_DATE_TOO_LATE_ERROR_CODE = "AAAA0011"          //Unofficial
+    val ADDRESS_ONE_TOO_SHORT_ERROR_CODE = "AAAA0012"      //Unofficial
+    val ADDRESS_ONE_TOO_LONG_ERROR_CODE = "AAAA0013"       //Unofficial
+    val ADDRESS_TWO_TOO_SHORT_ERROR_CODE = "AAAA0014"      //Unofficial
+    val ADDRESS_TWO_TOO_LONG_ERROR_CODE = "AAAA0015"       //Unofficial
+    val ADDRESS_THREE_TOO_LONG_ERROR_CODE = "AAAA0016"     //Unofficial
+    val ADDRESS_FOUR_TOO_LONG_ERROR_CODE = "AAAA0017"      //Unofficial
+    val ADDRESS_FIVE_TOO_LONG_ERROR_CODE = "AAAA0018"      //Unofficial
+    val PHONE_NUMBER_TOO_LONG_ERROR_CODE = "AAAA0019"      //Unofficial
+    val EMAIL_ADDRESS_TOO_LONG_ERROR_CODE = "AAAA0020"     //Unofficial
+    val EMAIL_ADDRESS_INVALID_ERROR_CODE = "AAAA0021"      //Unofficial
+    val INVALID_POSTCODE_ERROR_CODE = "ZYRC0506"
+    val LEADING_SPACES_ERROR_CODE = "ZYRA0703"
+    val NUMERIC_CHARS_ERROR_CODE = "ZYRA0705"
+    val DISALLOWED_CHARS_ERROR_CODE = "ZYRA0711"
+    val FIRST_CHAR_SPECIAL_ERROR_CODE = "ZYRA0712"
+    val LAST_CHAR_SPECIAL_ERROR_CODE = "ZYRA0713"
+    val TOO_FEW_INITIAL_ALPHA_ERROR_CODE = "ZYRA0714"
+    val TOO_FEW_CONSECUTIVE_ALPHA_ERROR_CODE = "ZYRA0715"
+    val TOO_MANY_CONSECUTIVE_SPECIAL_ERROR_CODE = "ZYRA0716"
+    val UNPARSABLE_DATE_ERROR_CODE = "CWFDAT02"
+    val BAD_DAY_DATE_ERROR_CODE = "CWDAT03"
+    val BAD_MONTH_DATE_ERROR_CODE = "CWFDAT04"
+    val BAD_CENTURY_DATE_ERROR_CODE = "CWDAT06"
+    val UNKNOWN_COUNTRY_CODE_ERROR_CODE = "TAR10005"
+    val BAD_NINO_ERROR_CODE = "ZYRC0508"
+    val BAD_COMM_PREF_ERROR_CODE = "AAAA0003"              //Unofficial
+    val EMAIL_NEEDED_ERROR_CODE = "ZYMC0004"
+  }
 
 }
