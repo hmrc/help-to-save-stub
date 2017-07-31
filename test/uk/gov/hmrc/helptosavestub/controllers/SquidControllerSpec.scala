@@ -22,7 +22,7 @@ import play.api.libs.json._
 import play.api.mvc.{AnyContentAsEmpty, Result}
 import play.api.test.Helpers._
 import play.api.test._
-import uk.gov.hmrc.helptosavestub.Constants._
+import uk.gov.hmrc.helptosavestub.controllers.SquidController.Constants._
 import uk.gov.hmrc.helptosavestub.models.SquidModels.{AccountCommand, ContactDetails}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
