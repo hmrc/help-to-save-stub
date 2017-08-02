@@ -16,21 +16,21 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.Logger
 import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
-object ITMPEnrolmentController extends BaseController{
+object ITMPEnrolmentController extends BaseController with Logging {
 
   def enrol(nino: String): Action[AnyContent] = Action { implicit request ⇒
     if(nino.startsWith("C")){
-      Logger.info("Received request to set ITMP flag: returning status 409 (CONFLICT)")
+      logger.info("Received request to set ITMP flag: returning status 409 (CONFLICT)")
       Conflict
     } else if(nino.startsWith("E")){
-      Logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
+      logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
       InternalServerError
     } else {
-      Logger.info("Received request to set ITMP flag: returning status 200 (OK)")
+      logger.info("Received request to set ITMP flag: returning status 200 (OK)")
       Ok
     }
   }

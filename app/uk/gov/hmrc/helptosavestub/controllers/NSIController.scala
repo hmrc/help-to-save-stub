@@ -20,17 +20,16 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-import play.api.Logger
 import play.api.libs.json._
 import play.api.mvc.{Action, Headers}
 import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.helptosavestub.controllers.SubmissionFailure._
+import uk.gov.hmrc.helptosavestub.util.Logging
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
-object NSIController extends BaseController {
+object NSIController extends BaseController with Logging {
 
   val authorizationHeaderKey = "Authorization1"
   val authorizationValuePrefix = "Basic: "
@@ -48,7 +47,7 @@ object NSIController extends BaseController {
               Some(new String(bytes, StandardCharsets.UTF_8))
 
             case Failure(error) ⇒
-              Logger.error(s"Could not decode authorization details: header value was $h. ${error.getMessage}", error)
+              logger.error(s"Could not decode authorization details: header value was $h. ${error.getMessage}", error)
               None
           }
         }
@@ -62,21 +61,21 @@ object NSIController extends BaseController {
 
       request.body.asJson.map(_.validate[NSIUserInfo]) match {
         case None ⇒
-          Logger.error(s"No JSON found for create-account request: $requestBodyText")
+          logger.error(s"No JSON found for create-account request: $requestBodyText")
           Future.successful(BadRequest(
             Json.toJson(SubmissionFailure(None,"No JSON found",""))))
 
         case Some(er: JsError) ⇒
-          Logger.error(s"Could not parse JSON found for create-account request: $requestBodyText")
+          logger.error(s"Could not parse JSON found for create-account request: $requestBodyText")
           Future.successful(BadRequest(
             Json.toJson(SubmissionFailure(None,"Invalid Json", er.toString))))
 
         case Some(JsSuccess(info, _)) ⇒
-              Logger.info("Responding to createAccount with 201")
+              logger.info("Responding to createAccount with 201")
               Future.successful(Created)
       }
     } else {
-      Logger.error("No authorisation data found in header")
+      logger.error("No authorisation data found in header")
       Future.successful(Unauthorized)
     }
   }
