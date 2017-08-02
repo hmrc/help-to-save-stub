@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.format.DateTimeFormatter
 import javax.inject.{Inject, Singleton}
-import play.api.Logger
+
 import play.api.i18n.MessagesApi
 import play.api.libs.json.{JsError, _}
 import play.api.mvc._
@@ -27,11 +27,10 @@ import SquidController._
 import SquidController.Constants._
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.config.ControllerConfiguration._
+import uk.gov.hmrc.helptosavestub.util.Logging
 
 @Singleton
-class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController {
-
-  private val logger = Logger("SquidController")
+class SquidController @Inject()(val messagesApi: MessagesApi) extends BaseController with Logging {
 
   private val ninoRegex = """^(([A-CEGHJ-PR-TW-Z][A-CEGHJ-NPR-TW-Z])([0-9]{2})([0-9]{2})([0-9]{2})([A-D]{1})|((XX)(99)(99)(99)(X)))$""".r
 
