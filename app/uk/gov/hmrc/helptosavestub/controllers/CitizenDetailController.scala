@@ -23,7 +23,6 @@ import org.scalacheck.Gen
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
 import hmrc.smartstub._
-import uk.gov.hmrc.helptosavestub.util.{AirGapTesting, DummyData}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 object CitizenDetailsController extends BaseController {
@@ -51,9 +50,9 @@ object CitizenDetailsController extends BaseController {
     import Gen._
 
     val personGen = for {
-      fnameO <- some(Gen.forename)
-      snameO <- some(Gen.surname)
-      dobO ← some(Gen.date(1940, 2017))
+      fnameO <- Gen.some(Gen.forename())
+      snameO <- Gen.some(Gen.surname)
+      dobO ← Gen.some(Gen.date(1940, 2017))
 
     } yield Person( fnameO, snameO, dobO)
 
@@ -76,7 +75,7 @@ object CitizenDetailsController extends BaseController {
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
     implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
-    DummyData.hardCodedData.get(encode(nino)).orElse(responseGen.seeded(nino)).map { response =>
+    responseGen.seeded(nino).map { response =>
       Ok(Json.toJson(response))
     }.getOrElse{
       NotFound
