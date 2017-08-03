@@ -17,11 +17,13 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.LocalDate
+import java.util.Base64
 
 import org.scalacheck.Gen
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
 import hmrc.smartstub._
+import uk.gov.hmrc.helptosavestub.util.{AirGapTesting, DummyData}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 object CitizenDetailsController extends BaseController {
@@ -74,11 +76,13 @@ object CitizenDetailsController extends BaseController {
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
     implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
-    responseGen.seeded(nino).map { response =>
+    DummyData.hardCodedData.get(encode(nino)).orElse(responseGen.seeded(nino)).map { response =>
       Ok(Json.toJson(response))
     }.getOrElse{
       NotFound
     }
   }
+
+  def encode(nino: String): String = new String(Base64.getEncoder.encode(nino.getBytes()))
 
 }
