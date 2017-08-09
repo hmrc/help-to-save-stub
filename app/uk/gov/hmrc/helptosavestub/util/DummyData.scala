@@ -99,7 +99,6 @@ object DummyData {
     "QUUxMzAxMjNC" → noEmailUser
   )
 
-
   def find(nino: String): Option[UserInfo] =
     hardCodedData.get(new String(Base64.getEncoder.encode(nino.getBytes)))
 }

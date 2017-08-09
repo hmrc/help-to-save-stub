@@ -57,9 +57,7 @@ class UserDetailsController extends BaseController with Logging {
   def toUserDetails(userInfo: UserInfo) = UserDetails(
     userInfo.forename, userInfo.surname, userInfo.email, userInfo.dateOfBirth
   )
-
 }
-
 
 object UserDetailsController{
   case class UserDetails(name: String,
