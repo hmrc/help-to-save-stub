@@ -23,6 +23,8 @@ import org.scalacheck.Gen
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
 import hmrc.smartstub._
+import uk.gov.hmrc.helptosavestub.util.DummyData
+import uk.gov.hmrc.helptosavestub.util.DummyData.UserInfo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 object CitizenDetailsController extends BaseController {
@@ -36,6 +38,8 @@ object CitizenDetailsController extends BaseController {
   case class Address(line1: Option[String],
                      line2: Option[String],
                      line3: Option[String],
+                     line4: Option[String],
+                     line5: Option[String],
                      postcode: Option[String],
                      country: Option[String]
                     )
@@ -57,15 +61,20 @@ object CitizenDetailsController extends BaseController {
     } yield Person( fnameO, snameO, dobO)
 
     val addressGen = for {
-      address <- Gen.ukAddress.map{_.map{x => some(const(x))}}
-      initAdd = address.init ++ List.fill(3)(const(Option.empty[String]))
-      add1 <- initAdd(0)
-      add2 <- initAdd(1)
-      add3 <- initAdd(2)
-      postcodeO <- address.last
-      countryO <- some(const("GB"))
-
-    } yield Address(add1, add2, add3, postcodeO, countryO)
+      address  <- Gen.ukAddress
+      postcode <- some(Gen.postcode)
+      country  <- some(const("GB"))
+    } yield {
+      val (l1, l2, l3, l4, l5) = address match {
+        case Nil                     ⇒ (None, None, None, None, None)
+        case a :: Nil                ⇒ (Some(a), None, None, None ,None)
+        case a :: b :: Nil           ⇒ (Some(a), Some(b), None, None ,None)
+        case a :: b :: c :: Nil      ⇒ (Some(a), Some(b), Some(c), None ,None)
+        case a :: b :: c :: d :: Nil ⇒ (Some(a), Some(b), Some(c), Some(d) ,None)
+        case a :: b :: c :: d :: e   ⇒ (Some(a), Some(b), Some(c), Some(d), Some(e.mkString(", ")))
+      }
+      Address(l1, l2, l3, l4, l5, postcode, country)
+    }
 
     for {
       personO <- some(personGen)
@@ -75,12 +84,29 @@ object CitizenDetailsController extends BaseController {
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
     implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
-    responseGen.seeded(nino).map { response =>
+    DummyData.find(nino).map(toResponse).orElse(responseGen.seeded(nino)).map { response =>
       Ok(Json.toJson(response))
     }.getOrElse{
       NotFound
     }
   }
+
+  private def toResponse(userInfo: UserInfo): Response = Response(
+    Some(Person(
+      Some(userInfo.forename),
+      userInfo.surname,
+      userInfo.dateOfBirth)),
+      Some(Address(
+        userInfo.address.line1,
+        userInfo.address.line2,
+        userInfo.address.line3,
+        userInfo.address.line4,
+        userInfo.address.line5,
+        userInfo.address.postcode,
+        userInfo.address.country
+      ))
+  )
+
 
   def encode(nino: String): String = new String(Base64.getEncoder.encode(nino.getBytes()))
 

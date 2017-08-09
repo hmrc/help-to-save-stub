@@ -17,67 +17,55 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.LocalDate
-import java.util.Base64
 
 import org.scalacheck.Gen
+import org.scalacheck.Gen._
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.Action
 import hmrc.smartstub._
 import uk.gov.hmrc.helptosavestub.controllers.UserDetailsController.UserDetails
-import uk.gov.hmrc.helptosavestub.util.DummyData
+import uk.gov.hmrc.helptosavestub.util.DummyData.UserInfo
+import uk.gov.hmrc.helptosavestub.util.{DummyData, Logging}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
-class UserDetailsController extends BaseController {
+class UserDetailsController extends BaseController with Logging {
 
   type NINO = String
 
-  val userDetailsGen: Gen[UserDetails] = {
-    import Gen._
-
-    val userDetails = for {
-      fname ← Gen.some(Gen.forename())
-      mname ← Gen.some(Gen.forename())
+  val userDetailsGen: Gen[UserDetails] =
+    for {
+      fname ← Gen.forename()
       sname ← Gen.some(Gen.surname)
       dob ← Gen.some(Gen.date(1940, 2017))
-      address ← Gen.some(Gen.ukAddress.map{_.map{x ⇒ some(const(x))}}.toString())
-      postcode0 ← Gen.some(Gen.postcode)
-      cname0 ← some(const("United Kingdom"))
-      ccode0 ← some(const("GB"))
-      email0 ← None
-    } yield UserDetails(fname, mname, sname, dob, address, postcode0, cname0, ccode0, email0)
+      email ← some("email@email.com")
+    } yield UserDetails(fname, sname, email, dob)
 
-    for {
-      userDetails0 ← userDetails
-    } yield userDetails0.get
-  }
 
+  implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
-    implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
-    DummyData.hardCodedData.get(encode(nino)).orElse(userDetailsGen.seeded(nino)).map { response =>
+    logger.info(s"Received request to get user details for nino $nino")
+    DummyData.find(nino).map(toUserDetails).orElse(userDetailsGen.seeded(nino)).map { response =>
+      logger.info(s"Responding to request from $nino with details $response")
       Ok(Json.toJson(response))
     }.getOrElse{
+      logger.warn(s"Could not find or generate data fro nino $nino")
       NotFound
     }
   }
 
-  def encode(nino: String): String = new String(Base64.getEncoder.encode(nino.getBytes()))
+  def toUserDetails(userInfo: UserInfo) = UserDetails(
+    userInfo.forename, userInfo.surname, userInfo.email, userInfo.dateOfBirth
+  )
 
 }
 
 
 object UserDetailsController{
-  case class UserDetails(
-                          givenName: Option[String],
-                          middleName: Option[String],
-                          familyName: Option[String],
-                          birthdate: Option[LocalDate],
-                          formattedAddress: Option[String],
-                          postCode: Option[String],
-                          countryName: Option[String],
-                          countryCode: Option[String],
-                          email: Option[String]
-                        )
+  case class UserDetails(name: String,
+                         lastName: Option[String],
+                         email: Option[String],
+                         dateOfBirth: Option[LocalDate])
 
   object UserDetails {
     implicit val userDetailFormat: Format[UserDetails] = Json.format[UserDetails]

@@ -17,78 +17,89 @@
 package uk.gov.hmrc.helptosavestub.util
 
 import java.time.LocalDate
-import uk.gov.hmrc.helptosavestub.controllers.UserDetailsController.UserDetails
+import java.util.Base64
+
 import scala.util.Random
 
 //DATA FOR AIR GAP TESTING AND INTEGRATION TESTS
 object DummyData {
-  type Token = String
+
+  case class Address(line1: Option[String],
+                     line2: Option[String],
+                     line3: Option[String],
+                     line4: Option[String],
+                     line5: Option[String],
+                     postcode: Option[String],
+                     country: Option[String])
+
+  case class UserInfo(forename: String,
+                      surname: Option[String],
+                      dateOfBirth: Option[LocalDate],
+                      address: Address,
+                      email: Option[String])
 
   def randomString(length: Int): String = Random.alphanumeric.take(length).mkString("")
   def randomAlphaString(length: Int): String = Random.alphanumeric.filter(_.isLetter).take(length).mkString("")
 
   val email = randomString(64) + "@" + randomString(189)
 
-  val scenario1User = UserDetails(Some("Sarah"), None, Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Some("1 the street\n the place\n the town\n line 4\n line 5\n"), Some("BN43 5QP"),
-    Some("United Kingdom"), Some("GB"), Some("sarah@smith.com"))
+  val scenario1User = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
+    Address(Some("line 1"), Some("line 2"), Some("line 3"), Some("line 4"), Some("line 5"),
+      Some("BN43 XXX"), Some("GB")), Some("sarah@smith.com"))
 
-  val scenerio2User = UserDetails(Some("Sarah"), None, Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Some("1 the street\n the place"), Some("BN43 5QP"),
-    Some("United Kingdom"), None, Some("sarah@smith.com"))
+  val scenerio2User = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
+    Address(Some("line1"), Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("BN43 5QP"),
+    Some("GB")), Some("sarah@smith.com"))
 
-  val scenerio3User = UserDetails(Some(randomAlphaString(26)), None, Some(randomAlphaString(300)),
-    Some(LocalDate.of(1999, 12, 12)), Some(randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35) + "\n" + randomString(35)),
-      Some("BN435QPABC"), Some("United Kingdom"), Some("GB"), Some(email))
+  val scenerio3User = UserInfo(randomAlphaString(26), Some(randomAlphaString(300)),
+    Some(LocalDate.of(1999, 12, 12)), Address(Some(randomString(35)), Some(randomString(35)), Some(randomString(35)),
+      Some(randomString(35)), Some(randomString(35)), Some("BN435QPABC"), Some("GB")), Some(email))
 
-  val scenario4User = UserDetails(Some("a"), None, Some("b"), Some(LocalDate.of(1999, 12, 12)),
-    Some("a\nb\nc\nd\ne"), Some("B"), Some("United Kingdom"), Some("GB"), Some("a@a"))
+  val scenario4User = UserInfo("a", Some("b"), Some(LocalDate.of(1999, 12, 12)),
+    Address(Some("a"), Some("b"), Some("c"), Some("d"), Some("e"), Some("B"), Some("GB")), Some("a@a"))
 
-  val scenario6User = UserDetails(Some("Sarah"), None, Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Some("1 the street\n the place\n the town\n line 4\n, line 5\n"), Some("BN43 5QP"),
-    Some("United Kingdom"), Some("GB"), None)
+  val scenario6User = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
+    Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
+    Some("GB")), None)
 
-  val scenario7User = UserDetails(Some("Sarah"), None, Some("Smith"),Some(LocalDate.of(1999, 12, 12)),
-    Some("C/O Fish 'n' Chips Ltd.\nThe Tate & Lyle Building\nCarisbrooke Rd.\nBarton-under-Needwood\nDerbyshire"),
-    Some("W1J 7NT"), Some("Greece"), Some("GR"), Some("sarah@smith.com"))
+  val scenario7User = UserInfo("Sarah", Some("Smith"),Some(LocalDate.of(1999, 12, 12)),
+    Address(Some("C/O Fish 'n' Chips Ltd."), Some("The Tate & Lyle Building"), Some("Carisbrooke Rd."),
+      Some("Barton-under-Needwood"), Some("Derbyshire"), Some("W1J 7NT"), Some("GR")), Some("sarah@smith.com"))
 
-  val scenario11User = UserDetails(Some("René Chloë"), None, Some("O'Connor-Jørgensen"), Some(LocalDate.of(1980, 2, 29)),
-    Some("17 Ålfotbreen\nGrünerløkka\nBodø\nHørdy-Gürdy4\nHørdy-Gürdy5"), Some("19023"),
-    Some("Ireland"), Some("IR"), Some("rené.chloë@jørgensen.com"))
+  val scenario11User = UserInfo("René Chloë", Some("O'Connor-Jørgensen"), Some(LocalDate.of(1980, 2, 29)),
+    Address(Some("17 Ålfotbreen"), Some("Grünerløkka"), Some("Bodø"), Some("Hørdy-Gürdy4"), Some("Hørdy-Gürdy5"), Some("19023"),
+      Some("IR")), Some("rené.chloë@jørgensen.com"))
 
-  val noSurnameUser = UserDetails(Some("Sarah"), None, None, Some(LocalDate.of(1999, 12, 12)),
-    Some("1 the street\n the place\n the town\n line 4\n line 5\n"), Some("BN43 5QP"),
-    Some("United Kingdom"), Some("GB"), Some("sarah@smith.com"))
+  val noSurnameUser = UserInfo("Sarah", None, Some(LocalDate.of(1999, 12, 12)),
+    Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
+    Some("GB")), Some("sarah@smith.com"))
 
-  val noForenameUser = UserDetails(None, None, Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Some("1 the street\n the place\n the town\n line 4\n line 5\n"), Some("BN43 5QP"),
-    Some("United Kingdom"), Some("GB"), Some("sarah@smith.com"))
-
-  val noEmailUser = UserDetails(Some("Sarah"), None, Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Some("1 the street\n the place\n the town\n line 4\n line 5\n"), Some("BN43 5QP"),
-    Some("United Kingdom"), Some("GB"), None)
+  val noEmailUser = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
+    Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
+      Some("GB")), None)
 
 
-  val hardCodedData: Map[Token, UserDetails] = Map(
-    "rvvcjuoZatpkmrolydvufvmxphlrceNdsgNHoBiwtoglrqenlkpqlxzakeKpmDizscmqepbaxphxbqvcvotlzff" → scenario1User,
+  private val hardCodedData: Map[String, UserInfo] = Map(
+    "QUcwMTAxMjND" → scenario1User,
 
-    "EgnebofytKPVcsjirlxpvgcsnvghtdGxx" → scenerio2User,
+    "QUcwMjAxMjND" → scenerio2User,
 
-    "kwwigeyGsakfrskugvawwjnitxibsyzouytkvrcgqzclDdfkE" → scenerio3User,
+    "QUcwMzAxMjND" → scenerio3User,
 
-    "FttygwwkxczolvuCtjjynuhwqfguxozTzyqdbKTsdqrc" → scenario4User,
+    "QUcwNDAxMjND" → scenario4User,
 
-    "gvlnrtvoPdnqbsPyqfztrtyztteezxgixrlAdvhoQtrzd" → scenario6User,
+    "QUcwNjAxMjND" → scenario6User,
 
-    "uMupuqobsqxp" → scenario7User,
+    "QUcwNzAxMjND" → scenario7User,
 
-    "uqfeptjgnpjkjAzcykLpgjluZhUlugGqNmxudvfXSAoqrnyrqhqpmisqBZaeGzfsiajgvSgzf" → scenario11User,
+    "QUcxMTAxMjND" → scenario11User,
 
-    "euvraezmfxsEjsmTwkGhefuv" → noSurnameUser,
+    "QUUxMjAxMjNB" → noSurnameUser,
 
-    "dcguzlcsjbeudkqde" → noForenameUser,
-
-    "deHrncuWvpowjtcybnfibY" → noEmailUser
+    "QUUxMzAxMjNC" → noEmailUser
   )
 
+
+  def find(nino: String): Option[UserInfo] =
+    hardCodedData.get(new String(Base64.getEncoder.encode(nino.getBytes)))
 }
