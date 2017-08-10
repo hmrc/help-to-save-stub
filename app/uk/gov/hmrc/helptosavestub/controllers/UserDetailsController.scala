@@ -46,11 +46,11 @@ class UserDetailsController extends BaseController with Logging {
   def retrieveDetails(nino: NINO) = Action { implicit request =>
     logger.info(s"Received request to get user details for nino $nino")
     DummyData.find(nino).map(toUserDetails).orElse(userDetailsGen.seeded(nino)).map { response =>
-      logger.info(s"Responding to request from $nino with details $response")
+      logger.info(s"[UserDetailsController] Responding to request from $nino with details $response")
       Ok(Json.toJson(response))
     }.getOrElse{
-      logger.warn(s"Could not find or generate data fro nino $nino")
-      NotFound
+      logger.warn(s"[UserDetailsController] Could not find or generate data for nino $nino")
+      InternalServerError
     }
   }
 

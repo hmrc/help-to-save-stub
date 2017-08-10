@@ -23,11 +23,11 @@ import org.scalacheck.Gen
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc.Action
 import hmrc.smartstub._
-import uk.gov.hmrc.helptosavestub.util.DummyData
+import uk.gov.hmrc.helptosavestub.util.{DummyData, Logging}
 import uk.gov.hmrc.helptosavestub.util.DummyData.UserInfo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
-object CitizenDetailsController extends BaseController {
+object CitizenDetailsController extends BaseController with Logging {
 
   type NINO = String
 
@@ -85,9 +85,11 @@ object CitizenDetailsController extends BaseController {
   def retrieveDetails(nino: NINO) = Action { implicit request =>
     implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
     DummyData.find(nino).map(toResponse).orElse(responseGen.seeded(nino)).map { response =>
+      logger.info(s"[CitizenDetailsController] Responding to request from $nino with details $response")
       Ok(Json.toJson(response))
     }.getOrElse{
-      NotFound
+      logger.warn(s"[CitizenDetailsController] Could not find or generate data for nino $nino")
+      InternalServerError
     }
   }
 
