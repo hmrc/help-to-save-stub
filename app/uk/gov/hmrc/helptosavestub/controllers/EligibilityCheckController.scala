@@ -30,14 +30,17 @@ class EligibilityCheckController extends BaseController {
   val ineligibleReasonGen: Gen[Int] = Gen.choose(1,5) // scalastyle:ignore magic.number
 
   def eligibilityCheck(nino: String) = Action { implicit request =>
-    val (result, reason): (Int, Option[Int]) = if(!nino.toUpperCase().startsWith("NA")){
-      1 → eligibleReasonGen.seeded(nino)
-    } else {
-      2 → ineligibleReasonGen.seeded(nino)
-    }
+    val (result, reason): (Int, Option[Int]) =
+      if(nino.startsWith("AC")){
+        // if nino start with AC return someone who has already opened an account in the past
+        2 → Some(1)
+      } else if(!nino.toUpperCase().startsWith("NA")){
+        1 → eligibleReasonGen.seeded(nino)
+      } else {
+        2 → ineligibleReasonGen.seeded(nino)
+      }
 
     reason.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(EligibilityCheckResult(result, r))))
-
   }
 }
 
