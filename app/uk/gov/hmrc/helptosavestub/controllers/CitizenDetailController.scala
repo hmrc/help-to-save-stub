@@ -83,7 +83,6 @@ object CitizenDetailsController extends BaseController with Logging {
   }
 
   def retrieveDetails(nino: NINO) = Action { implicit request =>
-    implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
     DummyData.find(nino).map(toResponse).orElse(responseGen.seeded(nino)).map { response =>
       logger.info(s"[CitizenDetailsController] Responding to request from $nino with details $response")
       Ok(Json.toJson(response))
@@ -98,15 +97,15 @@ object CitizenDetailsController extends BaseController with Logging {
       Some(userInfo.forename),
       userInfo.surname,
       userInfo.dateOfBirth)),
-      Some(Address(
-        userInfo.address.line1,
-        userInfo.address.line2,
-        userInfo.address.line3,
-        userInfo.address.line4,
-        userInfo.address.line5,
-        userInfo.address.postcode,
-        userInfo.address.country
-      ))
+    Some(Address(
+      userInfo.address.line1,
+      userInfo.address.line2,
+      userInfo.address.line3,
+      userInfo.address.line4,
+      userInfo.address.line5,
+      userInfo.address.postcode,
+      userInfo.address.country
+    ))
   )
 
 
