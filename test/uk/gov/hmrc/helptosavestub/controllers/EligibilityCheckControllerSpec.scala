@@ -20,7 +20,7 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
-import uk.gov.hmrc.helptosavestub.models.EligibilityResult
+import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
@@ -45,7 +45,7 @@ class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
       status(result) shouldBe Status.OK
       val json = contentAsString(result)
 
-      Json.fromJson[EligibilityResult](Json.parse(json)).get shouldBe EligibilityResult(isEligible)
+      Json.fromJson[EligibilityCheckResult](Json.parse(json)).get.result shouldBe(if(isEligible) 1 else 2)
     }
   }
 }
