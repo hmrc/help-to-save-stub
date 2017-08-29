@@ -7,3 +7,5 @@ GET        /help-to-save/eligibility-check/:nino      @uk.gov.hmrc.helptosavestu
 ->         /                                          health.Routes
 
 GET        /admin/metrics                             @com.kenshoo.play.metrics.MetricsController.metrics
+
+POST       /email-verification/verification-requests  @uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.verify
