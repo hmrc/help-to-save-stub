@@ -40,12 +40,11 @@ class UserDetailsController extends BaseController with Logging {
       email ← some("email@email.com")
     } yield UserDetails(fname, sname, email, dob)
 
-
   implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
 
-  def retrieveDetails(nino: NINO) = Action { implicit request =>
+  def retrieveDetails(nino: NINO) = Action { implicit request ⇒
     logger.info(s"Received request to get user details for nino $nino")
-    DummyData.find(nino).map(toUserDetails).orElse(userDetailsGen.seeded(nino)).map { response =>
+    DummyData.find(nino).map(toUserDetails).orElse(userDetailsGen.seeded(nino)).map { response ⇒
       logger.info(s"[UserDetailsController] Responding to request from $nino with details $response")
       Ok(Json.toJson(response))
     }.getOrElse{
@@ -59,10 +58,10 @@ class UserDetailsController extends BaseController with Logging {
   )
 }
 
-object UserDetailsController{
-  case class UserDetails(name: String,
-                         lastName: Option[String],
-                         email: Option[String],
+object UserDetailsController {
+  case class UserDetails(name:        String,
+                         lastName:    Option[String],
+                         email:       Option[String],
                          dateOfBirth: Option[LocalDate])
 
   object UserDetails {

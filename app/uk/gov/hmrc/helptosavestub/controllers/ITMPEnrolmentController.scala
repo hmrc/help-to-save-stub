@@ -23,10 +23,10 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 object ITMPEnrolmentController extends BaseController with Logging {
 
   def enrol(nino: String): Action[AnyContent] = Action { implicit request ⇒
-    if(nino.startsWith("C")){
+    if (nino.startsWith("C")) {
       logger.info("Received request to set ITMP flag: returning status 409 (CONFLICT)")
       Conflict
-    } else if(nino.startsWith("E")){
+    } else if (nino.startsWith("E")) {
       logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
       InternalServerError
     } else {

@@ -31,18 +31,18 @@ object CitizenDetailsController extends BaseController with Logging {
 
   type NINO = String
 
-  case class Person(firstName: Option[String],
-                    lastName: Option[String],
+  case class Person(firstName:   Option[String],
+                    lastName:    Option[String],
                     dateOfBirth: Option[LocalDate])
 
-  case class Address(line1: Option[String],
-                     line2: Option[String],
-                     line3: Option[String],
-                     line4: Option[String],
-                     line5: Option[String],
+  case class Address(line1:    Option[String],
+                     line2:    Option[String],
+                     line3:    Option[String],
+                     line4:    Option[String],
+                     line5:    Option[String],
                      postcode: Option[String],
-                     country: Option[String]
-                    )
+                     country:  Option[String]
+  )
 
   case class Response(person: Option[Person], address: Option[Address])
 
@@ -54,36 +54,36 @@ object CitizenDetailsController extends BaseController with Logging {
     import Gen._
 
     val personGen = for {
-      fnameO <- Gen.some(Gen.forename())
-      snameO <- Gen.some(Gen.surname)
+      fnameO ← Gen.some(Gen.forename())
+      snameO ← Gen.some(Gen.surname)
       dobO ← Gen.some(Gen.date(1940, 2017))
 
-    } yield Person( fnameO, snameO, dobO)
+    } yield Person(fnameO, snameO, dobO)
 
     val addressGen = for {
-      address  <- Gen.ukAddress
-      postcode <- some(Gen.postcode)
-      country  <- some(const("GB"))
+      address ← Gen.ukAddress
+      postcode ← some(Gen.postcode)
+      country ← some(const("GB"))
     } yield {
       val (l1, l2, l3, l4, l5) = address match {
         case Nil                     ⇒ (None, None, None, None, None)
-        case a :: Nil                ⇒ (Some(a), None, None, None ,None)
-        case a :: b :: Nil           ⇒ (Some(a), Some(b), None, None ,None)
-        case a :: b :: c :: Nil      ⇒ (Some(a), Some(b), Some(c), None ,None)
-        case a :: b :: c :: d :: Nil ⇒ (Some(a), Some(b), Some(c), Some(d) ,None)
+        case a :: Nil                ⇒ (Some(a), None, None, None, None)
+        case a :: b :: Nil           ⇒ (Some(a), Some(b), None, None, None)
+        case a :: b :: c :: Nil      ⇒ (Some(a), Some(b), Some(c), None, None)
+        case a :: b :: c :: d :: Nil ⇒ (Some(a), Some(b), Some(c), Some(d), None)
         case a :: b :: c :: d :: e   ⇒ (Some(a), Some(b), Some(c), Some(d), Some(e.mkString(", ")))
       }
       Address(l1, l2, l3, l4, l5, postcode, country)
     }
 
     for {
-      personO <- some(personGen)
-      addressO <- some(addressGen)
-    } yield Response( personO, addressO )
+      personO ← some(personGen)
+      addressO ← some(addressGen)
+    } yield Response(personO, addressO)
   }
 
-  def retrieveDetails(nino: NINO) = Action { implicit request =>
-    DummyData.find(nino).map(toResponse).orElse(responseGen.seeded(nino)).map { response =>
+  def retrieveDetails(nino: NINO) = Action { implicit request ⇒
+    DummyData.find(nino).map(toResponse).orElse(responseGen.seeded(nino)).map { response ⇒
       logger.info(s"[CitizenDetailsController] Responding to request from $nino with details $response")
       Ok(Json.toJson(response))
     }.getOrElse{
@@ -107,7 +107,6 @@ object CitizenDetailsController extends BaseController with Logging {
       userInfo.address.country
     ))
   )
-
 
   def encode(nino: String): String = new String(Base64.getEncoder.encode(nino.getBytes()))
 

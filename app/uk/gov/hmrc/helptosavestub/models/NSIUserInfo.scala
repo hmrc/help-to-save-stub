@@ -23,27 +23,25 @@ import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo.ContactDetails
 
 import scala.util.{Failure, Success, Try}
 
-
-case class NSIUserInfo (forename: String,
-                        surname: String,
-                        dateOfBirth: LocalDate,
-                        nino: String,
-                        contactDetails: ContactDetails,
-                        registrationChannel: String = "online")
+case class NSIUserInfo(forename:            String,
+                       surname:             String,
+                       dateOfBirth:         LocalDate,
+                       nino:                String,
+                       contactDetails:      ContactDetails,
+                       registrationChannel: String         = "online")
 
 object NSIUserInfo {
 
-
-    case class ContactDetails(address1: String,
-                              address2: String,
-                              address3: Option[String],
-                              address4: Option[String],
-                              address5: Option[String],
-                              postcode: String,
-                              countryCode: Option[String],
-                              email: String,
-                              phoneNumber: Option[String] = None,
-                              communicationPreference: String = "02")
+  case class ContactDetails(address1:                String,
+                            address2:                String,
+                            address3:                Option[String],
+                            address4:                Option[String],
+                            address5:                Option[String],
+                            postcode:                String,
+                            countryCode:             Option[String],
+                            email:                   String,
+                            phoneNumber:             Option[String] = None,
+                            communicationPreference: String         = "02")
 
   implicit val dateFormat: Format[LocalDate] = new Format[LocalDate] {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
@@ -53,9 +51,9 @@ object NSIUserInfo {
     override def reads(json: JsValue): JsResult[LocalDate] = json match {
       case JsString(s) ⇒
         Try(LocalDate.parse(s, formatter)) match {
-        case Success(date) ⇒ JsSuccess(date)
-        case Failure(error) ⇒ JsError(s"Could not parse date as yyyyMMdd: ${error.getMessage}")
-      }
+          case Success(date)  ⇒ JsSuccess(date)
+          case Failure(error) ⇒ JsError(s"Could not parse date as yyyyMMdd: ${error.getMessage}")
+        }
 
       case other ⇒ JsError(s"Expected string but got $other")
     }

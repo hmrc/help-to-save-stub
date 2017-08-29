@@ -24,19 +24,19 @@ import scala.util.Random
 //DATA FOR AIR GAP TESTING AND INTEGRATION TESTS
 object DummyData {
 
-  case class Address(line1: Option[String],
-                     line2: Option[String],
-                     line3: Option[String],
-                     line4: Option[String],
-                     line5: Option[String],
+  case class Address(line1:    Option[String],
+                     line2:    Option[String],
+                     line3:    Option[String],
+                     line4:    Option[String],
+                     line5:    Option[String],
                      postcode: Option[String],
-                     country: Option[String])
+                     country:  Option[String])
 
-  case class UserInfo(forename: String,
-                      surname: Option[String],
+  case class UserInfo(forename:    String,
+                      surname:     Option[String],
                       dateOfBirth: Option[LocalDate],
-                      address: Address,
-                      email: Option[String])
+                      address:     Address,
+                      email:       Option[String])
 
   def randomString(length: Int): String = Random.alphanumeric.take(length).mkString("")
   def randomAlphaString(length: Int): String = Random.alphanumeric.filter(_.isLetter).take(length).mkString("")
@@ -44,40 +44,39 @@ object DummyData {
   val email = randomString(64) + "@" + randomString(189)
 
   val scenario1User = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Address(Some("line 1"), Some("line 2"), Some("line 3"), Some("line 4"), Some("line 5"),
-      Some("BN43 XXX"), Some("GB")), Some("sarah@smith.com"))
+                                        Address(Some("line 1"), Some("line 2"), Some("line 3"), Some("line 4"), Some("line 5"),
+                                                Some("BN43 XXX"), Some("GB")), Some("sarah@smith.com"))
 
   val scenerio2User = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Address(Some("line1"), Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("BN43 5QP"),
-    Some("GB")), Some("sarah@smith.com"))
+                                        Address(Some("line1"), Some("line2"), Some("line3"), Some("line4"), Some("line5"), Some("BN43 5QP"),
+                                                Some("GB")), Some("sarah@smith.com"))
 
   val scenerio3User = UserInfo(randomAlphaString(26), Some(randomAlphaString(300)),
-    Some(LocalDate.of(1999, 12, 12)), Address(Some(randomString(35)), Some(randomString(35)), Some(randomString(35)),
-      Some(randomString(35)), Some(randomString(35)), Some("BN435QPABC"), Some("GB")), Some(email))
+                               Some(LocalDate.of(1999, 12, 12)), Address(Some(randomString(35)), Some(randomString(35)), Some(randomString(35)),
+                                                                         Some(randomString(35)), Some(randomString(35)), Some("BN435QPABC"), Some("GB")), Some(email))
 
   val scenario4User = UserInfo("a", Some("b"), Some(LocalDate.of(1999, 12, 12)),
-    Address(Some("a"), Some("b"), Some("c"), Some("d"), Some("e"), Some("B"), Some("GB")), Some("a@a"))
+                                    Address(Some("a"), Some("b"), Some("c"), Some("d"), Some("e"), Some("B"), Some("GB")), Some("a@a"))
 
   val scenario6User = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
-    Some("GB")), None)
+                                        Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
+                                                Some("GB")), None)
 
-  val scenario7User = UserInfo("Sarah", Some("Smith"),Some(LocalDate.of(1999, 12, 12)),
-    Address(Some("C/O Fish 'n' Chips Ltd."), Some("The Tate & Lyle Building"), Some("Carisbrooke Rd."),
-      Some("Barton-under-Needwood"), Some("Derbyshire"), Some("W1J 7NT"), Some("GR")), Some("sarah@smith.com"))
+  val scenario7User = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
+                                        Address(Some("C/O Fish 'n' Chips Ltd."), Some("The Tate & Lyle Building"), Some("Carisbrooke Rd."),
+                                                Some("Barton-under-Needwood"), Some("Derbyshire"), Some("W1J 7NT"), Some("GR")), Some("sarah@smith.com"))
 
   val scenario11User = UserInfo("René Chloë", Some("O'Connor-Jørgensen"), Some(LocalDate.of(1980, 2, 29)),
-    Address(Some("17 Ålfotbreen"), Some("Grünerløkka"), Some("Bodø"), Some("Hørdy-Gürdy4"), Some("Hørdy-Gürdy5"), Some("19023"),
-      Some("IR")), Some("rené.chloë@jørgensen.com"))
+                                              Address(Some("17 Ålfotbreen"), Some("Grünerløkka"), Some("Bodø"), Some("Hørdy-Gürdy4"), Some("Hørdy-Gürdy5"), Some("19023"),
+                                                      Some("IR")), Some("rené.chloë@jørgensen.com"))
 
   val noSurnameUser = UserInfo("Sarah", None, Some(LocalDate.of(1999, 12, 12)),
-    Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
-    Some("GB")), Some("sarah@smith.com"))
+                                        Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
+                                                Some("GB")), Some("sarah@smith.com"))
 
   val noEmailUser = UserInfo("Sarah", Some("Smith"), Some(LocalDate.of(1999, 12, 12)),
-    Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
-      Some("GB")), None)
-
+                                      Address(Some("1 the street"), Some("the place"), Some("the town"), Some("line 4"), Some("line 5"), Some("BN43 5QP"),
+                                              Some("GB")), None)
 
   private val hardCodedData: Map[String, UserInfo] = Map(
     "QUcwMTAxMjND" → scenario1User,

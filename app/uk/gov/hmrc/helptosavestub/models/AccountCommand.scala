@@ -16,7 +16,6 @@
 
 package uk.gov.hmrc.helptosavestub.models
 
-
 import play.api.libs.json._
 
 // Unfortunately, this is almost exactly the same as CreateAccount with the exception of the type of the birthdate.
@@ -25,26 +24,26 @@ import play.api.libs.json._
 // fails.
 
 object SquidModels {
-  case class ContactDetails(address1: String,
-                            address2: String,
-                            address3: Option[String],
-                            address4: Option[String],
-                            address5: Option[String],
-                            postcode: String,
-                            countryCode: Option[String],
-                            email: Option[String],
-                            phoneNumber: Option[String],
+  case class ContactDetails(address1:                String,
+                            address2:                String,
+                            address3:                Option[String],
+                            address4:                Option[String],
+                            address5:                Option[String],
+                            postcode:                String,
+                            countryCode:             Option[String],
+                            email:                   Option[String],
+                            phoneNumber:             Option[String],
                             communicationPreference: String)
 
   object ContactDetails {
     implicit val contactDetailsFormat: Format[ContactDetails] = Json.format[ContactDetails]
   }
 
-  case class AccountCommand(forename: String,
-                            surname: String,
-                            dateOfBirth: String,
-                            nino: String,
-                            contactDetails: ContactDetails,
+  case class AccountCommand(forename:            String,
+                            surname:             String,
+                            dateOfBirth:         String,
+                            nino:                String,
+                            contactDetails:      ContactDetails,
                             registrationChannel: String)
 
   object AccountCommand {
