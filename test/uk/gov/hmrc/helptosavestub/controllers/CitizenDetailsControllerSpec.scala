@@ -27,7 +27,6 @@ import play.api.test.Helpers.contentAsJson
 import uk.gov.hmrc.helptosavestub.controllers.CitizenDetailsController.{Address, Person, Response}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-
 class CitizenDetailsControllerSpec extends UnitSpec with WithFakeApplication {
 
   implicit val materializer: Materializer = fakeApplication.materializer
@@ -53,6 +52,5 @@ class CitizenDetailsControllerSpec extends UnitSpec with WithFakeApplication {
       response.get.person.get.dateOfBirth should be(defined)
     }
   }
-
 
 }

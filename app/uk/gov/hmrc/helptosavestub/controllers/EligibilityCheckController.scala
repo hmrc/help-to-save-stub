@@ -25,16 +25,16 @@ import hmrc.smartstub._
 
 class EligibilityCheckController extends BaseController {
 
-  val eligibleReasonGen: Gen[Int] = Gen.choose(6,8) // scalastyle:ignore magic.number
+  val eligibleReasonGen: Gen[Int] = Gen.choose(6, 8) // scalastyle:ignore magic.number
 
-  val ineligibleReasonGen: Gen[Int] = Gen.choose(1,5) // scalastyle:ignore magic.number
+  val ineligibleReasonGen: Gen[Int] = Gen.choose(1, 5) // scalastyle:ignore magic.number
 
-  def eligibilityCheck(nino: String) = Action { implicit request =>
+  def eligibilityCheck(nino: String) = Action { implicit request ⇒
     val (result, reason): (Int, Option[Int]) =
-      if(nino.startsWith("AC")){
+      if (nino.startsWith("AC")) {
         // if nino start with AC return someone who has already opened an account in the past
         2 → Some(1)
-      } else if(!nino.toUpperCase().startsWith("NA")){
+      } else if (!nino.toUpperCase().startsWith("NA")) {
         1 → eligibleReasonGen.seeded(nino)
       } else {
         2 → ineligibleReasonGen.seeded(nino)
@@ -47,20 +47,20 @@ class EligibilityCheckController extends BaseController {
 object EligibilityCheckController {
 
   /**
-    * Response from ITMP eligibility check
-    *
-    * @param result 1 = customer eligible to HtS Account
-    *               2 = customer ineligible to HtS Account
-    * @param reason 1 = An HtS account was opened previously (the HtS account may have been closed or inactive)
-    *               2 = Not entitled to WTC and not in receipt of UC
-    *               3 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC)   and not in receipt of UC
-    *               4 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC)   and in receipt of UC but income is insufficient
-    *               5 = Not entitled to WTC and in receipt of UC but income is insufficient
-    *               6 = In receipt of UC and income sufficient
-    *               7 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit
-    *               8 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient
-    *               N.B. 1-5 represent reasons for ineligibility and 6-8 repesents reasons for eligibility
-    */
+   * Response from ITMP eligibility check
+   *
+   * @param result 1 = customer eligible to HtS Account
+   *               2 = customer ineligible to HtS Account
+   * @param reason 1 = An HtS account was opened previously (the HtS account may have been closed or inactive)
+   *               2 = Not entitled to WTC and not in receipt of UC
+   *               3 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC)   and not in receipt of UC
+   *               4 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC)   and in receipt of UC but income is insufficient
+   *               5 = Not entitled to WTC and in receipt of UC but income is insufficient
+   *               6 = In receipt of UC and income sufficient
+   *               7 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit
+   *               8 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient
+   *               N.B. 1-5 represent reasons for ineligibility and 6-8 repesents reasons for eligibility
+   */
   case class EligibilityCheckResult(result: Int, reason: Int)
 
   object EligibilityCheckResult {
