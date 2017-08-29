@@ -16,17 +16,41 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import play.api.libs.json.{Format, Json}
 import play.api.mvc.Action
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import play.api.Logger
+import uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.EmailVerificationRequest
+import uk.gov.hmrc.helptosavestub.util.Logging
 
-class EmailVerificationController extends BaseController {
+class EmailVerificationController extends BaseController with Logging {
 
   def verify = Action {
     implicit request ⇒
-    // read conttinue URL from request and log it
-      Logger.info(s"[EmailVerificationController] A request has been made with continueURL: ${request.body.asJson}")
-    Ok
+      request.body.asJson match {
+        case None ⇒
+          logger.warn("[EmailVerificationController] - no JSON in body")
+          BadRequest
+
+        case Some(json) ⇒
+          json.validate[EmailVerificationRequest].fold({ e ⇒
+            logger.warn(s"[EmailVerificationController] - could not parse JSON in body $e")
+            BadRequest
+          }, { emailVerificationRequest ⇒
+            logger.info(s"[EmailVerificationController] A request has been made: $emailVerificationRequest")
+            Ok
+          })
+
+      }
   }
 
+}
+
+object EmailVerificationController {
+  case class EmailVerificationRequest(email: String, templateId: String,
+                                      linkExpiryDuration: String, continueUrl: String,
+                                      templateParameters: Map[String, String])
+
+  object EmailVerificationRequest {
+    implicit val format: Format[EmailVerificationRequest] = Json.format[EmailVerificationRequest]
+  }
 }
