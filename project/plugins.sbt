@@ -18,3 +18,4 @@ addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
 
 addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.0")
 
+//addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17")
