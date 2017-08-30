@@ -954,9 +954,9 @@ class SquidControllerSpec extends UnitSpec with WithFakeApplication {
         val tomorrow = today.plus(1, java.time.temporal.ChronoUnit.DAYS)
         val year = tomorrow.getYear
         val month = tomorrow.getMonthValue
-        val monthStr = if (month < 10) "0" + month else month
+        val monthStr = if (month < 10) s"0$month" else month.toString
         val day = tomorrow.getDayOfMonth
-        val dayStr = if (day < 10) "0" + day else day
+        val dayStr = if (day < 10) s"0$day" else day.toString
         val badJson = generateJsonWithDateOfBirth(s"$year$monthStr$dayStr")
 
           def fakeRequestWithBadContent = makeFakeRequest(badJson)
