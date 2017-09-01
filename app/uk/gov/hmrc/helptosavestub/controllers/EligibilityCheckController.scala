@@ -29,7 +29,7 @@ class EligibilityCheckController extends BaseController {
 
   val ineligibleReasonGen: Gen[Int] = Gen.choose(1, 5) // scalastyle:ignore magic.number
 
-  def eligibilityCheck(nino: String) = Action { implicit request ⇒
+  def eligibilityCheck(nino: String): Action[AnyContent] = Action { implicit request ⇒
     val (result, reason): (Int, Option[Int]) =
       if (nino.startsWith("AC")) {
         // if nino start with AC return someone who has already opened an account in the past

@@ -19,8 +19,10 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import cats.instances.string._
+import cats.syntax.eq._
 import play.api.libs.json._
-import play.api.mvc.{Action, Headers}
+import play.api.mvc.{Action, AnyContent, Headers}
 import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.util.Logging
@@ -30,15 +32,15 @@ import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController with Logging {
 
-  val authorizationHeaderKey = "Authorization1"
-  val authorizationValuePrefix = "Basic: "
-  val testAuthHeader = "user:password"
+  val authorizationHeaderKey: String = "Authorization1"
+  val authorizationValuePrefix: String = "Basic: "
+  val testAuthHeader: String = "user:password"
 
   def isAuthorised(headers: Headers): Boolean = {
     val decoded: Option[String] =
       headers.headers
         .find(entry ⇒
-          entry._1 == authorizationHeaderKey && entry._2.startsWith(authorizationValuePrefix))
+          entry._1 === authorizationHeaderKey && entry._2.startsWith(authorizationValuePrefix))
         .flatMap{
           case (_, h) ⇒
             val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
@@ -55,7 +57,7 @@ object NSIController extends BaseController with Logging {
     decoded.contains(testAuthHeader)
   }
 
-  def createAccount() = Action.async { implicit request ⇒
+  def createAccount(): Action[AnyContent] = Action.async { implicit request ⇒
     if (isAuthorised(request.headers)) {
       lazy val requestBodyText = request.body.asText.getOrElse("")
 
