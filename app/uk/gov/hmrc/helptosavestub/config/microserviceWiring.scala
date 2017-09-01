@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.config
 
-import uk.gov.hmrc.play.audit.http.config.LoadAuditingConfig
+import uk.gov.hmrc.play.audit.http.config.{AuditingConfig, LoadAuditingConfig}
 import uk.gov.hmrc.play.audit.http.connector.AuditConnector
 import uk.gov.hmrc.play.auth.microservice.connectors.AuthConnector
 import uk.gov.hmrc.play.config.{AppName, RunMode, ServicesConfig}
@@ -28,9 +28,9 @@ object WSHttp extends WSGet with WSPut with WSPost with WSDelete with WSPatch wi
 }
 
 object MicroserviceAuditConnector extends AuditConnector with RunMode {
-  override lazy val auditingConfig = LoadAuditingConfig("auditing")
+  override lazy val auditingConfig: AuditingConfig = LoadAuditingConfig("auditing")
 }
 
 object MicroserviceAuthConnector extends AuthConnector with ServicesConfig {
-  override val authBaseUrl = baseUrl("auth")
+  override val authBaseUrl: String = baseUrl("auth")
 }

@@ -2,4 +2,3 @@
 
 POST       /squid/create-account                      @uk.gov.hmrc.helptosavestub.controllers.SquidController.createAccount
 
-GET        /user-details/:nino                        @uk.gov.hmrc.helptosavestub.controllers.UserDetailsController.retrieveDetails(nino)

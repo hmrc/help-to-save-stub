@@ -17,14 +17,14 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.libs.json.{Format, Json}
-import play.api.mvc.Action
+import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.EmailVerificationRequest
 import uk.gov.hmrc.helptosavestub.util.Logging
 
 class EmailVerificationController extends BaseController with Logging {
 
-  def verify = Action {
+  def verify: Action[AnyContent] = Action {
     implicit request ⇒
       request.body.asJson match {
         case None ⇒
