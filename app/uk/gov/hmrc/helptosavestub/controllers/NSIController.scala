@@ -23,7 +23,7 @@ import cats.instances.string._
 import cats.syntax.eq._
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, Headers}
-import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo
+import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.util.Logging
 

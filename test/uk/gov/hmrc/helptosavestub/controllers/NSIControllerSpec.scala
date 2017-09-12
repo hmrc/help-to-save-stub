@@ -23,7 +23,7 @@ import java.util.Base64
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.helptosavefrontend.models.NSIUserInfo
+import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class NSIControllerSpec extends UnitSpec with WithFakeApplication {
