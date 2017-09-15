@@ -57,32 +57,32 @@ object NSIController extends BaseController with Logging {
   }
 
   def updateEmail(): Action[AnyContent] = Action { implicit request ⇒
-    handleRequest(Ok)
+    handleRequest(Ok, "update email")
   }
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
-    handleRequest(Created)
+    handleRequest(Created, "create account")
   }
 
-  def handleRequest(successResult: Result)(implicit request: Request[AnyContent]): Result = {
+  def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
     if (isAuthorised(request.headers)) {
       lazy val requestBodyText = request.body.asText.getOrElse("")
 
       request.body.asJson.map(_.validate[NSIUserInfo]) match {
         case None ⇒
-          logger.error(s"No JSON found for create-account request: $requestBodyText")
+          logger.error(s"No JSON found for $description request: $requestBodyText")
           BadRequest(Json.toJson(SubmissionFailure(None, "No JSON found", "")))
 
         case Some(er: JsError) ⇒
-          logger.error(s"Could not parse JSON found for create-account request: $requestBodyText")
+          logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
           BadRequest(Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString)))
 
         case Some(JsSuccess(info, _)) ⇒
-          logger.info("Responding to createAccount with 201")
+          logger.info(s"Responding to $description with ${successResult.header.status}")
           successResult
       }
     } else {
-      logger.error("No authorisation data found in header")
+      logger.error(s"No authorisation data found in header for $description request")
       Unauthorized
     }
   }
