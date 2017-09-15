@@ -22,12 +22,11 @@ import java.util.Base64
 import cats.instances.string._
 import cats.syntax.eq._
 import play.api.libs.json._
-import play.api.mvc.{Action, AnyContent, Headers}
+import play.api.mvc.{Action, AnyContent, Headers, Request, Result}
 import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.util.Logging
 
-import scala.concurrent.Future
 import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController with Logging {
@@ -57,30 +56,37 @@ object NSIController extends BaseController with Logging {
     decoded.contains(testAuthHeader)
   }
 
-  def createAccount(): Action[AnyContent] = Action.async { implicit request ⇒
+  def updateEmail(): Action[AnyContent] = Action { implicit request ⇒
+    handleRequest(Ok)
+  }
+
+  def createAccount(): Action[AnyContent] = Action { implicit request ⇒
+    handleRequest(Created)
+  }
+
+  def handleRequest(successResult: Result)(implicit request: Request[AnyContent]): Result = {
     if (isAuthorised(request.headers)) {
       lazy val requestBodyText = request.body.asText.getOrElse("")
 
       request.body.asJson.map(_.validate[NSIUserInfo]) match {
         case None ⇒
           logger.error(s"No JSON found for create-account request: $requestBodyText")
-          Future.successful(BadRequest(
-            Json.toJson(SubmissionFailure(None, "No JSON found", ""))))
+          BadRequest(Json.toJson(SubmissionFailure(None, "No JSON found", "")))
 
         case Some(er: JsError) ⇒
           logger.error(s"Could not parse JSON found for create-account request: $requestBodyText")
-          Future.successful(BadRequest(
-            Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString))))
+          BadRequest(Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString)))
 
         case Some(JsSuccess(info, _)) ⇒
           logger.info("Responding to createAccount with 201")
-          Future.successful(Created)
+          successResult
       }
     } else {
       logger.error("No authorisation data found in header")
-      Future.successful(Unauthorized)
+      Unauthorized
     }
   }
+
 }
 
 case class SubmissionFailure(errorMessageId: Option[String], errorMessage: String, errorDetail: String)
