@@ -39,7 +39,6 @@ class EligibilityCheckController extends BaseController with Logging {
   )
 
   val ineligibleReasonGen: Gen[String] = Gen.oneOf(
-    alreadyOpenedAccountString,
     "Not entitled to WTC and in receipt of UC but income is insufficient",
     "Not entitled to WTC and not in receipt of UC",
     "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient",
