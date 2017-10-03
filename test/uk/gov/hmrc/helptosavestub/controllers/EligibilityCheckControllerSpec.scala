@@ -39,13 +39,15 @@ class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
       verifyEligibility("NA123456C", isEligible = false)
     }
 
-      def verifyEligibility(nino: String, isEligible: Boolean) = {
+      def verifyEligibility(nino: String, isEligible: Boolean): Unit = {
 
         val result = eligCheckController.eligibilityCheck(nino)(fakeRequest)
         status(result) shouldBe Status.OK
         val json = contentAsString(result)
+        val expected = if (isEligible) "Eligible to HtS Account" else "Ineligible to HtS Account"
 
-        Json.fromJson[EligibilityCheckResult](Json.parse(json)).get.result shouldBe (if (isEligible) 1 else 2)
+        Json.fromJson[EligibilityCheckResult](Json.parse(json)).get.result shouldBe expected
+
       }
   }
 }
