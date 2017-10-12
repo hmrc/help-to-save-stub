@@ -64,6 +64,10 @@ object NSIController extends BaseController with Logging {
     handleRequest(Created, "create account")
   }
 
+  def test(): Action[AnyContent] = Action { implicit request ⇒
+    handleRequest(Ok, "test")
+  }
+
   def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
     if (isAuthorised(request.headers)) {
       lazy val requestBodyText = request.body.asText.getOrElse("")
