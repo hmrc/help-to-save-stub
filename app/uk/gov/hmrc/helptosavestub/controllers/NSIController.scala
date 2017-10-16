@@ -31,7 +31,7 @@ import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController with Logging {
 
-  val authorizationHeaderKey: String = "Authorization1"
+  val authorizationHeaderKey: String = "Authorization-test"
   val authorizationValuePrefix: String = "Basic: "
   val testAuthHeader: String = "user:password"
 
