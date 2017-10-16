@@ -31,7 +31,7 @@ import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController with Logging {
 
-  val authorizationHeaderKey: String = "Authorization1"
+  val authorizationHeaderKey: String = "Authorization-test"
   val authorizationValuePrefix: String = "Basic: "
   val testAuthHeader: String = "user:password"
 
@@ -62,6 +62,10 @@ object NSIController extends BaseController with Logging {
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
     handleRequest(Created, "create account")
+  }
+
+  def test(): Action[AnyContent] = Action { implicit request ⇒
+    handleRequest(Ok, "test")
   }
 
   def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
