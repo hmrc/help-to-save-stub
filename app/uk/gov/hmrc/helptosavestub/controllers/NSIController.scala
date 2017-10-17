@@ -64,8 +64,8 @@ object NSIController extends BaseController with Logging {
     handleRequest(Created, "create account")
   }
 
-  def test(): Action[AnyContent] = Action { implicit request ⇒
-    handleRequest(Ok, "test")
+  def healthCheck(): Action[AnyContent] = Action { implicit request ⇒
+    handleRequest(Ok, "health check")
   }
 
   def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
