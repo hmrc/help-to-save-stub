@@ -37,7 +37,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
 
   val authHeader = {
     val encoded = new String(Base64.getEncoder().encode("user:password".getBytes(StandardCharsets.UTF_8)))
-    "Authorization1" → s"Basic: $encoded"
+    "Authorization-test" → s"Basic: $encoded"
   }
 
   "Post /create-account  " should {

@@ -19,52 +19,58 @@ package uk.gov.hmrc.helptosavestub.controllers
 import org.scalacheck.Gen
 import play.api.libs.json.{Format, Json}
 import play.api.mvc._
-import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import hmrc.smartstub._
-import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
 
-class EligibilityCheckController extends BaseController with Logging {
+class EligibilityCheckController extends BaseController {
 
-  val eligibleString: String = "Eligible to HtS Account"
-
-  val ineligibleString: String = "Ineligible to HtS Account"
-
-  val alreadyOpenedAccountString: String = "An HtS account was opened previously (the HtS account may have been closed or inactive)"
-
-  val eligibleReasonGen: Gen[String] = Gen.oneOf(
-    "In receipt of UC and income sufficient",
-    "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit",
-    "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient"
+  val resultMappings: Map[Int, String] = Map(
+    1 → "Eligible to HtS Account",
+    2 → "Ineligible to HtS Account",
+    3 → "HtS account already exists"
   )
 
-  val ineligibleReasonGen: Gen[String] = Gen.oneOf(
-    "Not entitled to WTC and in receipt of UC but income is insufficient",
-    "Not entitled to WTC and not in receipt of UC",
-    "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient",
-    "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC"
+  val reasonMappings: Map[Int, String] = Map(
+    1 → "HtS account was previously created",
+    2 → "Not entitled to WTC and not in receipt of UC",
+    3 → "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC",
+    4 → "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient",
+    5 → "Not entitled to WTC and in receipt of UC but income is insufficient",
+    6 → "In receipt of UC and income sufficient",
+    7 → "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit",
+    8 → "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient"
   )
 
-  def eligibilityCheck(nino: String): Action[AnyContent] = Action { implicit request ⇒
-    logger.info(s"Received request to get eligibility for nino: $nino")
-    val (result, reason): (String, Option[String]) =
-      if (nino.startsWith("AC")) {
-        // if nino start with AC return someone who has already opened an account in the past
-        ineligibleString → Some(alreadyOpenedAccountString)
-      } else if (!nino.toUpperCase().startsWith("NA")) {
-        eligibleString → eligibleReasonGen.seeded(nino)
-      } else {
-        ineligibleString → ineligibleReasonGen.seeded(nino)
+  val eligibleReasonGen: Gen[EligibilityCheckResult] =
+    Gen.choose(6, 8) // scalastyle:ignore magic.number
+      .map{ i ⇒
+        val reason = reasonMappings.getOrElse(i, sys.error(s"Could not find eligibility reason for code $i"))
+        EligibilityCheckResult("Eligible to HtS Account", 1, reason, i)
       }
 
-    reason.fold[Result]{
-      logger.warn("Could not generate reason: returning with status 500")
-      InternalServerError
-    }{ r ⇒
-      val response = EligibilityCheckResult(result, r)
-      logger.info(s"Returning response: $response ")
-      Ok(Json.toJson(response))
-    }
+  val ineligibleReasonGen: Gen[EligibilityCheckResult] =
+    Gen.choose(2, 5) // scalastyle:ignore magic.number
+      .map{ i ⇒
+        val reason = reasonMappings.getOrElse(i, sys.error(s"Could not find ineligibility reason for code $i"))
+        EligibilityCheckResult("Ineligible to HtS Account", 2, reason, i)
+      }
+
+  val alreadyHasAccountResult: EligibilityCheckResult =
+    EligibilityCheckResult("HtS account already exists", 3, "HtS account was previously created", 1)
+
+  def eligibilityCheck(nino: String): Action[AnyContent] = Action { implicit request ⇒
+    val response: Option[EligibilityCheckResult] =
+      if (nino.startsWith("AC")) {
+        // if nino start with AC return someone who has already opened an account in the past
+        Some(alreadyHasAccountResult)
+      } else if (nino.toUpperCase().startsWith("NA")) {
+        ineligibleReasonGen.seeded(nino)
+      } else {
+        eligibleReasonGen.seeded(nino)
+      }
+
+    response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
   }
 }
 
@@ -72,8 +78,21 @@ object EligibilityCheckController {
 
   /**
    * Response from ITMP eligibility check
+   *
+   * @param result 1 = Eligible to HtS Account
+   *               2 = Ineligible to HtS Account
+   *               3 = HtS account already exists
+   * @param reason 1 = HtS account was previously created
+   *               2 = Not entitled to WTC and not in receipt of UC
+   *               3 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC
+   *               4 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient
+   *               5 = Not entitled to WTC and in receipt of UC but income is insufficient
+   *               6 = In receipt of UC and income sufficient
+   *               7 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit
+   *               8 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient
+   *               N.B. 1-5 represent reasons for ineligibility and 6-8 repesents reasons for eligibility
    */
-  case class EligibilityCheckResult(result: String, reason: String)
+  case class EligibilityCheckResult(result: String, resultCode: Int, reason: String, reasonCode: Int)
 
   object EligibilityCheckResult {
 
