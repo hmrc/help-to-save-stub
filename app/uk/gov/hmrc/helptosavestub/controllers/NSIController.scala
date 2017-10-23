@@ -33,7 +33,7 @@ object NSIController extends BaseController with Logging {
 
   val authorizationHeaderKey: String = "Authorization-test"
   val authorizationValuePrefix: String = "Basic: "
-  val testAuthHeader: String = "user:password"
+  val testAuthHeader: String = "username:password"
 
   def isAuthorised(headers: Headers): Boolean = {
     val decoded: Option[String] =
