@@ -1,4 +1,1 @@
 # microservice specific routes
-
-POST       /squid/create-account                      @uk.gov.hmrc.helptosavestub.controllers.SquidController.createAccount
-
