@@ -1,7 +1,6 @@
 # Add all the application routes to the app.routes file
 POST       /nsihts/createaccount                      uk.gov.hmrc.helptosavestub.controllers.NSIController.createAccount()
-PUT        /nsihts/updateemail                        uk.gov.hmrc.helptosavestub.controllers.NSIController.updateEmail()
-PUT        /nsihts/healthcheck                        uk.gov.hmrc.helptosavestub.controllers.NSIController.healthCheck()
+PUT        /nsihts/createaccount                        uk.gov.hmrc.helptosavestub.controllers.NSIController.updateEmailOrHealthCheck()
 
 PUT        /help-to-save/accounts/:nino               uk.gov.hmrc.helptosavestub.controllers.ITMPEnrolmentController.enrol(nino)
 GET        /help-to-save/eligibility-check/:nino      @uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.eligibilityCheck(nino)

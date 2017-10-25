@@ -56,16 +56,12 @@ object NSIController extends BaseController with Logging {
     decoded.contains(testAuthHeader)
   }
 
-  def updateEmail(): Action[AnyContent] = Action { implicit request ⇒
-    handleRequest(Ok, "update email")
+  def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
+    handleRequest(Ok, "update email or health check")
   }
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
     handleRequest(Created, "create account")
-  }
-
-  def healthCheck(): Action[AnyContent] = Action { implicit request ⇒
-    handleRequest(Ok, "health check")
   }
 
   def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {

@@ -64,4 +64,29 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
       status(result) shouldBe BAD_REQUEST
     }
   }
+
+  "Put /create-account  " should {
+    "return a successful successful status" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+        .withJsonBody(Json.toJson(testCreateAccount))
+
+      val result = NSIController.updateEmailOrHealthCheck()(request)
+      status(result) shouldBe OK
+    }
+
+    "return a 401  UNAUTHORIZED" in {
+      val request = FakeRequest()
+        .withJsonBody(Json.toJson(testCreateAccount))
+      val result = NSIController.updateEmailOrHealthCheck()(request)
+      status(result) shouldBe UNAUTHORIZED
+    }
+
+    "return a 400 for a bad request in" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+      val result = NSIController.updateEmailOrHealthCheck()(request)
+      status(result) shouldBe BAD_REQUEST
+    }
+  }
 }
