@@ -57,18 +57,24 @@ object NSIController extends BaseController with Logging {
   }
 
   def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
-    handleRequest(Ok, "update email or health check")
+    val maybeNSIInfo = request.body.asJson.map(_.validate[NSIUserInfo])
+    val description = maybeNSIInfo match {
+      case Some(JsSuccess(info, _)) ⇒ if (info.nino === "XX999999X") "health check" else "update-email"
+      case _                        ⇒ "invalid"
+    }
+    handleRequest(maybeNSIInfo, Ok, description)
   }
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
-    handleRequest(Created, "create account")
+    val maybeNSIInfo = request.body.asJson.map(_.validate[NSIUserInfo])
+    handleRequest(maybeNSIInfo, Created, "create account")
   }
 
-  def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
+  def handleRequest(maybeNSIInfo: Option[JsResult[NSIUserInfo]], successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
     if (isAuthorised(request.headers)) {
       lazy val requestBodyText = request.body.asText.getOrElse("")
 
-      request.body.asJson.map(_.validate[NSIUserInfo]) match {
+      maybeNSIInfo match {
         case None ⇒
           logger.error(s"No JSON found for $description request: $requestBodyText")
           BadRequest(Json.toJson(SubmissionFailure(None, "No JSON found", "")))
