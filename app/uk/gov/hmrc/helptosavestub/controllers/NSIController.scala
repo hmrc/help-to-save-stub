@@ -56,37 +56,39 @@ object NSIController extends BaseController with Logging {
     decoded.contains(testAuthHeader)
   }
 
-  def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
-    val maybeNSIInfo = request.body.asJson.map(_.validate[NSIUserInfo])
-    val description = maybeNSIInfo match {
-      case Some(JsSuccess(info, _)) ⇒ if (info.nino === "XX999999X") "health check" else "update-email"
-      case _                        ⇒ "invalid"
+  def withNSIUserInfo(description: String)(body: NSIUserInfo ⇒ Result)(implicit request: Request[AnyContent]): Result = {
+    lazy val requestBodyText = request.body.asText.getOrElse("")
+
+    request.body.asJson.map(_.validate[NSIUserInfo]) match {
+      case None ⇒
+        logger.error(s"No JSON found for $description request: $requestBodyText")
+        BadRequest(Json.toJson(SubmissionFailure(None, "No JSON found", "")))
+
+      case Some(er: JsError) ⇒
+        logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
+        BadRequest(Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString)))
+
+      case Some(JsSuccess(info, _)) ⇒
+        body(info)
     }
-    handleRequest(maybeNSIInfo, Ok, description)
+  }
+
+  def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
+    withNSIUserInfo("update email or health check") { nsiUserInfo ⇒
+      val description = if (nsiUserInfo.nino === "XX999999X") "health check" else "update email"
+      handleRequest(Ok, description)
+    }
   }
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
-    val maybeNSIInfo = request.body.asJson.map(_.validate[NSIUserInfo])
-    handleRequest(maybeNSIInfo, Created, "create account")
+    val description = "create account"
+    withNSIUserInfo(description){ _ ⇒ handleRequest(Created, description) }
   }
 
-  def handleRequest(maybeNSIInfo: Option[JsResult[NSIUserInfo]], successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
+  def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
     if (isAuthorised(request.headers)) {
-      lazy val requestBodyText = request.body.asText.getOrElse("")
-
-      maybeNSIInfo match {
-        case None ⇒
-          logger.error(s"No JSON found for $description request: $requestBodyText")
-          BadRequest(Json.toJson(SubmissionFailure(None, "No JSON found", "")))
-
-        case Some(er: JsError) ⇒
-          logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
-          BadRequest(Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString)))
-
-        case Some(JsSuccess(info, _)) ⇒
-          logger.info(s"Responding to $description with ${successResult.header.status}")
-          successResult
-      }
+      logger.info(s"Responding to $description with ${successResult.header.status}")
+      successResult
     } else {
       logger.error(s"No authorisation data found in header for $description request")
       Unauthorized
