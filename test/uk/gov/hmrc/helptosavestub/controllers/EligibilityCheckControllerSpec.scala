@@ -32,19 +32,32 @@ class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
   "GET /" should {
 
     "returns true when user is eligible" in {
-      verifyEligibility("AE123456C", isEligible = true)
+      verifyEligibility("EL071111D", 1)
     }
 
-    "returns false when user is not eligible" in {
-      verifyEligibility("NA123456C", isEligible = false)
+    "returns false when user is not eligible for reason code 2" in {
+      verifyEligibility("NE021111D", 2)
     }
 
-      def verifyEligibility(nino: String, isEligible: Boolean): Unit = {
+    "returns false when user is not eligible for reason code 3" in {
+      verifyEligibility("NE031111D", 2)
+    }
+
+    "returns false when user already has an account" in {
+      verifyEligibility("AC111111D", 3)
+    }
+
+      def verifyEligibility(nino: String, resultCode: Int): Unit = {
 
         val result = eligCheckController.eligibilityCheck(nino)(fakeRequest)
         status(result) shouldBe Status.OK
         val json = contentAsString(result)
-        val expected = if (isEligible) "Eligible to HtS Account" else "Ineligible to HtS Account"
+        val expected = resultCode match {
+          case 1 ⇒ "Eligible to HtS Account"
+          case 2 ⇒ "Ineligible to HtS Account"
+          case 3 ⇒ "HtS account already exists"
+          case _ ⇒ sys.error("Invalid result code")
+        }
 
         Json.fromJson[EligibilityCheckResult](Json.parse(json)).get.result shouldBe expected
 

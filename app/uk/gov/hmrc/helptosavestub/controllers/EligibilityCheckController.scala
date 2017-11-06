@@ -26,9 +26,9 @@ import scala.util.Try
 class EligibilityCheckController extends BaseController {
 
   val resultMappings: Map[Int, String] = Map(
-    1  → "Eligible to HtS Account",
-    2  → "Ineligible to HtS Account",
-    3  → "HtS account already exists",
+    1 → "Eligible to HtS Account",
+    2 → "Ineligible to HtS Account",
+    3 → "HtS account already exists",
     99 → "INVALID RESULT WHICH DES SHOULD NEVER SEND"
   )
 
