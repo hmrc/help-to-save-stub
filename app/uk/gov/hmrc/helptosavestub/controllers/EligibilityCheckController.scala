@@ -16,19 +16,20 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import org.scalacheck.Gen
 import play.api.libs.json.{Format, Json}
 import play.api.mvc._
-import uk.gov.hmrc.play.microservice.controller.BaseController
-import hmrc.smartstub._
 import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
+import uk.gov.hmrc.play.microservice.controller.BaseController
+
+import scala.util.Try
 
 class EligibilityCheckController extends BaseController {
 
   val resultMappings: Map[Int, String] = Map(
-    1 → "Eligible to HtS Account",
-    2 → "Ineligible to HtS Account",
-    3 → "HtS account already exists"
+    1  → "Eligible to HtS Account",
+    2  → "Ineligible to HtS Account",
+    3  → "HtS account already exists",
+    99 → "INVALID RESULT WHICH DES SHOULD NEVER SEND"
   )
 
   val reasonMappings: Map[Int, String] = Map(
@@ -42,32 +43,55 @@ class EligibilityCheckController extends BaseController {
     8 → "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient"
   )
 
-  val eligibleReasonGen: Gen[EligibilityCheckResult] =
-    Gen.choose(6, 8) // scalastyle:ignore magic.number
-      .map{ i ⇒
-        val reason = reasonMappings.getOrElse(i, sys.error(s"Could not find eligibility reason for code $i"))
-        EligibilityCheckResult("Eligible to HtS Account", 1, reason, i)
-      }
-
-  val ineligibleReasonGen: Gen[EligibilityCheckResult] =
-    Gen.choose(2, 5) // scalastyle:ignore magic.number
-      .map{ i ⇒
-        val reason = reasonMappings.getOrElse(i, sys.error(s"Could not find ineligibility reason for code $i"))
-        EligibilityCheckResult("Ineligible to HtS Account", 2, reason, i)
-      }
-
   val alreadyHasAccountResult: EligibilityCheckResult =
     EligibilityCheckResult("HtS account already exists", 3, "HtS account was previously created", 1)
 
+  val invalidResultCode: EligibilityCheckResult =
+    EligibilityCheckResult("INVALID RESULT WHICH DES SHOULD NEVER SEND", 99, "Not entitled to WTC and not in receipt of UC", 2)
+
+  def eligibleResult(reasonCode: Int): EligibilityCheckResult = {
+    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
+    EligibilityCheckResult("Eligible to HtS Account", 1, reason, reasonCode)
+  }
+
+  def ineligibleResult(reasonCode: Int): EligibilityCheckResult = {
+    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
+    EligibilityCheckResult("Ineligible to HtS Account", 2, reason, reasonCode)
+  }
+
+  def getReasonCodeFromNino(nino: String): Int =
+    Try(nino.substring(3, 4).toInt)
+      .getOrElse(sys.error(s"Error getting reason code from fourth character of NINO $nino"))
+
   def eligibilityCheck(nino: String): Action[AnyContent] = Action { implicit request ⇒
     val response: Option[EligibilityCheckResult] =
-      if (nino.startsWith("AC")) {
-        // if nino start with AC return someone who has already opened an account in the past
+      // Comments are for the Test & Release Services (T&RS) team
+      // Private BETA:
+      // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
+      //
+      // After private BETA:
+      // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
+      // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
+      if (nino.toUpperCase().startsWith("EL")) {
+        Some(eligibleResult(getReasonCodeFromNino(nino)))
+      } // Private BETA:
+      // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
+      // Start NINO with NE03 to specify an ineligible customer in receipt of WTC (with reason code 3)
+      //
+      // After private BETA:
+      // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
+      // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
+      else if (nino.toUpperCase().startsWith("NE")) {
+        Some(ineligibleResult(getReasonCodeFromNino(nino)))
+      } // Start NINO with AC to specify an existing account holder (with reason code 1)
+      else if (nino.startsWith("AC")) {
         Some(alreadyHasAccountResult)
-      } else if (nino.toUpperCase().startsWith("NA")) {
-        ineligibleReasonGen.seeded(nino)
-      } else {
-        eligibleReasonGen.seeded(nino)
+      } // Start NINO with EE to specify an invalid result code
+      else if (nino.startsWith("EE")) {
+        Some(invalidResultCode)
+      } // Start NINO with anything else to specify an eligible customer
+      else {
+        Some(eligibleResult(7))
       }
 
     response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
