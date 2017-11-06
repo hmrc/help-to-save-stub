@@ -76,7 +76,7 @@ class EligibilityCheckController extends BaseController {
         Some(eligibleResult(getReasonCodeFromNino(nino)))
       } // Private BETA:
       // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
-      // Start NINO with NE03 to specify an ineligible customer in receipt of WTC (with reason code 3)
+      // Start NINO with NE03 to specify an ineligible applicant in receipt of WTC (with reason code 3)
       //
       // After private BETA:
       // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
@@ -89,7 +89,7 @@ class EligibilityCheckController extends BaseController {
       } // Start NINO with EE to specify an invalid result code
       else if (nino.startsWith("EE")) {
         Some(invalidResultCode)
-      } // Start NINO with anything else to specify an eligible customer
+      } // Start NINO with anything else to specify an eligible applicant
       else {
         Some(eligibleResult(7))
       }
