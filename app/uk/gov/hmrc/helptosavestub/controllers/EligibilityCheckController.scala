@@ -26,10 +26,10 @@ import scala.util.Try
 class EligibilityCheckController extends BaseController {
 
   val resultMappings: Map[Int, String] = Map(
-    1 → "Eligible to HtS Account",
-    2 → "Ineligible to HtS Account",
-    3 → "HtS account already exists",
-    4 → "INVALID RESULT WHICH DES SHOULD NEVER SEND"
+    1  → "Eligible to HtS Account",
+    2  → "Ineligible to HtS Account",
+    3  → "HtS account already exists",
+    99 → "INVALID RESULT WHICH DES SHOULD NEVER SEND"
   )
 
   val reasonMappings: Map[Int, String] = Map(
@@ -47,7 +47,7 @@ class EligibilityCheckController extends BaseController {
     EligibilityCheckResult("HtS account already exists", 3, "HtS account was previously created", 1)
 
   val invalidResultCode: EligibilityCheckResult =
-    EligibilityCheckResult("INVALID RESULT WHICH DES SHOULD NEVER SEND", 4, "Not entitled to WTC and not in receipt of UC", 2)
+    EligibilityCheckResult("INVALID RESULT WHICH DES SHOULD NEVER SEND", 99, "Not entitled to WTC and not in receipt of UC", 2)
 
   def eligibleResult(reasonCode: Int): EligibilityCheckResult = {
     val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
