@@ -62,11 +62,11 @@ object NSIController extends BaseController with Logging {
     request.body.asJson.map(_.validate[NSIUserInfo]) match {
       case None ⇒
         logger.error(s"No JSON found for $description request: $requestBodyText")
-        BadRequest(Json.toJson(SubmissionFailure(None, "No JSON found", "")))
+        BadRequest(JsObject(Seq("error" → Json.toJson(SubmissionFailure(None, "No JSON found", "")))))
 
       case Some(er: JsError) ⇒
         logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
-        BadRequest(Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString)))
+        BadRequest(JsObject(Seq("error" → Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString)))))
 
       case Some(JsSuccess(info, _)) ⇒
         body(info)
