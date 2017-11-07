@@ -62,11 +62,11 @@ object NSIController extends BaseController with Logging {
     request.body.asJson.map(_.validate[NSIUserInfo]) match {
       case None ⇒
         logger.error(s"No JSON found for $description request: $requestBodyText")
-        BadRequest(JsObject(Seq("error" → Json.toJson(SubmissionFailure(None, "No JSON found", "")))))
+        BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "No JSON found", ""))))
 
       case Some(er: JsError) ⇒
         logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
-        BadRequest(JsObject(Seq("error" → Json.toJson(SubmissionFailure(None, "Invalid Json", er.toString)))))
+        BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "Invalid Json", er.toString))))
 
       case Some(JsSuccess(info, _)) ⇒
         body(info)
@@ -76,24 +76,36 @@ object NSIController extends BaseController with Logging {
   def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
     withNSIUserInfo("update email or health check") { nsiUserInfo ⇒
       val description = if (nsiUserInfo.nino === "XX999999X") "health check" else "update email"
-      handleRequest(Ok, description)
+      handleRequest(nsiUserInfo, Ok, description)
     }
   }
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
     val description = "create account"
-    withNSIUserInfo(description){ _ ⇒ handleRequest(Created, description) }
+    withNSIUserInfo(description){ nsiUserInfo ⇒ handleRequest(nsiUserInfo, Created, description) }
   }
 
-  def handleRequest(successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
+  def handleRequest(nsiUserInfo: NSIUserInfo, successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
     if (isAuthorised(request.headers)) {
-      logger.info(s"Responding to $description with ${successResult.header.status}")
-      successResult
+      val status: Option[Int] = nsiUserInfo.nino match {
+        case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
+        case _                  ⇒ None
+      }
+
+      logger.info(s"Responding to $description with ${status.getOrElse(successResult.header.status)}")
+
+      status.fold(successResult){ s ⇒
+        Status(s)(Json.toJson(SubmissionFailureResponse(
+          SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiUserInfo.nino}"))
+        ))
+      }
     } else {
       logger.error(s"No authorisation data found in header for $description request")
       Unauthorized
     }
   }
+
+  private val ninoStatusRegex = """ST(\d{3}).*""".r
 
 }
 
@@ -101,4 +113,10 @@ case class SubmissionFailure(errorMessageId: Option[String], errorMessage: Strin
 
 object SubmissionFailure {
   implicit val submissionFailureFormat: Writes[SubmissionFailure] = Json.writes[SubmissionFailure]
+}
+
+case class SubmissionFailureResponse(error: SubmissionFailure)
+
+object SubmissionFailureResponse {
+  implicit val submissionFailureResponseFormat: Writes[SubmissionFailureResponse] = Json.writes[SubmissionFailureResponse]
 }
