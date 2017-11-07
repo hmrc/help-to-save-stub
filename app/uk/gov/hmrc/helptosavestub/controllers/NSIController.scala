@@ -105,7 +105,7 @@ object NSIController extends BaseController with Logging {
     }
   }
 
-  private val ninoStatusRegex = """ST(\d{3})*""".r
+  private val ninoStatusRegex = """ST(\d{3}).*""".r
 
 }
 
