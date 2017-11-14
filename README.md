@@ -27,7 +27,7 @@ This microservice is deployed as per all MDTP microservices via Jenkins into a D
 ## Endpoints
 
 # POST /nsihts/createaccount
- Given a nino of STXYZ123A this endpoint responds with a status of XYZ, XYZ being any of the possible HTTP responses.
+ Given a nino of STxyz... this endpoint responds with a status of xyz, xyz being any of the possible HTTP responses.
 
 # PUT /nsihts/createaccount
  If the nino: XX999999X is given, a health check response with an OK status is returned otherwise an update email response with an OK status is returned.
@@ -41,11 +41,9 @@ This microservice is deployed as per all MDTP microservices via Jenkins into a D
  if the nino starts with AC, a result of an existing account holder is returned, if the nino starts with EE, an invalid result code is returned, with any other
  nino given, an eligible result is returned.
 
-# GET /admin/metrics
-
 # POST /email-verification/verification-requests
- If a valid emailVerificationRequest is given in the request body as json, then a 200 OK response is returned, If invalid or no json is given in the request
- body then a 400 BAD REQUEST response is returned.
+ If a valid emailVerificationRequest is given in the request body as json, then a 200 OK response is returned. Also if successful the continue URL is logged,
+ as this was the reason this endpoint was placed here in the stub. If invalid or no json is given in the request body then a 400 BAD REQUEST response is returned.
 
 
 ### License
