@@ -71,7 +71,7 @@ class EligibilityCheckController extends BaseController {
 
     status match {
       case Some(s) ⇒
-        Status(s)(errorJson)
+        Status(s)(errorJson(s))
 
       case None ⇒
         val response: Option[EligibilityCheckResult] =
