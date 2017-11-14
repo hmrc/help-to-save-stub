@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
 import uk.gov.hmrc.play.microservice.controller.BaseController
@@ -64,38 +64,59 @@ class EligibilityCheckController extends BaseController {
       .getOrElse(sys.error(s"Error getting reason code from fourth character of NINO $nino"))
 
   def eligibilityCheck(nino: String): Action[AnyContent] = Action { implicit request ⇒
-    val response: Option[EligibilityCheckResult] =
-      // Comments are for the Test & Release Services (T&RS) team
-      // Private BETA:
-      // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
-      //
-      // After private BETA:
-      // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
-      // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
-      if (nino.toUpperCase().startsWith("EL")) {
-        Some(eligibleResult(getReasonCodeFromNino(nino)))
-      } // Private BETA:
-      // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
-      // Start NINO with NE03 to specify an ineligible applicant in receipt of WTC (with reason code 3)
-      //
-      // After private BETA:
-      // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
-      // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
-      else if (nino.toUpperCase().startsWith("NE")) {
-        Some(ineligibleResult(getReasonCodeFromNino(nino)))
-      } // Start NINO with AC to specify an existing account holder (with reason code 1)
-      else if (nino.startsWith("AC")) {
-        Some(alreadyHasAccountResult)
-      } // Start NINO with EE to specify an invalid result code
-      else if (nino.startsWith("EE")) {
-        Some(invalidResultCode)
-      } // Start NINO with anything else to specify an eligible applicant
-      else {
-        Some(eligibleResult(7))
-      }
+    val status: Option[Int] = nino match {
+      case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
+      case _                  ⇒ None
+    }
 
-    response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
+    status match {
+      case Some(s) ⇒
+        Status(s)(errorJson)
+
+      case None ⇒
+        val response: Option[EligibilityCheckResult] =
+          // Comments are for the Test & Release Services (T&RS) team
+          // Private BETA:
+          // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
+          //
+          // After private BETA:
+          // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
+          // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
+          if (nino.toUpperCase().startsWith("EL")) {
+            Some(eligibleResult(getReasonCodeFromNino(nino)))
+          } // Private BETA:
+          // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
+          // Start NINO with NE03 to specify an ineligible applicant in receipt of WTC (with reason code 3)
+          //
+          // After private BETA:
+          // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
+          // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
+          else if (nino.toUpperCase().startsWith("NE")) {
+            Some(ineligibleResult(getReasonCodeFromNino(nino)))
+          } // Start NINO with AC to specify an existing account holder (with reason code 1)
+          else if (nino.startsWith("AC")) {
+            Some(alreadyHasAccountResult)
+          } // Start NINO with EE to specify an invalid result code
+          else if (nino.startsWith("EE")) {
+            Some(invalidResultCode)
+          } // Start NINO with anything else to specify an eligible applicant
+          else {
+            Some(eligibleResult(7))
+          }
+
+        response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
+    }
   }
+
+  private val ninoStatusRegex = """ES(\d{3}).*""".r
+
+  private def errorJson(status: Int): JsValue = Json.parse(
+    s"""
+       |{
+       |  "code":   "${io.netty.handler.codec.http.HttpResponseStatus.valueOf(status).reasonPhrase()}",
+       |  "reason": "intentional error"
+       |}
+       """.stripMargin)
 }
 
 object EligibilityCheckController {
