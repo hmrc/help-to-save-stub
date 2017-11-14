@@ -27,7 +27,7 @@ This microservice is deployed as per all MDTP microservices via Jenkins into a D
 ## Endpoints
 
 # POST /nsihts/createaccount
- Given a nino of STxyz... this endpoint responds with a status of xyz, xyz being any of the possible HTTP responses.
+ Given a nino of `STxyz...` this endpoint responds with a status of `xyz`, `xyz` being any of the possible HTTP responses.
 
 # PUT /nsihts/createaccount
  If the nino: XX999999X is given, a health check response with an OK status is returned otherwise an update email response with an OK status is returned.
@@ -40,6 +40,7 @@ This microservice is deployed as per all MDTP microservices via Jenkins into a D
  If the given nino starts with EL, an eligibility check result of eligible is returned, if the given nino starts with NE, a result of ineligible is returned,
  if the nino starts with AC, a result of an existing account holder is returned, if the nino starts with EE, an invalid result code is returned, with any other
  nino given, an eligible result is returned.
+ If the nino starts with `ESxyz...` a response will be returned with status `xyz` and an error JSON response.
 
 # POST /email-verification/verification-requests
  If a valid emailVerificationRequest is given in the request body as json, then a 200 OK response is returned. Also if successful the continue URL is logged,
