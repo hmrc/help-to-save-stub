@@ -9,8 +9,9 @@ Please click [here](https://github.com/hmrc/help-to-save-frontend#product-repos)
 ## How to run
 
 Run the help-to-save-stub service on port 7002, e.g.:
-
+```
 sbt "run 7002"
+```
 
 ## How to test
 
