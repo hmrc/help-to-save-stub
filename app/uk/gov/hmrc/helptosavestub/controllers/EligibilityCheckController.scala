@@ -19,11 +19,12 @@ package uk.gov.hmrc.helptosavestub.controllers
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
+import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.util.Try
 
-class EligibilityCheckController extends BaseController {
+class EligibilityCheckController extends BaseController with DESController with Logging {
 
   val resultMappings: Map[Int, String] = Map(
     1 → "Eligible to HtS Account",
@@ -63,7 +64,7 @@ class EligibilityCheckController extends BaseController {
     Try(nino.substring(3, 4).toInt)
       .getOrElse(sys.error(s"Error getting reason code from fourth character of NINO $nino"))
 
-  def eligibilityCheck(nino: String): Action[AnyContent] = Action { implicit request ⇒
+  def eligibilityCheck(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
     val status: Option[Int] = nino match {
       case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
       case _                  ⇒ None
@@ -107,7 +108,6 @@ class EligibilityCheckController extends BaseController {
         response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
     }
   }
-
   private val ninoStatusRegex = """ES(\d{3}).*""".r
 
   private def errorJson(status: Int): JsValue = Json.parse(

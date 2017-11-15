@@ -16,22 +16,27 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.mvc.{Action, AnyContent}
+import cats.instances.list._
+import cats.instances.string._
+import cats.syntax.eq._
+import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
-object ITMPEnrolmentController extends BaseController with DESController with Logging {
+// trait for controllers mimicking DES
+trait DESController { this: BaseController with Logging ⇒
 
-  def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    if (nino.startsWith("C")) {
-      logger.info("Received request to set ITMP flag: returning status 403 (FORBIDDEN)")
-      Forbidden
-    } else if (nino.startsWith("E")) {
-      logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
-      InternalServerError
+  private val expectedAuthorisationHeader = List("Bearer: test")
+
+  def desAuthorisedAction(body: Request[AnyContent] ⇒ Result): Action[AnyContent] = Action { request ⇒
+    val authorisationHeaders = request.headers.getAll("Authorization")
+
+    if (authorisationHeaders.toList === expectedAuthorisationHeader) {
+      body(request)
     } else {
-      logger.info("Received request to set ITMP flag: returning status 200 (OK)")
-      Ok
+      logger.warn(s"Request did not contain expected authorisation header. Received: $authorisationHeaders")
+      Unauthorized
     }
   }
+
 }
