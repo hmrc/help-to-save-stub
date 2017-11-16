@@ -100,8 +100,8 @@ class EligibilityCheckController extends BaseController with DESController with 
           } // Start NINO with EE to specify an invalid result code
           else if (nino.startsWith("EE")) {
             Some(invalidResultCode)
-          } // Start NINO with TO02 to force eligibility check to time out
-          else if (nino.startsWith("TO02")) {
+          } // Start NINO with TM02 to force eligibility check to time out
+          else if (nino.startsWith("TM02")) {
             Thread.sleep(90000)
             Some(eligibleResult(7))
           } // Start NINO with anything else to specify an eligible applicant
