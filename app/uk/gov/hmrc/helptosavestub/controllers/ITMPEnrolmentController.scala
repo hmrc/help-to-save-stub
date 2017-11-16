@@ -29,7 +29,7 @@ object ITMPEnrolmentController extends BaseController with DESController with Lo
     } else if (nino.startsWith("E")) {
       logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
       InternalServerError
-    } else if (nino.startsWith("TO04")) {
+    } else if (nino.startsWith("TM04")) {
       logger.info("Received request to set ITMP flag: returning status 200 (OK) after timeout")
       Thread.sleep(90000)
       Ok
