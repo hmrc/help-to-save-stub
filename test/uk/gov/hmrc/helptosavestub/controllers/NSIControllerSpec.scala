@@ -40,7 +40,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
     "Authorization-test" → s"Basic: $encoded"
   }
 
-  "Post /create-account  " should {
+  "Post /nsi-services/account  " should {
     "return a successful Create Account" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
