@@ -25,7 +25,7 @@ import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
 
-  val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" → "Bearer: test")
+  val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" → "Bearer test")
 
   val eligCheckController = new EligibilityCheckController
 
