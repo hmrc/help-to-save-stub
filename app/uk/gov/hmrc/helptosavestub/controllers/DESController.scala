@@ -26,7 +26,7 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 // trait for controllers mimicking DES
 trait DESController { this: BaseController with Logging ⇒
 
-  private val expectedAuthorisationHeader = List("Bearer: test")
+  private val expectedAuthorisationHeader = List("Bearer test")
 
   def desAuthorisedAction(body: Request[AnyContent] ⇒ Result): Action[AnyContent] = Action { request ⇒
     val authorisationHeaders = request.headers.getAll("Authorization")
