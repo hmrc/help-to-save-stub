@@ -23,12 +23,21 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 object ITMPEnrolmentController extends BaseController with DESController with Logging {
 
   def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    if (nino.startsWith("C")) {
+    if (nino.startsWith("FS403")) {
       logger.info("Received request to set ITMP flag: returning status 403 (FORBIDDEN)")
       Forbidden
-    } else if (nino.startsWith("E")) {
+    } else if (nino.startsWith("FS400")) {
+      logger.info("Received request to set ITMP flag: returning status 400 (BAD REQUEST)")
+      BadRequest
+    } else if (nino.startsWith("FS404")) {
+      logger.info("Received request to set ITMP flag: returning status 404 (NOT FOUND)")
+      NotFound
+    } else if (nino.startsWith("FS500")) {
       logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
       InternalServerError
+    } else if (nino.startsWith("FS503")) {
+      logger.info("Received request to set ITMP flag: returning status 503 (SERVICE UNAVAILABLE)")
+      ServiceUnavailable
     } else if (nino.startsWith("TM04")) {
       logger.info("Received request to set ITMP flag: returning status 200 (OK) after timeout")
       Thread.sleep(90000)
