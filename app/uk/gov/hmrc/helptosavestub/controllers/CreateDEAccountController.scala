@@ -40,17 +40,19 @@ object CreateDEAccountController extends BaseController with Logging {
 
       case Some(JsSuccess(nsiUserInfo, _)) ⇒
 
-        val status =
+        val response =
           if (nsiUserInfo.registrationChannel =!= "callCentre" ||
             nsiUserInfo.contactDetails.communicationPreference =!= "00") {
-            BAD_REQUEST
+            BadRequest(Json.toJson(
+              SubmissionFailureResponse(SubmissionFailure(None, "Invalid Json data", "check registrationChannel and communicationPreference fields")
+              )))
           } else {
-            CREATED
+            Created
           }
 
-        logger.info(s"Responding to /create-de-account with status $status")
+        logger.info(s"Responding to /create-de-account with status s${response.header.status}")
 
-        Status(status)
+        response
     }
   }
 }
