@@ -1,5 +1,5 @@
 /*
- * Copyright 2017 HM Revenue & Customs
+ * Copyright 2018 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -39,7 +39,7 @@ object NSIUserInfo {
                             address5:                Option[String],
                             postcode:                String,
                             countryCode:             Option[String],
-                            email:                   String,
+                            email:                   Option[String],
                             phoneNumber:             Option[String] = None,
                             communicationPreference: String         = "02")
 
