@@ -32,7 +32,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
 
   val testCreateAccount = NSIUserInfo(
     "Donald", "Duck", LocalDate.of(1990, 1, 1), "AA999999A", // scalastyle:ignore magic.number
-                      ContactDetails("1", ",Test Street 2", None, None, None, "BN124XH", Some("GB"), "dduck@email.com", None, "02"),
+                      ContactDetails("1", ",Test Street 2", None, None, None, "BN124XH", Some("GB"), Some("dduck@email.com"), None, "02"),
     "online")
 
   val authHeader = {

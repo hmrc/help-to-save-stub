@@ -39,7 +39,7 @@ object NSIUserInfo {
                             address5:                Option[String],
                             postcode:                String,
                             countryCode:             Option[String],
-                            email:                   String,
+                            email:                   Option[String],
                             phoneNumber:             Option[String] = None,
                             communicationPreference: String         = "02")
 
