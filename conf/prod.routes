@@ -13,3 +13,5 @@ GET        /admin/metrics                             @com.kenshoo.play.metrics.
 POST       /email-verification/verification-requests  @uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.verify
 
 POST       /v1/isEligible/:nino                       @uk.gov.hmrc.helptosavestub.controllers.DWPController.dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Int, transactionId: Option[java.util.UUID])
+
+GET        /pay-as-you-earn/02.00.00/individuals/:nino        @uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController.getPayeDetails(nino)
