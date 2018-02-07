@@ -30,8 +30,6 @@ class DWPControllerSpec extends UnitSpec with WithFakeApplication {
 
   val fakeRequest = FakeRequest().withHeaders("Authorization" → "Bearer test")
 
-  val fakeRequestToBlowUp = FakeRequest()
-
   val dwpController = new DWPController
 
   val wp01Json = UCDetails("Y", Some("Y"))
@@ -75,11 +73,6 @@ class DWPControllerSpec extends UnitSpec with WithFakeApplication {
     "return a 504 status with no json payload when given a nino starting with WP504" in {
       val result: Future[Result] = dwpController.dwpClaimantCheck("WS504123A")(fakeRequest)
       status(result) shouldBe Status.GATEWAY_TIMEOUT
-    }
-
-    "stub to blow up if there's no authorization key with bearer token" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("AA121123A")(fakeRequestToBlowUp)
-      status(result) shouldBe Status.FORBIDDEN
     }
 
   }
