@@ -11,3 +11,5 @@ GET        /help-to-save/eligibility-check/:nino      @uk.gov.hmrc.helptosavestu
 GET        /admin/metrics                             @com.kenshoo.play.metrics.MetricsController.metrics
 
 POST       /email-verification/verification-requests  @uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.verify
+
+POST       /help-to-save/dwp-uc-check/:nino           @uk.gov.hmrc.helptosavestub.controllers.DWPController.dwpClaimantCheck(nino)
