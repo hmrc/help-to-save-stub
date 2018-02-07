@@ -16,12 +16,16 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.util.UUID
+
 import org.scalacheck.Gen
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import cats.syntax.eq._
+import cats.instances.string._
 
 class DWPController extends BaseController with Logging {
 
@@ -33,7 +37,7 @@ class DWPController extends BaseController with Logging {
     val booleanGen = Gen.oneOf("Y", "N")
     for {
       c ← booleanGen
-      w ← Gen.option(booleanGen)
+      w ← if (c === "Y") { booleanGen.map(Some(_)) } else { Gen.const(None) }
     } yield UCDetails(c, w)
   }
 
@@ -44,7 +48,7 @@ class DWPController extends BaseController with Logging {
     Status(result)
   }
 
-  def dwpClaimantCheck(nino: String): Action[AnyContent] = Action {
+  def dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Int, transactionId: Option[UUID]): Action[AnyContent] = Action {
     implicit request ⇒
       {
         if (nino.startsWith("WP01")) { Ok(Json.toJson(wp01Json)) }
