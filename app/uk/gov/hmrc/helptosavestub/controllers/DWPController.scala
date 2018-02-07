@@ -51,6 +51,9 @@ class DWPController extends BaseController with Logging {
   def dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Int, transactionId: Option[UUID]): Action[AnyContent] = Action {
     implicit request ⇒
       {
+        logger.info(s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
+          s"thresholdAmount: $thresholdAmount, transactionId: $transactionId")
+
         if (nino.startsWith("WP01")) { Ok(Json.toJson(wp01Json)) }
         else if (nino.startsWith("WP02")) { Ok(Json.toJson(wp02Json)) }
         else if (nino.startsWith("WP03")) { Ok(Json.toJson(wp03Json)) }
