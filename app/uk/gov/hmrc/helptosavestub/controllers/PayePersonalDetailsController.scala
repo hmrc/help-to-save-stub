@@ -16,10 +16,16 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.time.format.DateTimeFormatter
+import java.time.{LocalDate, LocalDateTime, ZoneId}
+
+import org.scalacheck.Gen
+import uk.gov.hmrc.smartstub._
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
 
 import scala.util.Try
 
@@ -32,10 +38,18 @@ class PayePersonalDetailsController extends BaseController with DESController wi
     }
 
     status match {
-      case Some(s) ⇒ Status(s)(errorJson(s))
+      case Some(s) ⇒
+        Status(s)(errorJson(s))
+
       case None ⇒
         logger.info(s"returning paye-personal-details from nino: $nino")
-        Ok(Json.parse(payeDetails(nino)))
+        payeDetails(nino).seeded(nino).fold[Result]{
+          logger.warn("Could not generate PayeDetails")
+          InternalServerError
+        }{ s ⇒
+          println(s"\n\n$s\n\n")
+          Ok(Json.parse(s))
+        }
     }
   }
 
@@ -49,29 +63,35 @@ class PayePersonalDetailsController extends BaseController with DESController wi
 
   private val ninoStatusRegex = """PD(\d{3}).*""".r
 
-  def payeDetails(nino: String): String =
-    s"""{
+  private[controllers] def payeDetails(nino: String) = for {
+    sex ← Gen.gender
+    name ← Gen.forename(sex)
+    surname ← Gen.surname
+    date ← Gen.choose(100L, 1000L).map(LocalDate.ofEpochDay)
+    address ← Gen.ukAddress
+    postcode ← Gen.postcode
+  } yield s"""{
       |  "nino": "${nino.dropRight(1)}",
       |  "ninoSuffix": "${nino.takeRight(1)}",
       |  "names": {
       |    "1": {
       |      "sequenceNumber": 12345,
-      |      "firstForenameOrInitial": "A",
-      |      "surname": "Smith",
+      |      "firstForenameOrInitial": "$name",
+      |      "surname": "$surname",
       |      "startDate": "2000-01-01"
       |    }
       |  },
-      |  "sex": "M",
-      |  "dateOfBirth": "1980-01-01",
+      |  "sex": "${sex.fold("F", "M")}",
+      |  "dateOfBirth": "${date.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
       |  "deceased": false,
       |  "addresses": {
       |    "1": {
-      |      "line1": "1 Station Road",
-      |      "line2": "Town Centre",
+      |      "line1": "${address.headOption.getOrElse("1 the road")}",
+      |      "line2": "${address.drop(1).headOption.getOrElse("The Place")}",
       |      "line3": "Sometown",
       |      "line4": "Anyshire",
-      |      "postcode": "AB12 3CD",
       |      "line5": "UK",
+      |      "postcode": "$postcode",
       |      "sequenceNumber": 1,
       |      "startDate": "2000-01-01"
       |    }
@@ -93,4 +113,15 @@ class PayePersonalDetailsController extends BaseController with DESController wi
       |  "largePrintOutputRequired": false,
       |  "welshOutputRequired": false
       |}""".stripMargin
+}
+
+object PayePersonalDetailsController {
+
+  implicit class GenderOps(val gender: Gender) extends AnyVal {
+    def fold[A](female: ⇒ A, male: ⇒ A): A = gender match {
+      case Female ⇒ female
+      case Male   ⇒ male
+    }
+  }
+
 }

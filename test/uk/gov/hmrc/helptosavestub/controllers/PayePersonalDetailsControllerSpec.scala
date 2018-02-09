@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import uk.gov.hmrc.smartstub._
+
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
@@ -31,12 +33,13 @@ class PayePersonalDetailsControllerSpec extends UnitSpec with WithFakeApplicatio
   "GET /pay-as-you-earn/02.00.00/individuals/AE123456C" should {
 
     "returns paye details for a valid NINO" in {
-      val result = payeDetailsController.getPayeDetails("AE123456C")(fakeRequest)
+      val nino = "AE123456C"
+      val result = payeDetailsController.getPayeDetails(nino)(fakeRequest)
 
       status(result) shouldBe Status.OK
       val json = contentAsString(result)
 
-      json === Json.toJson(payeDetailsController.payeDetails("AE123456C"))
+      json === Json.toJson(payeDetailsController.payeDetails(nino).seeded(nino).getOrElse(sys.error("Could not generate details")))
 
     }
 
