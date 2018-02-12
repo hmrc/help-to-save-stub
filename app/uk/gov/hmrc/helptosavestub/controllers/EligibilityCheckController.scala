@@ -64,7 +64,7 @@ class EligibilityCheckController extends BaseController with DESController with 
     Try(nino.substring(3, 4).toInt)
       .getOrElse(sys.error(s"Error getting reason code from fourth character of NINO $nino"))
 
-  def eligibilityCheck(nino: String, ucClaimant: Option[String] = None, withinThreshold: Option[String] = None): Action[AnyContent] =
+  def eligibilityCheck(nino: String, ucClaimant: Option[Boolean] = None, withinThreshold: Option[Boolean] = None): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
       val status: Option[Int] = nino match {
         case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
@@ -115,6 +115,7 @@ class EligibilityCheckController extends BaseController with DESController with 
           response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
       }
     }
+
   private val ninoStatusRegex = """ES(\d{3}).*""".r
 
   private def errorJson(status: Int): JsValue = Json.parse(

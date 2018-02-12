@@ -4,7 +4,7 @@ PUT        /nsi-services/account                      uk.gov.hmrc.helptosavestub
 
 POST       /help-to-save/create-de-account            uk.gov.hmrc.helptosavestub.controllers.CreateDEAccountController.createDEAccount()
 PUT        /help-to-save/accounts/:nino               uk.gov.hmrc.helptosavestub.controllers.ITMPEnrolmentController.enrol(nino)
-GET        /help-to-save/eligibility-check/:nino      @uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.eligibilityCheck(nino, ucClaimant: Option[String], withinThreshold: Option[String])
+GET        /help-to-save/eligibility-check/:nino      @uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.eligibilityCheck(nino, ucClaimant: Option[Boolean], withinThreshold: Option[Boolean])
 ->         /help-to-save-stub                         app.Routes
 ->         /                                          health.Routes
 
