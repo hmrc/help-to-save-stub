@@ -47,6 +47,10 @@ class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
       verifyEligibility("AC111111D", 3)
     }
 
+    "returns true when user is receiving only UC credits but no WTC" in {
+      verifyEligibility("UC161111D", 1)
+    }
+
       def verifyEligibility(nino: String, resultCode: Int): Unit = {
 
         val result = eligCheckController.eligibilityCheck(nino)(fakeRequest)

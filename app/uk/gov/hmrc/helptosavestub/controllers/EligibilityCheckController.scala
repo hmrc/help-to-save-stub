@@ -64,54 +64,57 @@ class EligibilityCheckController extends BaseController with DESController with 
     Try(nino.substring(3, 4).toInt)
       .getOrElse(sys.error(s"Error getting reason code from fourth character of NINO $nino"))
 
-  def eligibilityCheck(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    val status: Option[Int] = nino match {
-      case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-      case _                  ⇒ None
+  def eligibilityCheck(nino: String, ucClaimant: Option[String] = None, withinThreshold: Option[String] = None): Action[AnyContent] =
+    desAuthorisedAction { implicit request ⇒
+      val status: Option[Int] = nino match {
+        case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
+        case _                  ⇒ None
+      }
+
+      status match {
+        case Some(s) ⇒
+          Status(s)(errorJson(s))
+
+        case None ⇒
+          val response: Option[EligibilityCheckResult] =
+            // Comments are for the Test & Release Services (T&RS) team
+            // Private BETA:
+            // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
+            //
+            // After private BETA:
+            // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
+            // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
+            if (nino.toUpperCase().startsWith("EL")) {
+              Some(eligibleResult(getReasonCodeFromNino(nino)))
+            } // Private BETA:
+            // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
+            // Start NINO with NE03 to specify an ineligible applicant in receipt of WTC (with reason code 3)
+            //
+            // After private BETA:
+            // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
+            // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
+            else if (nino.toUpperCase().startsWith("NE")) {
+              Some(ineligibleResult(getReasonCodeFromNino(nino)))
+            } // Start NINO with AC to specify an existing account holder (with reason code 1)
+            else if (nino.startsWith("AC")) {
+              Some(alreadyHasAccountResult)
+            } // Start NINO with EE to specify an invalid result code
+            else if (nino.startsWith("EE")) {
+              Some(invalidResultCode)
+            } // Start NINO with TM02 to force eligibility check to time out
+            else if (nino.startsWith("TM02")) {
+              Thread.sleep(90000)
+              Some(eligibleResult(7))
+            } else if (nino.startsWith("UC1")) {
+              Some(eligibleResult(getReasonCodeFromNino(nino)))
+            } // Start NINO with anything else to specify an eligible applicant
+            else {
+              Some(eligibleResult(7))
+            }
+
+          response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
+      }
     }
-
-    status match {
-      case Some(s) ⇒
-        Status(s)(errorJson(s))
-
-      case None ⇒
-        val response: Option[EligibilityCheckResult] =
-          // Comments are for the Test & Release Services (T&RS) team
-          // Private BETA:
-          // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
-          //
-          // After private BETA:
-          // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
-          // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
-          if (nino.toUpperCase().startsWith("EL")) {
-            Some(eligibleResult(getReasonCodeFromNino(nino)))
-          } // Private BETA:
-          // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
-          // Start NINO with NE03 to specify an ineligible applicant in receipt of WTC (with reason code 3)
-          //
-          // After private BETA:
-          // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
-          // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
-          else if (nino.toUpperCase().startsWith("NE")) {
-            Some(ineligibleResult(getReasonCodeFromNino(nino)))
-          } // Start NINO with AC to specify an existing account holder (with reason code 1)
-          else if (nino.startsWith("AC")) {
-            Some(alreadyHasAccountResult)
-          } // Start NINO with EE to specify an invalid result code
-          else if (nino.startsWith("EE")) {
-            Some(invalidResultCode)
-          } // Start NINO with TM02 to force eligibility check to time out
-          else if (nino.startsWith("TM02")) {
-            Thread.sleep(90000)
-            Some(eligibleResult(7))
-          } // Start NINO with anything else to specify an eligible applicant
-          else {
-            Some(eligibleResult(7))
-          }
-
-        response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
-    }
-  }
   private val ninoStatusRegex = """ES(\d{3}).*""".r
 
   private def errorJson(status: Int): JsValue = Json.parse(
