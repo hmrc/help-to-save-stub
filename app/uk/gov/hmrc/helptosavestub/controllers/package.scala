@@ -16,10 +16,10 @@
 
 package uk.gov.hmrc.helptosavestub
 
-import hmrc.smartstub._
+import uk.gov.hmrc.smartstub._
 
 package object controllers {
 
-  implicit val ninoEnum: Enumerable[String] = pattern"ZZ999999Z"
+  implicit val ninoEnum: ToLong[String] = pattern"ZZ999999Z"
 
 }
