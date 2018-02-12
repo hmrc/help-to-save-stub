@@ -60,7 +60,7 @@ class DWPController extends BaseController with Logging {
         else if (nino.startsWith("WS")) { getHttpStatus(nino) }
         else if (nino.startsWith("WT")) {
           Thread.sleep(16000) // scalastyle:ignore magic.number
-          InternalServerError
+          Ok("Timeout")
         } else { Ok(Json.toJson(randomUCDetails())) }
       }
   }
