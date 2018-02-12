@@ -58,7 +58,10 @@ class DWPController extends BaseController with Logging {
         else if (nino.startsWith("WP02")) { Ok(Json.toJson(wp02Json)) }
         else if (nino.startsWith("WP03")) { Ok(Json.toJson(wp03Json)) }
         else if (nino.startsWith("WS")) { getHttpStatus(nino) }
-        else { Ok(Json.toJson(randomUCDetails())) }
+        else if (nino.startsWith("WT")) {
+          Thread.sleep(16000) // scalastyle:ignore magic.number
+          Ok("Timeout")
+        } else { Ok(Json.toJson(randomUCDetails())) }
       }
   }
 
