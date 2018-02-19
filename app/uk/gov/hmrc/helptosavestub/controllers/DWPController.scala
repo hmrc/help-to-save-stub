@@ -27,11 +27,7 @@ import uk.gov.hmrc.play.microservice.controller.BaseController
 import cats.syntax.eq._
 import cats.instances.string._
 
-class DWPController extends BaseController with Logging {
-
-  val wp01Json: UCDetails = UCDetails("Y", Some("Y"))
-  val wp02Json: UCDetails = UCDetails("Y", Some("N"))
-  val wp03Json: UCDetails = UCDetails("N", None)
+class DWPController extends BaseController with Logging with DWPEligibilityBehaviour {
 
   val ucGen: Gen[UCDetails] = {
     val booleanGen = Gen.oneOf("Y", "N")
@@ -54,14 +50,17 @@ class DWPController extends BaseController with Logging {
         logger.info(s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
           s"thresholdAmount: $thresholdAmount, transactionId: $transactionId")
 
-        if (nino.startsWith("WP01")) { Ok(Json.toJson(wp01Json)) }
-        else if (nino.startsWith("WP02")) { Ok(Json.toJson(wp02Json)) }
-        else if (nino.startsWith("WP03")) { Ok(Json.toJson(wp03Json)) }
-        else if (nino.startsWith("WS")) { getHttpStatus(nino) }
+        if (nino.startsWith("WS")) { getHttpStatus(nino) }
         else if (nino.startsWith("WT")) {
-          Thread.sleep(16000) // scalastyle:ignore magic.number
+          Thread.sleep(43000) // scalastyle:ignore magic.number
           Ok("Timeout")
-        } else { Ok(Json.toJson(randomUCDetails())) }
+        } else {
+          getProfile(nino).
+            fold(Ok(Json.toJson(randomUCDetails()))){
+              _.uCDetails.fold[Result](InternalServerError)(ucDetails ⇒
+                Ok(Json.toJson(ucDetails)))
+            }
+        }
       }
   }
 
