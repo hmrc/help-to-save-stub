@@ -43,40 +43,23 @@ class DWPControllerSpec extends UnitSpec with WithFakeApplication {
   val newUUID = UUID.randomUUID()
 
   "dwpEligibilityCheck" must {
-    "return a 200 status along with (Y, Y) json payload when given a nino starting with WP01" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("WP010123A", systemId, threshold, Some(newUUID))(fakeRequest)
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.toJson(wp01Json)
-    }
 
-    "return a 200 status along with (Y, N) json payload when given a nino starting with WP02" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("WP020123A", systemId, threshold, Some(newUUID))(fakeRequest)
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.toJson(wp02Json)
-    }
-
-    "return a 200 status along with (N, None) json payload when given a nino starting with WP03" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("WP030123A", systemId, threshold, Some(newUUID))(fakeRequest)
-      status(result) shouldBe Status.OK
-      contentAsJson(result) shouldBe Json.toJson(wp03Json)
-    }
-
-    "return a 400 status with no json payload when given a nino starting with WP400" in {
+    "return a 400 status with no json payload when given a nino starting with WS400" in {
       val result: Future[Result] = dwpController.dwpClaimantCheck("WS400123A", systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }
 
-    "return a 404 status with no json payload when given a nino starting with WP404" in {
+    "return a 404 status with no json payload when given a nino starting with WS404" in {
       val result: Future[Result] = dwpController.dwpClaimantCheck("WS404123A", systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
-    "return a 500 status with no json payload when given a nino starting with WP500" in {
+    "return a 500 status with no json payload when given a nino starting with WS500" in {
       val result: Future[Result] = dwpController.dwpClaimantCheck("WS500123A", systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    "return a 504 status with no json payload when given a nino starting with WP504" in {
+    "return a 504 status with no json payload when given a nino starting with WS504" in {
       val result: Future[Result] = dwpController.dwpClaimantCheck("WS504123A", systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.GATEWAY_TIMEOUT
     }
