@@ -18,51 +18,12 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
-import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
 import scala.util.Try
 
-class EligibilityCheckController extends BaseController with DESController with Logging {
-
-  val resultMappings: Map[Int, String] = Map(
-    1 → "Eligible to HtS Account",
-    2 → "Ineligible to HtS Account",
-    3 → "HtS account already exists",
-    99 → "INVALID RESULT WHICH DES SHOULD NEVER SEND"
-  )
-
-  val reasonMappings: Map[Int, String] = Map(
-    1 → "HtS account was previously created",
-    2 → "Not entitled to WTC and not in receipt of UC",
-    3 → "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC",
-    4 → "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient",
-    5 → "Not entitled to WTC and in receipt of UC but income is insufficient",
-    6 → "In receipt of UC and income sufficient",
-    7 → "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit",
-    8 → "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient"
-  )
-
-  val alreadyHasAccountResult: EligibilityCheckResult =
-    EligibilityCheckResult("HtS account already exists", 3, "HtS account was previously created", 1)
-
-  val invalidResultCode: EligibilityCheckResult =
-    EligibilityCheckResult("INVALID RESULT WHICH DES SHOULD NEVER SEND", 99, "Not entitled to WTC and not in receipt of UC", 2)
-
-  def eligibleResult(reasonCode: Int): EligibilityCheckResult = {
-    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
-    EligibilityCheckResult("Eligible to HtS Account", 1, reason, reasonCode)
-  }
-
-  def ineligibleResult(reasonCode: Int): EligibilityCheckResult = {
-    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
-    EligibilityCheckResult("Ineligible to HtS Account", 2, reason, reasonCode)
-  }
-
-  def getReasonCodeFromNino(nino: String): Int =
-    Try(nino.substring(3, 4).toInt)
-      .getOrElse(sys.error(s"Error getting reason code from fourth character of NINO $nino"))
+class EligibilityCheckController extends BaseController with DESController with Logging with DWPEligibilityBehaviour {
 
   def eligibilityCheck(nino: String, ucClaimant: Option[Boolean] = None, withinThreshold: Option[Boolean] = None): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
@@ -80,51 +41,42 @@ class EligibilityCheckController extends BaseController with DESController with 
       }
     }
 
-  private def getResponse(nino: String, ucClaimant: Option[Boolean], withinThreshold: Option[Boolean]) = {
-    val response: Option[EligibilityCheckResult] =
-      // Comments are for the Test & Release Services (T&RS) team
-      // Private BETA:
-      // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
-      //
-      // After private BETA:
-      // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
-      // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
-      if (nino.toUpperCase().startsWith("EL")) {
-        Some(eligibleResult(getReasonCodeFromNino(nino)))
-      } // Private BETA:
-      // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
-      // Start NINO with NE03 to specify an ineligible applicant in receipt of WTC (with reason code 3)
-      //
-      // After private BETA:
-      // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
-      // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
-      else if (nino.toUpperCase().startsWith("NE")) {
-        Some(ineligibleResult(getReasonCodeFromNino(nino)))
-      } // Start NINO with AC to specify an existing account holder (with reason code 1)
-      else if (nino.startsWith("AC")) {
-        Some(alreadyHasAccountResult)
-      } // Start NINO with EE to specify an invalid result code
-      else if (nino.startsWith("EE")) {
-        Some(invalidResultCode)
-      } // Start NINO with TM02 to force eligibility check to time out
-      else if (nino.startsWith("TM02")) {
-        Thread.sleep(90000)
-        Some(eligibleResult(7))
-      } else if (nino.startsWith("WP0")) {
-        (ucClaimant, withinThreshold) match {
-          case (None, None)              ⇒ Some(eligibleResult(getReasonCodeFromNino(nino)))
-          case (Some(true), Some(true))  ⇒ Some(eligibleResult(6))
-          case (Some(true), Some(false)) ⇒ Some(ineligibleResult(5))
-          case (Some(false), None)       ⇒ Some(ineligibleResult(3))
-          case _                         ⇒ Some(ineligibleResult(3))
+  private def getResponse(nino: String, ucClaimant: Option[Boolean], withinThreshold: Option[Boolean]): Result =
+    // Comments are for the Test & Release Services (T&RS) team
+    // Private BETA:
+    // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
+    //
+    // After private BETA:
+    // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
+    // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
+    if (nino.toUpperCase().startsWith("EL")) {
+      Ok(eligibleResult(getReasonCodeFromNino(nino)).toJson())
+    } // Private BETA:
+    // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
+    // Start NINO with NE03 to specify an ineligible applicant in receipt of WTC (with reason code 3)
+    //
+    // After private BETA:
+    // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
+    // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
+    else if (nino.toUpperCase().startsWith("NE")) {
+      Ok(ineligibleResult(getReasonCodeFromNino(nino)).toJson())
+    } // Start NINO with AC to specify an existing account holder (with reason code 1)
+    else if (nino.startsWith("AC")) {
+      Ok(alreadyHasAccountResult.toJson())
+    } else if (nino.startsWith("EE")) {
+      Ok(invalidResultCode.toJson())
+    } // Start NINO with TM02 to force eligibility check to time out
+    else if (nino.startsWith("TM02")) {
+      Thread.sleep(90000)
+      Ok(eligibleResult(7).toJson())
+    } // Start NINO with anything else to specify an eligible applicant
+    else {
+      getProfile(nino).
+        fold(Ok(eligibleResult(7).toJson())) {
+          _.eligibiltyCheckResult.fold[Result](InternalServerError)(r ⇒
+            Ok(r.toJson()))
         }
-      } // Start NINO with anything else to specify an eligible applicant
-      else {
-        Some(eligibleResult(7))
-      }
-
-    response.fold[Result](InternalServerError)(r ⇒ Ok(Json.toJson(r)))
-  }
+    }
 
   private val ninoStatusRegex = """ES(\d{3}).*""".r
 
@@ -146,20 +98,25 @@ object EligibilityCheckController {
    *               2 = Ineligible to HtS Account
    *               3 = HtS account already exists
    * @param reason 1 = HtS account was previously created
-   *               2 = Not entitled to WTC and not in receipt of UC
+   *               2 = Not entitled to WTC and UC not checked
    *               3 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC
    *               4 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient
    *               5 = Not entitled to WTC and in receipt of UC but income is insufficient
    *               6 = In receipt of UC and income sufficient
    *               7 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit
    *               8 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient
-   *               N.B. 1-5 represent reasons for ineligibility and 6-8 repesents reasons for eligibility
+   *               9 = Not entitled to WTC and not in receipt of UC
+   *               N.B. 1-5 & 9 represent reasons for ineligibility and 6-8 repesents reasons for eligibility
    */
   case class EligibilityCheckResult(result: String, resultCode: Int, reason: String, reasonCode: Int)
 
   object EligibilityCheckResult {
 
     implicit val format: Format[EligibilityCheckResult] = Json.format[EligibilityCheckResult]
+
+    implicit class EligibilityCheckResultOps(val r: EligibilityCheckResult) extends AnyVal {
+      def toJson(): JsValue = Json.toJson(r)
+    }
 
   }
 
