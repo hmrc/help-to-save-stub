@@ -14,10 +14,21 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helptosavestub.models
+package uk.gov.hmrc.helptosavestub.controllers
 
-import java.time.LocalDate
-import java.util.UUID
+import play.api.mvc.{Action, AnyContent}
+import uk.gov.hmrc.helptosavestub.models.NSIErrorResponse
+import uk.gov.hmrc.play.microservice.controller.BaseController
 
-import play.api.libs.json.{Format, Json}
+import scala.concurrent.ExecutionContext.Implicits.global
 
+class NSIGetAccountController extends BaseController with NSIGetAccountBehaviour {
+
+  def getAccount: Action[AnyContent] = Action {
+    implicit request ⇒
+      val maybeNino = request.queryString.get("nino")
+      maybeNino.fold(BadRequest(NSIErrorResponse.missingNinoResponse))(nino ⇒ Ok(getAccountByNino(nino.head)))
+
+  }
+
+}
