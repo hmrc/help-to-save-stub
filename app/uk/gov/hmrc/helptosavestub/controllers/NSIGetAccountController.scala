@@ -16,18 +16,49 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import play.api.mvc.{Action, AnyContent}
+import cats.instances.string._
+import cats.syntax.eq._
+import play.api.libs.json.Json
+import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.helptosavestub.models.NSIErrorResponse
+import uk.gov.hmrc.http.HeaderCarrier
 import uk.gov.hmrc.play.microservice.controller.BaseController
 
+import scala.concurrent.ExecutionContext
 import scala.concurrent.ExecutionContext.Implicits.global
 
 class NSIGetAccountController extends BaseController with NSIGetAccountBehaviour {
 
-  def getAccount: Action[AnyContent] = Action {
+  def queryAccount(resource: String): Action[AnyContent] = Action {
     implicit request ⇒
-      val maybeNino = request.queryString.get("nino")
-      maybeNino.fold(BadRequest(NSIErrorResponse.missingNinoResponse))(nino ⇒ Ok(getAccountByNino(nino.head)))
+      handleQuery(resource, request.rawQueryString)
+  }
+
+  private def handleQuery(resource: String, queryString: String)(implicit hc: HeaderCarrier, ex: ExecutionContext): Result = {
+    validate(resource, queryString).fold(
+      {
+        error ⇒ BadRequest(Json.toJson(NSIErrorResponse.missingNinoError))
+      },
+      nino ⇒ if (nino.startsWith("EM") || nino.startsWith("TM")) {
+        Ok(Json.toJson(getAccountByNino(nino)))
+      } else {
+        Ok(Json.toJson(getErrorResponse(nino)))
+      }
+    )
+  }
+
+  private def validate(resource: String, rawQueryString: String): Either[String, String] = {
+    if (resource === "account") {
+      if (rawQueryString.contains("nino")) {
+        Right(rawQueryString.split("nino=").takeRight(9).toString)
+      } else {
+        Left("No Nino was found in the query string")
+      }
+    } else if (resource === "transactions") {
+      Right("")
+    } else {
+      Left("")
+    }
 
   }
 
