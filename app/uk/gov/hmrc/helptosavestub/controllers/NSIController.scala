@@ -29,6 +29,7 @@ import uk.gov.hmrc.helptosavestub.models.{NSIErrorResponse, NSIUserInfo}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController with Logging {
@@ -112,27 +113,29 @@ object NSIController extends BaseController with Logging {
   def queryAccount(resource: String): Action[AnyContent] = Action { implicit request ⇒
     val queryString = request.rawQueryString
     resource match {
-      case "account" ⇒ handleAccountQuery(queryString)
+      case "account"      ⇒ handleAccountQuery(queryString)
       case "transactions" ⇒ handleTxnQuery(queryString)
-      case "messages" ⇒ handleMessagesQuery(queryString)
-      case _ ⇒ BadRequest
+      case "messages"     ⇒ handleMessagesQuery(queryString)
+      case _              ⇒ BadRequest
     }
   }
 
   private def handleAccountQuery(rawQueryString: String): Result = {
 
     extractParams(rawQueryString)
-      .fold(error ⇒
-        //logger.warn("invalid params")
-        BadRequest,
+      .fold(error ⇒ {
+        logger.warn("[Handle Account Query] error occurred when trying to extract params")
+        BadRequest
+      },
         map ⇒
           validateParams(map).fold(
-            error ⇒ BadRequest,
-            nino ⇒
-              Ok(Json.toJson(getAccountByNino(nino)))
+            error ⇒ {
+              logger.warn("[Handle Account Query] invalid params")
+              Ok(Json.toJson(error))
+            },
+            nino ⇒ Ok(Json.toJson(getAccountByNino(nino)))
           )
       )
-
   }
 
   private def handleTxnQuery(rawQueryString: String): Result = ???
@@ -153,20 +156,22 @@ object NSIController extends BaseController with Logging {
         } else {
           systemId match {
             case Some(s) ⇒
-              //validate systemdi to specifc string like mobile-help-to-save
-              nino match {
-                case Some(n) ⇒
-                  if (n.matches(helptosavestub.util.ninoRegex.regex)) {
-                    Right(n)
-                  } else {
-                    Left(NSIErrorResponse.badNinoResponse)
-                  }
+              if (systemId.get === "mobile-help-to-save") {
+                nino match {
+                  case Some(n) ⇒
+                    if (n.matches(helptosavestub.util.ninoRegex.regex)) {
+                      Right(n)
+                    } else {
+                      Left(NSIErrorResponse.badNinoResponse)
+                    }
 
-                case _ ⇒
-                  Left(NSIErrorResponse.missingNinoResponse)
+                  case _ ⇒ Left(NSIErrorResponse.missingNinoResponse)
+                }
+              } else {
+                Left(NSIErrorResponse.unsupportedSystemIdResponse)
               }
-            case _ ⇒ Left(missinfgSystemIdResponse)
 
+            case _ ⇒ Left(NSIErrorResponse.missingSystemIdResponse)
           }
         }
 
@@ -181,11 +186,10 @@ object NSIController extends BaseController with Logging {
         .map(keyValue ⇒ (keyValue.split("=")(0), keyValue.split("=")(1)))
         .toMap
     } match {
-      case Success(map) ⇒ Right(map)
+      case Success(map)   ⇒ Right(map)
       case Failure(error) ⇒ Left(error.getMessage)
     }
   }
-
 
 }
 

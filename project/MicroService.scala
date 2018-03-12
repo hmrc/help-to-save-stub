@@ -105,6 +105,7 @@ trait MicroService {
       routes.in(Compile).value ++
       (baseDirectory.value ** "*.sc").get ++
       (baseDirectory.value ** "NSIGetAccountBehaviour.scala").get ++
+      (baseDirectory.value ** "NSIController.scala").get ++
       Seq(sourceManaged.value / "main" / "sbt-buildinfo" / "BuildInfo.scala")
     )
     .settings(

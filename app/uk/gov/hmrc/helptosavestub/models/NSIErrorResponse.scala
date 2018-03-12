@@ -50,5 +50,11 @@ object NSIErrorResponse {
   val unknownNinoError: ErrorDetails = ErrorDetails("HTS-API015-006", "Unknown NINO. No HTS account found for this nino", "Field: NINO")
   val unknownNinoResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unknownNinoError)
 
+  val missingSystemIdError: ErrorDetails = ErrorDetails("HTS-API015-007", "Missing systemId.", "Field: SystemId")
+  val missingSystemIdResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingSystemIdError)
+
+  val unsupportedSystemIdError: ErrorDetails = ErrorDetails("HTS-API015-008", "Unsupported systemId ", "Field: systemId")
+  val unsupportedSystemIdResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unsupportedSystemIdError)
+
 }
 
