@@ -19,16 +19,13 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.time.LocalDate
 import java.util.UUID
 
-import ai.x.play.json.Jsonx
 import cats.instances.string._
 import cats.syntax.eq._
 import play.api.libs.json.{Format, Json}
-import uk.gov.hmrc.helptosavestub.models.NSIErrorResponse
 
 import scala.concurrent.ExecutionContext
 
-trait NSIGetAccountBehaviour {
-  import NSIGetAccountBehaviour._
+object NSIGetAccountBehaviour {
 
   def getAccountByNino(nino: String)(implicit ec: ExecutionContext): NSIGetAccountByNinoResponse =
     if (nino === "EM000001A") {
@@ -55,50 +52,35 @@ trait NSIGetAccountBehaviour {
       NSIGetAccountByNinoResponse.annaNSIResponse ///maybe need to update this???
     }
 
-  def getErrorResponse(nino: String)(implicit ec: ExecutionContext): NSIErrorResponse =
-    if (nino.startsWith("EC01")) {
-      NSIErrorResponse.missingVersionResponse
-    } else if (nino.startsWith("EC02")) {
-      NSIErrorResponse.unsupportedVersionResponse
-    } else if (nino.startsWith("EC04")) {
-      NSIErrorResponse.badNinoResponse
-    } else {
-      NSIErrorResponse.unknownNinoResponse
-    }
-
-}
-
-object NSIGetAccountBehaviour {
-
-  case class NSIGetAccountByNinoResponse(version:                   String,
-                                         correlationId:             UUID,
-                                         accountNumber:             Long,
-                                         availableWithdrawal:       String,
-                                         accountBalance:            String,
-                                         accountClosedFlag:         Boolean,
-                                         accountBlockingCode:       String,
+  case class NSIGetAccountByNinoResponse(version: String,
+                                         correlationId: UUID,
+                                         accountNumber: Long,
+                                         availableWithdrawal: String,
+                                         accountBalance: String,
+                                         accountClosedFlag: Boolean,
+                                         accountBlockingCode: String,
                                          accountBlockingReasonCode: String,
-                                         currentInvestmentMonth:    CurrentInvestmentMonth,
-                                         clientForename:            String,
-                                         clientSurname:             String,
-                                         dateOfBirth:               LocalDate,
-                                         addressLine1:              String,
-                                         addressLine2:              String,
-                                         addressLine3:              String,
-                                         addressLine4:              String,
-                                         addressLine5:              String,
-                                         postCode:                  String,
-                                         countryCode:               String,
-                                         emailAddress:              String,
-                                         commsPreference:           String,
-                                         clientBlockingCode:        String,
-                                         clientBlockingReasonCode:  String,
-                                         clientCancellationStatus:  String,
-                                         nbaAccountNumber:          String,
-                                         nbaPayee:                  String,
-                                         nbaRollNumber:             String,
-                                         nbaSortCode:               String,
-                                         terms:                     List[Term])
+                                         currentInvestmentMonth: CurrentInvestmentMonth,
+                                         clientForename: String,
+                                         clientSurname: String,
+                                         dateOfBirth: LocalDate,
+                                         addressLine1: String,
+                                         addressLine2: String,
+                                         addressLine3: String,
+                                         addressLine4: String,
+                                         addressLine5: String,
+                                         postCode: String,
+                                         countryCode: String,
+                                         emailAddress: String,
+                                         commsPreference: String,
+                                         clientBlockingCode: String,
+                                         clientBlockingReasonCode: String,
+                                         clientCancellationStatus: String,
+                                         nbaAccountNumber: String,
+                                         nbaPayee: String,
+                                         nbaRollNumber: String,
+                                         nbaSortCode: String,
+                                         terms: List[Term])
 
   case class CurrentInvestmentMonth(investmentRemaining: String, investmentLimit: String, endDate: LocalDate)
 
@@ -123,7 +105,7 @@ object NSIGetAccountBehaviour {
     val bethCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val bethTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 11, 1), "200.00", "100.00", "0.00"),
-                                           Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 11, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 11, 1), "0.00", "0.00", "0.00"))
 
     val bethNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "175.00", "200.00", false, "00", "00", bethCIM, "Beth", "Planner", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -133,7 +115,7 @@ object NSIGetAccountBehaviour {
     val peteCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("9.88", "50.00", LocalDate.of(2018, 3, 31))
 
     val peteTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 9, 1), LocalDate.of(2019, 9, 1), "190.12", "95.06", "0.00"),
-                                           Term(2, LocalDate.of(2019, 9, 1), LocalDate.of(2021, 9, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2019, 9, 1), LocalDate.of(2021, 9, 1), "0.00", "0.00", "0.00"))
 
     val peteNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "165.12", "190.12", false, "00", "00", peteCIM, "Pete", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -143,7 +125,7 @@ object NSIGetAccountBehaviour {
     val lauraCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val lauraTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 3, 1), LocalDate.of(2019, 3, 1), "135.00", "67.50", "0.00"),
-                                            Term(2, LocalDate.of(2019, 3, 1), LocalDate.of(2021, 3, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2019, 3, 1), LocalDate.of(2021, 3, 1), "0.00", "0.00", "0.00"))
 
     val lauraNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "110.00", "135.00", false, "00", "00", lauraCIM, "Laura", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -153,7 +135,7 @@ object NSIGetAccountBehaviour {
     val tonyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val tonyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2018, 10, 1), LocalDate.of(2020, 10, 1), "75.00", "37.50", "0.00"),
-                                           Term(2, LocalDate.of(2019, 3, 1), LocalDate.of(2021, 3, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2019, 3, 1), LocalDate.of(2021, 3, 1), "0.00", "0.00", "0.00"))
 
     val tonyNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "50.00", "75.00", false, "00", "00", tonyCIM, "Tony", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -163,7 +145,7 @@ object NSIGetAccountBehaviour {
     val monikaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val monikaTerms: List[Term] = List[Term](Term(1, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 3, 1), "0.00", "0.00", "0.00"),
-                                             Term(2, LocalDate.of(2020, 3, 1), LocalDate.of(2022, 3, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2020, 3, 1), LocalDate.of(2022, 3, 1), "0.00", "0.00", "0.00"))
 
     val monikaNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "0.00", "0.00", false, "00", "00", monikaCIM, "Monika", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -173,7 +155,7 @@ object NSIGetAccountBehaviour {
     val happyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val happyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 3, 1), "1200.00", "600.00", "0.00"),
-                                            Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "2400.00", "600.00", "0.00"))
+      Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "2400.00", "600.00", "0.00"))
 
     val happyNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "0.00", "0.00", false, "00", "00", happyCIM, "Happy", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -183,7 +165,7 @@ object NSIGetAccountBehaviour {
     val takenCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val takenTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 3, 1), "1200.00", "600.00", "0.00"),
-                                            Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "0.00", "0.00", "0.00"))
 
     val takenNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "0.00", "0.00", false, "00", "00", takenCIM, "Taken", "Out", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -193,7 +175,7 @@ object NSIGetAccountBehaviour {
     val spencerCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("40.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val spencerTerms: List[Term] = List[Term](Term(1, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "832.00", "416.00", "0.00"),
-                                              Term(2, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 3, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 3, 1), "0.00", "0.00", "0.00"))
 
     val spencerNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "0.00", "0.00", false, "00", "00", spencerCIM, "Spencer", "Waller", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -203,7 +185,7 @@ object NSIGetAccountBehaviour {
     val alexCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("13.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val alexTerms: List[Term] = List[Term](Term(1, LocalDate.of(2015, 2, 1), LocalDate.of(2017, 2, 1), "900.00", "450.00", "0.00"),
-                                           Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 2, 1), "1270.00", "185.00", "0.00"))
+      Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 2, 1), "1270.00", "185.00", "0.00"))
 
     val alexNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "0.00", "0.00", false, "00", "00", alexCIM, "Alex", "Millar", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -213,7 +195,7 @@ object NSIGetAccountBehaviour {
     val annaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val annaTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 10, 1), LocalDate.of(2019, 10, 1), "75.00", "37.50", "0.00"),
-                                           Term(2, LocalDate.of(2019, 10, 1), LocalDate.of(2021, 10, 1), "0.00", "0.00", "0.00"))
+      Term(2, LocalDate.of(2019, 10, 1), LocalDate.of(2021, 10, 1), "0.00", "0.00", "0.00"))
 
     val annaNSIResponse: NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       1100000112057l, "0.00", "0.00", false, "00", "00", annaCIM, "Anna", "Smith", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
@@ -221,4 +203,5 @@ object NSIGetAccountBehaviour {
       "02", "00", "00", " ", "11111111", "Mr P Smith", " ", "801497", annaTerms)
 
   }
+
 }

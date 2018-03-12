@@ -23,9 +23,11 @@ import cats.instances.string._
 import cats.syntax.eq._
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, Headers, Request, Result}
-import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
+import uk.gov.hmrc.helptosavestub
+import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.getAccountByNino
+import uk.gov.hmrc.helptosavestub.models.{NSIErrorResponse, NSIUserInfo}
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
 
 import scala.util.{Failure, Success, Try}
 
@@ -106,6 +108,84 @@ object NSIController extends BaseController with Logging {
   }
 
   private val ninoStatusRegex = """AS(\d{3}).*""".r
+
+  def queryAccount(resource: String): Action[AnyContent] = Action { implicit request ⇒
+    val queryString = request.rawQueryString
+    resource match {
+      case "account" ⇒ handleAccountQuery(queryString)
+      case "transactions" ⇒ handleTxnQuery(queryString)
+      case "messages" ⇒ handleMessagesQuery(queryString)
+      case _ ⇒ BadRequest
+    }
+  }
+
+  private def handleAccountQuery(rawQueryString: String): Result = {
+
+    extractParams(rawQueryString)
+      .fold(error ⇒
+        //logger.warn("invalid params")
+        BadRequest,
+        map ⇒
+          validateParams(map).fold(
+            error ⇒ BadRequest,
+            nino ⇒
+              Ok(Json.toJson(getAccountByNino(nino)))
+          )
+      )
+
+  }
+
+  private def handleTxnQuery(rawQueryString: String): Result = ???
+
+  private def handleMessagesQuery(rawQueryString: String): Result = ???
+
+  private def validateParams(map: Map[String, String]): Either[NSIErrorResponse, NINO] = {
+
+    val nino = map.get("nino")
+    val version = map.get("version")
+    val systemId = map.get("systemId")
+    val correlationId = map.get("correlationId")
+
+    version match {
+      case Some(v) ⇒
+        if (v =!= "1.0") {
+          Left(NSIErrorResponse.unsupportedVersionResponse)
+        } else {
+          systemId match {
+            case Some(s) ⇒
+              //validate systemdi to specifc string like mobile-help-to-save
+              nino match {
+                case Some(n) ⇒
+                  if (n.matches(helptosavestub.util.ninoRegex.regex)) {
+                    Right(n)
+                  } else {
+                    Left(NSIErrorResponse.badNinoResponse)
+                  }
+
+                case _ ⇒
+                  Left(NSIErrorResponse.missingNinoResponse)
+              }
+            case _ ⇒ Left(missinfgSystemIdResponse)
+
+          }
+        }
+
+      case _ ⇒ Left(NSIErrorResponse.missingVersionResponse)
+    }
+  }
+
+  private def extractParams(rawQueryString: String): Either[String, Map[String, String]] = {
+    Try {
+      rawQueryString
+        .split("&")
+        .map(keyValue ⇒ (keyValue.split("=")(0), keyValue.split("=")(1)))
+        .toMap
+    } match {
+      case Success(map) ⇒ Right(map)
+      case Failure(error) ⇒ Left(error.getMessage)
+    }
+  }
+
 
 }
 
