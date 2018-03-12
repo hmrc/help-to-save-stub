@@ -36,23 +36,18 @@ object NSIErrorResponse {
   val correlationId: UUID = UUID.randomUUID()
 
   val missingVersionError: ErrorDetails = ErrorDetails("HTS-API015-002", "Missing version.", "Field: version")
-
   val missingVersionResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingVersionError)
 
   val unsupportedVersionError: ErrorDetails = ErrorDetails("HTS-API015-003", "Unsupported service version. Expected V1.0, received v1", "Field: version")
-
   val unsupportedVersionResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unsupportedVersionError)
 
   val missingNinoError: ErrorDetails = ErrorDetails("HTS-API015-004", "Missing NINO.", "Field: NINO")
-
   val missingNinoResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingNinoError)
 
   val badNinoError: ErrorDetails = ErrorDetails("HTS-API015-005", "Bad NINO.Format is incorrect (XX999999X) for this nino", "Field: NINO")
-
   val badNinoResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, badNinoError)
 
   val unknownNinoError: ErrorDetails = ErrorDetails("HTS-API015-006", "Unknown NINO. No HTS account found for this nino", "Field: NINO")
-
   val unknownNinoResponse: NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unknownNinoError)
 
 }
