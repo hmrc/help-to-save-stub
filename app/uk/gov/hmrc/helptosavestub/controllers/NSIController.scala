@@ -153,13 +153,12 @@ object NSIController extends BaseController with Logging {
       ).toValidatedNel
 
     val systemIdValidation: ValidatedNel[NSIErrorResponse, String] = map.get("systemId").fold[Validated[NSIErrorResponse, String]](
-      Invalid(NSIErrorResponse.missingVersionResponse)
+      Invalid(NSIErrorResponse.missingSystemIdResponse)
     )(
-        s ⇒ if (s =!= "mobile-help-to-save") Invalid(NSIErrorResponse.missingVersionResponse) else Valid(s)
+        s ⇒ if (s =!= "mobile-help-to-save") Invalid(NSIErrorResponse.unsupportedSystemIdResponse) else Valid(s)
       ).toValidatedNel
 
-    val ninoValidation: ValidatedNel[NSIErrorResponse, String] =
-      map.get("nino").fold[Validated[NSIErrorResponse, String]](
+    val ninoValidation: ValidatedNel[NSIErrorResponse, String] = map.get("nino").fold[Validated[NSIErrorResponse, String]](
         Invalid(NSIErrorResponse.missingNinoResponse)
       )(n ⇒ if (!n.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(n)
         ).toValidatedNel
