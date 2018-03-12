@@ -24,11 +24,9 @@ import cats.syntax.eq._
 import play.api.libs.json.{Format, Json}
 import ai.x.play.json.Jsonx
 
-import scala.concurrent.ExecutionContext
-
 object NSIGetAccountBehaviour {
 
-  def getAccountByNino(nino: String)(implicit ec: ExecutionContext): NSIGetAccountByNinoResponse =
+  def getAccountByNino(nino: String): NSIGetAccountByNinoResponse =
     if (nino === "EM000001A") {
       NSIGetAccountByNinoResponse.bethNSIResponse
     } else if (nino === "EM000002A") {

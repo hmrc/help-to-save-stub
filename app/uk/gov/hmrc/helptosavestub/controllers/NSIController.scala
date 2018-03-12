@@ -19,8 +19,11 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
 import cats.syntax.eq._
+import cats.syntax.cartesian._
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, Headers, Request, Result}
 import uk.gov.hmrc.helptosavestub
@@ -29,7 +32,6 @@ import uk.gov.hmrc.helptosavestub.models.{NSIErrorResponse, NSIUserInfo}
 import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
 
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController with Logging {
@@ -142,41 +144,34 @@ object NSIController extends BaseController with Logging {
 
   private def handleMessagesQuery(rawQueryString: String): Result = ???
 
-  private def validateParams(map: Map[String, String]): Either[NSIErrorResponse, NINO] = {
+  private def validateParams(map: Map[String, String]): Either[List[NSIErrorResponse], NINO] = {
 
-    val nino = map.get("nino")
-    val version = map.get("version")
-    val systemId = map.get("systemId")
-    val correlationId = map.get("correlationId")
+    val versionValidation: ValidatedNel[NSIErrorResponse, String] = map.get("version").fold[Validated[NSIErrorResponse, String]](
+      Validated.Invalid(NSIErrorResponse.missingVersionResponse)
+    )(
+        v ⇒ if (v =!= "1.0") Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse) else Validated.Valid(v)
+      ).toValidatedNel
 
-    version match {
-      case Some(v) ⇒
-        if (v =!= "1.0") {
-          Left(NSIErrorResponse.unsupportedVersionResponse)
-        } else {
-          systemId match {
-            case Some(s) ⇒
-              if (systemId.get === "mobile-help-to-save") {
-                nino match {
-                  case Some(n) ⇒
-                    if (n.matches(helptosavestub.util.ninoRegex.regex)) {
-                      Right(n)
-                    } else {
-                      Left(NSIErrorResponse.badNinoResponse)
-                    }
+    val systemIdValidation: ValidatedNel[NSIErrorResponse, String] = map.get("systemId").fold[Validated[NSIErrorResponse, String]](
+      Invalid(NSIErrorResponse.missingVersionResponse)
+    )(
+        s ⇒ if (s =!= "mobile-help-to-save") Invalid(NSIErrorResponse.missingVersionResponse) else Valid(s)
+      ).toValidatedNel
 
-                  case _ ⇒ Left(NSIErrorResponse.missingNinoResponse)
-                }
-              } else {
-                Left(NSIErrorResponse.unsupportedSystemIdResponse)
-              }
+    val ninoValidation: ValidatedNel[NSIErrorResponse, String] =
+      map.get("nino").fold[Validated[NSIErrorResponse, String]](
+        Invalid(NSIErrorResponse.missingNinoResponse)
+      )(n ⇒ if (!n.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(n)
+        ).toValidatedNel
 
-            case _ ⇒ Left(NSIErrorResponse.missingSystemIdResponse)
-          }
-        }
+    val validation = (versionValidation |@| systemIdValidation |@| ninoValidation)
+      .map {
+        case (v, s, nino) ⇒ nino
+      }
 
-      case _ ⇒ Left(NSIErrorResponse.missingVersionResponse)
-    }
+    validation
+      .leftMap(e ⇒ e.toList)
+      .toEither
   }
 
   private def extractParams(rawQueryString: String): Either[String, Map[String, String]] = {
