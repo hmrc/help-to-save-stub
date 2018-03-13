@@ -21,6 +21,7 @@ import java.util.Base64
 
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
+import cats.instances.list._
 import cats.instances.string._
 import cats.syntax.eq._
 import cats.syntax.cartesian._
@@ -112,62 +113,48 @@ object NSIController extends BaseController with Logging {
 
   private val ninoStatusRegex = """AS(\d{3}).*""".r
 
-  def queryAccount(resource: String): Action[AnyContent] = Action { implicit request ⇒
-    val queryString = request.rawQueryString
-    resource match {
-      case "account"      ⇒ handleAccountQuery(queryString)
-      case "transactions" ⇒ handleTxnQuery(queryString)
-      case "messages"     ⇒ handleMessagesQuery(queryString)
-      case _              ⇒ BadRequest
-    }
-  }
-
-  private def handleAccountQuery(rawQueryString: String): Result = {
-
-    extractParams(rawQueryString)
-      .fold(error ⇒ {
-        logger.warn("[Handle Account Query] error occurred when trying to extract params")
-        BadRequest
-      },
-        map ⇒
-          validateParams(map).fold(
-            error ⇒ {
-              logger.warn("[Handle Account Query] invalid params")
-              Ok(Json.toJson(error))
-            },
-            nino ⇒
-              if (nino.contains("401")) {
-                Unauthorized
-              } else if (nino.contains("500")) {
-                InternalServerError
-              } else {
-                Ok(Json.toJson(getAccountByNino(nino)))
-              }
-          )
+  def getAccount: Action[AnyContent] = Action { implicit request ⇒
+    val params = request.queryString
+    validateParams(params.mapValues(_.toList))
+      .fold(
+        error ⇒ {
+          logger.warn("[Handle Account Query] invalid params")
+          Ok(Json.toJson(error))
+        },
+        nino ⇒
+          if (nino.head.contains("401")) {
+            Unauthorized
+          } else if (nino.head.contains("500")) {
+            InternalServerError
+          } else {
+            Ok(Json.toJson(getAccountByNino(nino.head)))
+          }
       )
   }
 
-  private def handleTxnQuery(rawQueryString: String): Result = ???
+  def getTransactions: Action[AnyContent] = ???
 
-  private def handleMessagesQuery(rawQueryString: String): Result = ???
+  def getMessages: Action[AnyContent] = ???
 
-  private def validateParams(map: Map[String, String]): Either[List[NSIErrorResponse], NINO] = {
+  def getMessage(messageId: String): Action[AnyContent] = ???
 
-    val versionValidation: ValidatedNel[NSIErrorResponse, String] = map.get("version").fold[Validated[NSIErrorResponse, String]](
+  private def validateParams(map: Map[String, List[String]]): Either[List[NSIErrorResponse], List[NINO]] = {
+
+    val versionValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("version").fold[Validated[NSIErrorResponse, List[String]]](
       Validated.Invalid(NSIErrorResponse.missingVersionResponse)
     )(
-        v ⇒ if (v =!= "1.0") Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse) else Validated.Valid(v)
+        v ⇒ if (v =!= List("1.0")) Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse) else Validated.Valid(v)
       ).toValidatedNel
 
-    val systemIdValidation: ValidatedNel[NSIErrorResponse, String] = map.get("systemId").fold[Validated[NSIErrorResponse, String]](
+    val systemIdValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("systemId").fold[Validated[NSIErrorResponse, List[String]]](
       Invalid(NSIErrorResponse.missingSystemIdResponse)
     )(
-        s ⇒ if (s =!= "mobile-help-to-save") Invalid(NSIErrorResponse.unsupportedSystemIdResponse) else Valid(s)
+        s ⇒ if (s =!= List("mobile-help-to-save")) Invalid(NSIErrorResponse.unsupportedSystemIdResponse) else Valid(s)
       ).toValidatedNel
 
-    val ninoValidation: ValidatedNel[NSIErrorResponse, String] = map.get("nino").fold[Validated[NSIErrorResponse, String]](
+    val ninoValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("nino").fold[Validated[NSIErrorResponse, List[String]]](
       Invalid(NSIErrorResponse.missingNinoResponse)
-    )(n ⇒ if (!n.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(n)
+    )(n ⇒ if (!n.head.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(n)
       ).toValidatedNel
 
     val validation = (versionValidation |@| systemIdValidation |@| ninoValidation)
