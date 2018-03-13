@@ -135,7 +135,14 @@ object NSIController extends BaseController with Logging {
               logger.warn("[Handle Account Query] invalid params")
               Ok(Json.toJson(error))
             },
-            nino ⇒ Ok(Json.toJson(getAccountByNino(nino)))
+            nino ⇒
+              if (nino.contains("401")) {
+                Unauthorized
+              } else if (nino.contains("500")) {
+                InternalServerError
+              } else {
+                Ok(Json.toJson(getAccountByNino(nino)))
+              }
           )
       )
   }
@@ -159,9 +166,9 @@ object NSIController extends BaseController with Logging {
       ).toValidatedNel
 
     val ninoValidation: ValidatedNel[NSIErrorResponse, String] = map.get("nino").fold[Validated[NSIErrorResponse, String]](
-        Invalid(NSIErrorResponse.missingNinoResponse)
-      )(n ⇒ if (!n.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(n)
-        ).toValidatedNel
+      Invalid(NSIErrorResponse.missingNinoResponse)
+    )(n ⇒ if (!n.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(n)
+      ).toValidatedNel
 
     val validation = (versionValidation |@| systemIdValidation |@| ninoValidation)
       .map {
