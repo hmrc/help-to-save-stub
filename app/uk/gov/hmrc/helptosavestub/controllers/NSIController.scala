@@ -115,7 +115,7 @@ object NSIController extends BaseController with Logging {
 
   def getAccount(correlationId: Option[String]): Action[AnyContent] = Action { implicit request ⇒
     val params = request.queryString
-    validateParams(params.mapValues(_.toList))
+    validateParams(params.mapValues(_.toList), correlationId)
       .fold(
         error ⇒ {
           logger.warn("[Handle Account Query] invalid params")
@@ -143,12 +143,12 @@ object NSIController extends BaseController with Logging {
 
   def getMessage(messageId: String): Action[AnyContent] = ???
 
-  private def validateParams(map: Map[String, List[String]]): Either[List[NSIErrorResponse], List[NINO]] = {
+  private def validateParams(map: Map[String, List[String]], correlationId: Option[String]): Either[List[NSIErrorResponse], List[NINO]] = {
 
     val versionValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("version").fold[Validated[NSIErrorResponse, List[String]]](
-      Validated.Invalid(NSIErrorResponse.missingVersionResponse)
+      Validated.Invalid(NSIErrorResponse.missingVersionResponse(correlationId.getOrElse("")))
     )(
-        v ⇒ if (v =!= List("V1.0")) Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse) else Validated.Valid(v)
+        v ⇒ if (v =!= List("V1.0")) Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse(correlationId.getOrElse(""))) else Validated.Valid(v)
       ).toValidatedNel
 
     //    val systemIdValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("systemId").fold[Validated[NSIErrorResponse, List[String]]](
@@ -158,11 +158,11 @@ object NSIController extends BaseController with Logging {
     //      ).toValidatedNel
 
     val ninoValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("nino").fold[Validated[NSIErrorResponse, List[String]]]({
-      Invalid(NSIErrorResponse.missingNinoResponse)
+      Invalid(NSIErrorResponse.missingNinoResponse(correlationId.getOrElse("")))
     }
     ){
-      case nino :: Nil ⇒ if (!nino.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(List(nino))
-      case other       ⇒ Invalid(NSIErrorResponse.badNinoResponse)
+      case nino :: Nil ⇒ if (!nino.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse(correlationId.getOrElse(""))) else Valid(List(nino))
+      case other       ⇒ Invalid(NSIErrorResponse.badNinoResponse(correlationId.getOrElse("")))
     }.toValidatedNel
 
     val validation = (versionValidation |@|
