@@ -143,23 +143,27 @@ object NSIController extends BaseController with Logging {
     val versionValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("version").fold[Validated[NSIErrorResponse, List[String]]](
       Validated.Invalid(NSIErrorResponse.missingVersionResponse)
     )(
-        v ⇒ if (v =!= List("1.0")) Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse) else Validated.Valid(v)
+        v ⇒ if (v =!= List("V1.0")) Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse) else Validated.Valid(v)
       ).toValidatedNel
 
-    val systemIdValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("systemId").fold[Validated[NSIErrorResponse, List[String]]](
-      Invalid(NSIErrorResponse.missingSystemIdResponse)
-    )(
-        s ⇒ if (s =!= List("mobile-help-to-save")) Invalid(NSIErrorResponse.unsupportedSystemIdResponse) else Valid(s)
-      ).toValidatedNel
+    //    val systemIdValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("systemId").fold[Validated[NSIErrorResponse, List[String]]](
+    //      Invalid(NSIErrorResponse.missingSystemIdResponse)
+    //    )(
+    //        s ⇒ if (s =!= List("mobile-help-to-save")) Invalid(NSIErrorResponse.unsupportedSystemIdResponse) else Valid(s)
+    //      ).toValidatedNel
 
     val ninoValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("nino").fold[Validated[NSIErrorResponse, List[String]]](
       Invalid(NSIErrorResponse.missingNinoResponse)
     )(n ⇒ if (!n.head.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse) else Valid(n)
       ).toValidatedNel
 
-    val validation = (versionValidation |@| systemIdValidation |@| ninoValidation)
+    val validation = (versionValidation |@|
+      // systemIdValidation |@|
+      ninoValidation)
       .map {
-        case (v, s, nino) ⇒ nino
+        case (v,
+          //s,
+          nino) ⇒ nino
       }
 
     validation
