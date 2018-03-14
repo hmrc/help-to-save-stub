@@ -117,9 +117,13 @@ object NSIController extends BaseController with Logging {
     val params = request.queryString
     validateParams(params.mapValues(_.toList), correlationId)
       .fold(
-        error ⇒ {
+        errors ⇒ {
           logger.warn("[Handle Account Query] invalid params")
-          Ok(Json.toJson(error))
+          errors match {
+            case error :: Nil ⇒ BadRequest(Json.toJson(error))
+            case _            ⇒ BadRequest
+          }
+
         }, {
           case nino :: Nil ⇒
             if (nino.contains("401")) {
@@ -127,14 +131,15 @@ object NSIController extends BaseController with Logging {
             } else if (nino.contains("500")) {
               InternalServerError
             } else {
-              Ok(Json.toJson(getAccountByNino(nino, correlationId)))
+              val maybeAccount = getAccountByNino(nino, correlationId)
+              maybeAccount match {
+                case Right(a) ⇒ Ok(Json.toJson(a))
+                case Left(e)  ⇒ BadRequest(Json.toJson(e))
+              }
             }
           case other ⇒
             BadRequest
-
-        }
-
-      )
+        })
   }
 
   def getTransactions: Action[AnyContent] = ???
@@ -146,9 +151,9 @@ object NSIController extends BaseController with Logging {
   private def validateParams(map: Map[String, List[String]], correlationId: Option[String]): Either[List[NSIErrorResponse], List[NINO]] = {
 
     val versionValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("version").fold[Validated[NSIErrorResponse, List[String]]](
-      Validated.Invalid(NSIErrorResponse.missingVersionResponse(correlationId.getOrElse("")))
+      Validated.Invalid(NSIErrorResponse.missingVersionResponse(correlationId))
     )(
-        v ⇒ if (v =!= List("V1.0")) Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse(correlationId.getOrElse(""))) else Validated.Valid(v)
+        v ⇒ if (v =!= List("V1.0")) Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse(correlationId)) else Validated.Valid(v)
       ).toValidatedNel
 
     //    val systemIdValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("systemId").fold[Validated[NSIErrorResponse, List[String]]](
@@ -158,11 +163,11 @@ object NSIController extends BaseController with Logging {
     //      ).toValidatedNel
 
     val ninoValidation: ValidatedNel[NSIErrorResponse, List[String]] = map.get("nino").fold[Validated[NSIErrorResponse, List[String]]]({
-      Invalid(NSIErrorResponse.missingNinoResponse(correlationId.getOrElse("")))
+      Invalid(NSIErrorResponse.missingNinoResponse(correlationId))
     }
     ){
-      case nino :: Nil ⇒ if (!nino.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse(correlationId.getOrElse(""))) else Valid(List(nino))
-      case other       ⇒ Invalid(NSIErrorResponse.badNinoResponse(correlationId.getOrElse("")))
+      case nino :: Nil ⇒ if (!nino.matches(helptosavestub.util.ninoRegex.regex)) Invalid(NSIErrorResponse.badNinoResponse(correlationId)) else Valid(List(nino))
+      case other       ⇒ Invalid(NSIErrorResponse.badNinoResponse(correlationId))
     }.toValidatedNel
 
     val validation = (versionValidation |@|

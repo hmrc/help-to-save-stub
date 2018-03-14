@@ -16,11 +16,9 @@
 
 package uk.gov.hmrc.helptosavestub.models
 
-import java.util.UUID
-
 import play.api.libs.json.{Format, Json}
 
-case class NSIErrorResponse(version: String, correlationId: String, error: ErrorDetails)
+case class NSIErrorResponse(version: String, correlationId: Option[String], error: ErrorDetails)
 
 case class ErrorDetails(errorMessageId: String, errorMessage: String, errorDetail: String)
 
@@ -36,25 +34,25 @@ object NSIErrorResponse {
   //val correlationId: UUID = UUID.randomUUID()
 
   val missingVersionError: ErrorDetails = ErrorDetails("HTS-API015-002", "Missing version.", "Field: version")
-  def missingVersionResponse(correlationId: String): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingVersionError)
+  def missingVersionResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingVersionError)
 
   val unsupportedVersionError: ErrorDetails = ErrorDetails("HTS-API015-003", "Unsupported service version. Expected V1.0, received v1", "Field: version")
-  def unsupportedVersionResponse(correlationId: String): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unsupportedVersionError)
+  def unsupportedVersionResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unsupportedVersionError)
 
   val missingNinoError: ErrorDetails = ErrorDetails("HTS-API015-004", "Missing NINO.", "Field: NINO")
-  def missingNinoResponse(correlationId: String): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingNinoError)
+  def missingNinoResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingNinoError)
 
   val badNinoError: ErrorDetails = ErrorDetails("HTS-API015-005", "Bad NINO.Format is incorrect (XX999999X) for this nino", "Field: NINO")
-  def badNinoResponse(correlationId: String): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, badNinoError)
+  def badNinoResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, badNinoError)
 
   val unknownNinoError: ErrorDetails = ErrorDetails("HTS-API015-006", "Unknown NINO. No HTS account found for this nino", "Field: NINO")
-  def unknownNinoResponse(correlationId: String): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unknownNinoError)
+  def unknownNinoResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unknownNinoError)
 
   val missingSystemIdError: ErrorDetails = ErrorDetails("HTS-API015-007", "Missing systemId.", "Field: SystemId")
-  def missingSystemIdResponse(correlationId: String): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingSystemIdError)
+  def missingSystemIdResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingSystemIdError)
 
   val unsupportedSystemIdError: ErrorDetails = ErrorDetails("HTS-API015-008", "Unsupported systemId ", "Field: systemId")
-  def unsupportedSystemIdResponse(correlationId: String): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unsupportedSystemIdError)
+  def unsupportedSystemIdResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unsupportedSystemIdError)
 
 }
 
