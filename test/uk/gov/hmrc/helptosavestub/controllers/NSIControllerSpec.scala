@@ -89,4 +89,35 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
       status(result) shouldBe BAD_REQUEST
     }
   }
+
+  "Get /nsi-services/account" should {
+    "return a successful status when given an existing nino" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+      val result = NSIController.getAccount(Some("correlationId"), Some("EM000001A"), Some("V1.0"), Some("systemId"))(request)
+      status(result) shouldBe OK
+    }
+
+    "return a 400 when given a nino not found" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+      val result = NSIController.getAccount(Some("correlationId"), Some("EZ000001A"), Some("V1.0"), Some("systemId"))(request)
+      status(result) shouldBe BAD_REQUEST
+    }
+
+    "return a 500 when given a nino with 500 in" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+      val result = NSIController.getAccount(Some("correlationId"), Some("EM500001A"), Some("V1.0"), Some("systemId"))(request)
+      status(result) shouldBe INTERNAL_SERVER_ERROR
+    }
+
+    "return a 401 when given a nino with 500 in" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+      val result = NSIController.getAccount(Some("correlationId"), Some("EM000401A"), Some("V1.0"), Some("systemId"))(request)
+      status(result) shouldBe UNAUTHORIZED
+    }
+
+  }
 }

@@ -31,8 +31,6 @@ object NSIErrorResponse {
 
   implicit val format: Format[NSIErrorResponse] = Json.format[NSIErrorResponse]
 
-  //val correlationId: UUID = UUID.randomUUID()
-
   val missingVersionError: ErrorDetails = ErrorDetails("HTS-API015-002", "Missing version.", "Field: version")
   def missingVersionResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingVersionError)
 
