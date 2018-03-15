@@ -21,7 +21,6 @@ import java.util.Base64
 
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
-import cats.instances.list._
 import cats.instances.string._
 import cats.syntax.eq._
 import cats.syntax.cartesian._

@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.LocalDate
-import java.util.UUID
 
 import cats.instances.string._
 import cats.syntax.eq._

@@ -23,7 +23,8 @@ import java.util.Base64
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
+import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.NSIGetAccountByNinoResponse
+import uk.gov.hmrc.helptosavestub.models.{NSIErrorResponse, NSIUserInfo}
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class NSIControllerSpec extends UnitSpec with WithFakeApplication {
@@ -96,6 +97,8 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
         .withHeaders(authHeader)
       val result = NSIController.getAccount(Some("correlationId"), Some("EM000001A"), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe OK
+      val json = contentAsString(result)
+      Json.fromJson[NSIGetAccountByNinoResponse](Json.parse(json)).get shouldBe NSIGetAccountByNinoResponse.bethNSIResponse(Some("correlationId"))
     }
 
     "return a 400 when given a nino not found" in {
@@ -103,6 +106,8 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
         .withHeaders(authHeader)
       val result = NSIController.getAccount(Some("correlationId"), Some("EZ000001A"), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe BAD_REQUEST
+      val json = contentAsString(result)
+      Json.fromJson[NSIErrorResponse](Json.parse(json)).get shouldBe NSIErrorResponse.unknownNinoResponse(Some("correlationId"))
     }
 
     "return a 500 when given a nino with 500 in" in {
@@ -112,7 +117,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication {
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
 
-    "return a 401 when given a nino with 500 in" in {
+    "return a 401 when given a nino with 401 in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
       val result = NSIController.getAccount(Some("correlationId"), Some("EM000401A"), Some("V1.0"), Some("systemId"))(request)
