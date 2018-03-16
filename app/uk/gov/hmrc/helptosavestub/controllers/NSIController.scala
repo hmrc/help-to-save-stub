@@ -125,13 +125,13 @@ object NSIController extends BaseController with Logging {
               case _            ⇒ BadRequest
             }
           }, {
-            maybeNino ⇒
-              if (maybeNino.contains("401")) {
+            validatedNino ⇒
+              if (validatedNino.contains("401")) {
                 Unauthorized
-              } else if (maybeNino.contains("500")) {
+              } else if (validatedNino.contains("500")) {
                 InternalServerError
               } else {
-                val maybeAccount = getAccountByNino(maybeNino, correlationId)
+                val maybeAccount = getAccountByNino(validatedNino, correlationId)
                 maybeAccount match {
                   case Right(a) ⇒ Ok(Json.toJson(a))
                   case Left(e)  ⇒ BadRequest(Json.toJson(e))
