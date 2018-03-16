@@ -19,13 +19,18 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
 import cats.syntax.eq._
+import cats.syntax.cartesian._
 import play.api.libs.json._
 import play.api.mvc.{Action, AnyContent, Headers, Request, Result}
-import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
+import uk.gov.hmrc.helptosavestub
+import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.getAccountByNino
+import uk.gov.hmrc.helptosavestub.models.{NSIErrorResponse, NSIUserInfo}
 import uk.gov.hmrc.play.microservice.controller.BaseController
-import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
 
 import scala.util.{Failure, Success, Try}
 
@@ -106,6 +111,63 @@ object NSIController extends BaseController with Logging {
   }
 
   private val ninoStatusRegex = """AS(\d{3}).*""".r
+
+  def getAccount(correlationId: Option[String],
+                 nino:          Option[String],
+                 version:       Option[String]): Action[AnyContent] = Action {
+    implicit request ⇒
+      validateParams(correlationId, nino, version)
+        .fold(
+          errors ⇒ {
+            logger.warn("[Handle Account Query] invalid params")
+            errors match {
+              case error :: Nil ⇒ BadRequest(Json.toJson(error))
+              case _            ⇒ BadRequest
+            }
+          }, {
+            validatedNino ⇒
+              if (validatedNino.contains("401")) {
+                Unauthorized
+              } else if (validatedNino.contains("500")) {
+                InternalServerError
+              } else {
+                val maybeAccount = getAccountByNino(validatedNino, correlationId)
+                maybeAccount match {
+                  case Right(a) ⇒ Ok(Json.toJson(a))
+                  case Left(e)  ⇒ BadRequest(Json.toJson(e))
+                }
+              }
+          })
+  }
+
+  private def validateParams(correlationId: Option[String],
+                             nino:          Option[String],
+                             version:       Option[String]): Either[List[NSIErrorResponse], NINO] = {
+
+    val versionValidation: ValidatedNel[NSIErrorResponse, String] = version.fold[Validated[NSIErrorResponse, String]](
+      Validated.Invalid(NSIErrorResponse.missingVersionResponse(correlationId))
+    )(
+        v ⇒ if (v =!= "V1.0") Validated.Invalid(NSIErrorResponse.unsupportedVersionResponse(correlationId)) else Validated.Valid(v)
+      ).toValidatedNel
+
+    val ninoValidation: ValidatedNel[NSIErrorResponse, String] = nino.fold[Validated[NSIErrorResponse, String]]({
+      Invalid(NSIErrorResponse.missingNinoResponse(correlationId))
+    }
+    ){
+      case maybeNino ⇒ if (!maybeNino.matches(helptosavestub.util.ninoRegex.regex)) {
+        Invalid(NSIErrorResponse.badNinoResponse(correlationId))
+      } else { Valid(maybeNino) }
+    }.toValidatedNel
+
+    val validation = (versionValidation |@| ninoValidation)
+      .map {
+        case (v, validatedNino) ⇒ validatedNino
+      }
+
+    validation
+      .leftMap(e ⇒ e.toList)
+      .toEither
+  }
 
 }
 
