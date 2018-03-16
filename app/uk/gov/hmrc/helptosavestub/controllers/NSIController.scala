@@ -143,8 +143,6 @@ object NSIController extends BaseController with Logging {
           })
   }
 
-  def getMessage(messageId: String): Action[AnyContent] = ???
-
   private def validateParams(correlationId: Option[String],
                              nino:          Option[String],
                              version:       Option[String],

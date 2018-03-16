@@ -18,37 +18,25 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.LocalDate
 
-import cats.instances.string._
-import cats.syntax.eq._
 import play.api.libs.json.{Format, Json}
 import ai.x.play.json.Jsonx
 import uk.gov.hmrc.helptosavestub.models.NSIErrorResponse
 
 object NSIGetAccountBehaviour {
 
-  def getAccountByNino(nino: String, correlationId: Option[String]): Either[NSIErrorResponse, NSIGetAccountByNinoResponse] =
-    if (nino === "EM000001A") {
-      Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
-    } else if (nino === "EM000002A") {
-      Right(NSIGetAccountByNinoResponse.peteNSIResponse(correlationId))
-    } else if (nino === "EM000003A") {
-      Right(NSIGetAccountByNinoResponse.lauraNSIResponse(correlationId))
-    } else if (nino === "EM000004A") {
-      Right(NSIGetAccountByNinoResponse.tonyNSIResponse(correlationId))
-    } else if (nino === "EM000005A") {
-      Right(NSIGetAccountByNinoResponse.monikaNSIResponse(correlationId))
-    } else if (nino === "EM000006A") {
-      Right(NSIGetAccountByNinoResponse.happyNSIResponse(correlationId))
-    } else if (nino === "EM000007A") {
-      Right(NSIGetAccountByNinoResponse.takenNSIResponse(correlationId))
-    } else if (nino === "EM000008A") {
-      Right(NSIGetAccountByNinoResponse.spencerNSIResponse(correlationId))
-    } else if (nino === "EM000009A") {
-      Right(NSIGetAccountByNinoResponse.alexNSIResponse(correlationId))
-    } else if (nino === "TM739915A") {
-      Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
-    } else {
-      Left(NSIErrorResponse.unknownNinoResponse(correlationId))
+  def getAccountByNino(nino: String, correlationId: Option[String]): Either[NSIErrorResponse, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
+    nino match {
+      case "EM000001A" ⇒ Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
+      case "EM000002A" ⇒ Right(NSIGetAccountByNinoResponse.peteNSIResponse(correlationId))
+      case "EM000003A" ⇒ Right(NSIGetAccountByNinoResponse.lauraNSIResponse(correlationId))
+      case "EM000004A" ⇒ Right(NSIGetAccountByNinoResponse.tonyNSIResponse(correlationId))
+      case "EM000005A" ⇒ Right(NSIGetAccountByNinoResponse.monikaNSIResponse(correlationId))
+      case "EM000006A" ⇒ Right(NSIGetAccountByNinoResponse.happyNSIResponse(correlationId))
+      case "EM000007A" ⇒ Right(NSIGetAccountByNinoResponse.takenNSIResponse(correlationId))
+      case "EM000008A" ⇒ Right(NSIGetAccountByNinoResponse.spencerNSIResponse(correlationId))
+      case "EM000009A" ⇒ Right(NSIGetAccountByNinoResponse.alexNSIResponse(correlationId))
+      case "TM739915A" ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
+      case _           ⇒ Left(NSIErrorResponse.unknownNinoResponse(correlationId))
     }
 
   case class NSIGetAccountByNinoResponse(version:                   String,
