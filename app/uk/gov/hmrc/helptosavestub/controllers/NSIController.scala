@@ -114,10 +114,9 @@ object NSIController extends BaseController with Logging {
 
   def getAccount(correlationId: Option[String],
                  nino:          Option[String],
-                 version:       Option[String],
-                 systemId:      Option[String]): Action[AnyContent] = Action {
+                 version:       Option[String]): Action[AnyContent] = Action {
     implicit request ⇒
-      validateParams(correlationId, nino, version, systemId)
+      validateParams(correlationId, nino, version)
         .fold(
           errors ⇒ {
             logger.warn("[Handle Account Query] invalid params")
@@ -126,27 +125,24 @@ object NSIController extends BaseController with Logging {
               case _            ⇒ BadRequest
             }
           }, {
-            case nino ⇒
-              if (nino.contains("401")) {
+            maybeNino ⇒
+              if (maybeNino.contains("401")) {
                 Unauthorized
-              } else if (nino.contains("500")) {
+              } else if (maybeNino.contains("500")) {
                 InternalServerError
               } else {
-                val maybeAccount = getAccountByNino(nino, correlationId)
+                val maybeAccount = getAccountByNino(maybeNino, correlationId)
                 maybeAccount match {
                   case Right(a) ⇒ Ok(Json.toJson(a))
                   case Left(e)  ⇒ BadRequest(Json.toJson(e))
                 }
               }
-            case other ⇒
-              BadRequest
           })
   }
 
   private def validateParams(correlationId: Option[String],
                              nino:          Option[String],
-                             version:       Option[String],
-                             systemId:      Option[String]): Either[List[NSIErrorResponse], NINO] = {
+                             version:       Option[String]): Either[List[NSIErrorResponse], NINO] = {
 
     val versionValidation: ValidatedNel[NSIErrorResponse, String] = version.fold[Validated[NSIErrorResponse, String]](
       Validated.Invalid(NSIErrorResponse.missingVersionResponse(correlationId))
@@ -161,8 +157,6 @@ object NSIController extends BaseController with Logging {
       case maybeNino ⇒ if (!maybeNino.matches(helptosavestub.util.ninoRegex.regex)) {
         Invalid(NSIErrorResponse.badNinoResponse(correlationId))
       } else { Valid(maybeNino) }
-
-      case other ⇒ Invalid(NSIErrorResponse.badNinoResponse(correlationId))
     }.toValidatedNel
 
     val validation = (versionValidation |@| ninoValidation)
