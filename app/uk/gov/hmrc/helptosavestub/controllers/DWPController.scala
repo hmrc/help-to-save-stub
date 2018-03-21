@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.util.UUID
 
 import org.scalacheck.Gen
-import play.api.libs.json.{Format, Json}
+import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.helptosavestub.util.Logging
@@ -38,6 +38,15 @@ class DWPController extends BaseController with Logging with DWPEligibilityBehav
   }
 
   def randomUCDetails(): UCDetails = ucGen.sample.getOrElse(sys.error(""))
+
+  val healthCheckResponse: JsValue =
+    Json.parse("""
+                 |{
+                 |  "RequestService" : {
+                 |    "healthy" : true
+                 |  }
+                 |}
+               """.stripMargin)
 
   private def getHttpStatus(nino: String): Result = {
     val result = nino.substring(2, 5).toInt // scalastyle:ignore magic.number
@@ -62,6 +71,11 @@ class DWPController extends BaseController with Logging with DWPEligibilityBehav
             }
         }
       }
+  }
+
+  def dwpHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
+    logger.info("Responding to DWP health check with status 200")
+    Ok(healthCheckResponse)
   }
 
 }
