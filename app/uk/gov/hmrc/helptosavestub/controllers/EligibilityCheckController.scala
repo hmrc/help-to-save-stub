@@ -16,6 +16,8 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import cats.syntax.eq._
+import cats.instances.string._
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.util.Logging
@@ -29,7 +31,8 @@ class EligibilityCheckController extends BaseController with DESController with 
     desAuthorisedAction { implicit request ⇒
       val status: Option[Int] = nino match {
         case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-        case _                  ⇒ None
+        case s if s.startsWith("WP1144") || s === "AA123123A" ⇒ Some(404)
+        case _ ⇒ None
       }
 
       status match {
@@ -41,15 +44,34 @@ class EligibilityCheckController extends BaseController with DESController with 
       }
     }
 
-  private def getResponse(nino: String, ucClaimant: Option[Boolean], withinThreshold: Option[Boolean]): Result =
-    // Comments are for the Test & Release Services (T&RS) team
-    // Private BETA:
+  private def getResponse(nino: String, ucClaimant: Option[Boolean], withinThreshold: Option[Boolean]): Result = {
+    val upperCaseNINO = nino.toUpperCase()
+    // Allow early system integration testing with DWP, with DES stubbed
+    if (upperCaseNINO.startsWith("LW634114")) {
+      Ok(ineligibleResult(9).toJson())
+    } else if (upperCaseNINO.startsWith("ZX368514")) {
+      Ok(ineligibleResult(3).toJson())
+    } else if (upperCaseNINO.startsWith("BJ825714")) {
+      Ok(eligibleResult(7).toJson())
+    } else if (upperCaseNINO.startsWith("HG737615")) {
+      Ok(ineligibleResult(5).toJson())
+    } else if (upperCaseNINO.startsWith("EK978215")) {
+      Ok(ineligibleResult(4).toJson())
+    } else if (upperCaseNINO.startsWith("KS384413")) {
+      Ok(eligibleResult(7).toJson())
+    } else if (upperCaseNINO.startsWith("GH987015")) {
+      Ok(eligibleResult(6).toJson())
+    } else if (upperCaseNINO.startsWith("LX405614")) {
+      Ok(eligibleResult(6).toJson())
+    } else if (upperCaseNINO.startsWith("EX535913")) {
+      Ok(eligibleResult(8).toJson())
+    } // Private BETA:
     // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
     //
     // After private BETA:
     // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
     // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
-    if (nino.toUpperCase().startsWith("EL")) {
+    else if (upperCaseNINO.startsWith("EL")) {
       Ok(eligibleResult(getReasonCodeFromNino(nino)).toJson())
     } // Private BETA:
     // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
@@ -58,15 +80,15 @@ class EligibilityCheckController extends BaseController with DESController with 
     // After private BETA:
     // Start NINO with NE06 to specify an ineligible applicant in receipt of UC (with reason code 6)
     // Start NINO with NE08 to specify an ineligible applicant in receipt of WTC and UC (with reason code 8)
-    else if (nino.toUpperCase().startsWith("NE")) {
+    else if (upperCaseNINO.startsWith("NE")) {
       Ok(ineligibleResult(getReasonCodeFromNino(nino)).toJson())
     } // Start NINO with AC to specify an existing account holder (with reason code 1)
-    else if (nino.startsWith("AC")) {
+    else if (upperCaseNINO.startsWith("AC")) {
       Ok(alreadyHasAccountResult.toJson())
-    } else if (nino.startsWith("EE")) {
+    } else if (upperCaseNINO.startsWith("EE")) {
       Ok(invalidResultCode.toJson())
     } // Start NINO with TM02 to force eligibility check to time out
-    else if (nino.startsWith("TM02")) {
+    else if (upperCaseNINO.startsWith("TM02")) {
       Thread.sleep(90000)
       Ok(eligibleResult(7).toJson())
     } // Start NINO with anything else to specify an eligible applicant
@@ -77,6 +99,7 @@ class EligibilityCheckController extends BaseController with DESController with 
             Ok(r.toJson()))
         }
     }
+  }
 
   private val ninoStatusRegex = """ES(\d{3}).*""".r
 
