@@ -28,8 +28,10 @@ class EligibilityCheckController extends BaseController with DESController with 
   def eligibilityCheck(nino: String, ucClaimant: Option[Boolean] = None, withinThreshold: Option[Boolean] = None): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
       val status: Option[Int] = nino match {
-        case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-        case _                  ⇒ None
+        case ninoStatusRegex(s)    ⇒ Try(s.toInt).toOption
+        case ninoStatus404Regex(_) ⇒ Some(404)
+        case "AA123123A"           ⇒ Some(404)
+        case _                     ⇒ None
       }
 
       status match {
@@ -42,14 +44,32 @@ class EligibilityCheckController extends BaseController with DESController with 
     }
 
   private def getResponse(nino: String, ucClaimant: Option[Boolean], withinThreshold: Option[Boolean]): Result =
-    // Comments are for the Test & Release Services (T&RS) team
-    // Private BETA:
+    // Allow early system integration testing with DWP, with DES stubbed
+    if (nino.toUpperCase().startsWith("LW634114")) {
+      Ok(ineligibleResult(9).toJson())
+    } else if (nino.toUpperCase().startsWith("ZX368514")) {
+      Ok(ineligibleResult(3).toJson())
+    } else if (nino.toUpperCase().startsWith("BJ825714")) {
+      Ok(eligibleResult(7).toJson())
+    } else if (nino.toUpperCase().startsWith("HG737615")) {
+      Ok(ineligibleResult(5).toJson())
+    } else if (nino.toUpperCase().startsWith("EK978215")) {
+      Ok(ineligibleResult(4).toJson())
+    } else if (nino.toUpperCase().startsWith("KS384413")) {
+      Ok(eligibleResult(7).toJson())
+    } else if (nino.toUpperCase().startsWith("GH987015")) {
+      Ok(eligibleResult(6).toJson())
+    } else if (nino.toUpperCase().startsWith("LX405614")) {
+      Ok(eligibleResult(6).toJson())
+    } else if (nino.toUpperCase().startsWith("EX535913")) {
+      Ok(eligibleResult(8).toJson())
+    } // Private BETA:
     // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
     //
     // After private BETA:
     // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
     // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
-    if (nino.toUpperCase().startsWith("EL")) {
+    else if (nino.toUpperCase().startsWith("EL")) {
       Ok(eligibleResult(getReasonCodeFromNino(nino)).toJson())
     } // Private BETA:
     // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
@@ -79,6 +99,7 @@ class EligibilityCheckController extends BaseController with DESController with 
     }
 
   private val ninoStatusRegex = """ES(\d{3}).*""".r
+  private val ninoStatus404Regex = """WP1144.*""".r
 
   private def errorJson(status: Int): JsValue = Json.parse(
     s"""
