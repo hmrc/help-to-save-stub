@@ -92,7 +92,7 @@ trait DWPEligibilityBehaviour {
   }
   def unknownResult(reasonCode: Int): EligibilityCheckResult = {
     val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
-    EligibilityCheckResult("Ineligible to HtS Account", 4, reason, reasonCode)
+    EligibilityCheckResult("Unknown eligibility because call to DWP failed", 4, reason, reasonCode)
   }
 
   def getReasonCodeFromNino(nino: String): Int =
