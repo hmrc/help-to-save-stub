@@ -29,6 +29,10 @@ class EligibilityCheckController extends BaseController with DESController with 
 
   def eligibilityCheck(nino: String, ucClaimant: Option[Boolean] = None, withinThreshold: Option[Boolean] = None): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
+      logger.info(s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
+        s"ucClaimant: ${ucClaimant.map(_.toString).getOrElse("-")}, " +
+        s"withinThresold: ${withinThreshold.map(_.toString).getOrElse("-")}")
+
       val status: Option[Int] = nino match {
         case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
         case s if s.startsWith("WP1144") || s === "AA123123A" ⇒ Some(404)
@@ -40,11 +44,11 @@ class EligibilityCheckController extends BaseController with DESController with 
           Status(s)(errorJson(s))
 
         case None ⇒
-          getResponse(nino, ucClaimant, withinThreshold)
+          getResponse(nino)
       }
     }
 
-  private def getResponse(nino: String, ucClaimant: Option[Boolean], withinThreshold: Option[Boolean]): Result = {
+  private def getResponse(nino: String): Result = {
     val upperCaseNINO = nino.toUpperCase()
     // Allow early system integration testing with DWP, with DES stubbed
     if (upperCaseNINO.startsWith("LW634114")) {
@@ -59,9 +63,7 @@ class EligibilityCheckController extends BaseController with DESController with 
       Ok(ineligibleResult(4).toJson())
     } else if (upperCaseNINO.startsWith("KS384413")) {
       Ok(eligibleResult(7).toJson())
-    } else if (upperCaseNINO.startsWith("GH987015")) {
-      Ok(eligibleResult(6).toJson())
-    } else if (upperCaseNINO.startsWith("LX405614")) {
+    } else if (upperCaseNINO.startsWith("GH987015") || upperCaseNINO.startsWith("LX405614")) {
       Ok(eligibleResult(6).toJson())
     } else if (upperCaseNINO.startsWith("EX535913")) {
       Ok(eligibleResult(8).toJson())
