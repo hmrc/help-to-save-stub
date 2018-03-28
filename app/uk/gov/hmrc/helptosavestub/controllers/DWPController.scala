@@ -53,7 +53,7 @@ class DWPController extends BaseController with Logging with DWPEligibilityBehav
     Status(result)
   }
 
-  def dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Int, transactionId: Option[UUID]): Action[AnyContent] = Action {
+  def dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Double, transactionId: Option[UUID]): Action[AnyContent] = Action {
     implicit request ⇒
       {
         logger.info(s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
