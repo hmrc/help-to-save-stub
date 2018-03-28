@@ -18,5 +18,5 @@ GET        /hmrc/:nino                                @uk.gov.hmrc.helptosavestu
 
 GET        /pay-as-you-earn/02.00.00/individuals/:nino        @uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController.getPayeDetails(nino)
 
-GET        /nsi-services/account                      uk.gov.hmrc.helptosavestub.controllers.NSIController.getAccount(correlationId: Option[String], nino: Option[String], version: Option[String])
+GET        /nsi-services/account                      uk.gov.hmrc.helptosavestub.controllers.NSIController.getAccount(correlationId: Option[String], nino: Option[String], version: Option[String], systemId: Option[String])
 
