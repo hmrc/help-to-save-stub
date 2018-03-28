@@ -46,5 +46,8 @@ object NSIErrorResponse {
   val unknownNinoError: ErrorDetails = ErrorDetails("HTS-API015-006", "Unknown NINO. No HTS account found for this nino", "Field: NINO")
   def unknownNinoResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, unknownNinoError)
 
+  val missingSystemIdError: ErrorDetails = ErrorDetails("HTS-API015-012", "Missing systemId parameter", "Field: SystemId")
+  def missingSystemIdResponse(correlationId: Option[String]): NSIErrorResponse = NSIErrorResponse("V1.0", correlationId, missingSystemIdError)
+
 }
 

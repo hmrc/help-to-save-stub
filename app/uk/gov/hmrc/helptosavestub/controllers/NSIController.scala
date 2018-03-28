@@ -114,9 +114,10 @@ object NSIController extends BaseController with Logging {
 
   def getAccount(correlationId: Option[String],
                  nino:          Option[String],
-                 version:       Option[String]): Action[AnyContent] = Action {
+                 version:       Option[String],
+                 systemId:      Option[String]): Action[AnyContent] = Action {
     implicit request ⇒
-      validateParams(correlationId, nino, version)
+      validateParams(correlationId, nino, version, systemId)
         .fold(
           errors ⇒ {
             logger.warn("[Handle Account Query] invalid params")
@@ -142,7 +143,8 @@ object NSIController extends BaseController with Logging {
 
   private def validateParams(correlationId: Option[String],
                              nino:          Option[String],
-                             version:       Option[String]): Either[List[NSIErrorResponse], NINO] = {
+                             version:       Option[String],
+                             systemId:      Option[String]): Either[List[NSIErrorResponse], NINO] = {
 
     val versionValidation: ValidatedNel[NSIErrorResponse, String] = version.fold[Validated[NSIErrorResponse, String]](
       Validated.Invalid(NSIErrorResponse.missingVersionResponse(correlationId))
@@ -159,9 +161,15 @@ object NSIController extends BaseController with Logging {
       } else { Valid(maybeNino) }
     }.toValidatedNel
 
-    val validation = (versionValidation |@| ninoValidation)
+    val systemIdValidation: ValidatedNel[NSIErrorResponse, String] = systemId.fold[Validated[NSIErrorResponse, String]](
+      Validated.Invalid(NSIErrorResponse.missingSystemIdResponse(correlationId))
+    )(
+        sid ⇒ Validated.Valid(sid)
+      ).toValidatedNel
+
+    val validation = (versionValidation |@| ninoValidation |@| systemIdValidation)
       .map {
-        case (v, validatedNino) ⇒ validatedNino
+        case (v, validatedNino, sid) ⇒ validatedNino
       }
 
     validation
