@@ -20,11 +20,12 @@ import java.time.LocalDate
 
 import play.api.libs.json.{Format, Json}
 import ai.x.play.json.Jsonx
+import uk.gov.hmrc.helptosavestub.models.ErrorDetails
 import uk.gov.hmrc.helptosavestub.models.NSIErrorResponse
 
 object NSIGetAccountBehaviour {
 
-  def getAccountByNino(nino: String, correlationId: Option[String]): Either[NSIErrorResponse, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
+  def getAccountByNino(nino: String, correlationId: Option[String]): Either[ErrorDetails, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
     nino match {
       case "EM000001A" ⇒ Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
       case "EM000002A" ⇒ Right(NSIGetAccountByNinoResponse.peteNSIResponse(correlationId))
@@ -36,7 +37,7 @@ object NSIGetAccountBehaviour {
       case "EM000008A" ⇒ Right(NSIGetAccountByNinoResponse.spencerNSIResponse(correlationId))
       case "EM000009A" ⇒ Right(NSIGetAccountByNinoResponse.alexNSIResponse(correlationId))
       case "TM739915A" ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
-      case _           ⇒ Left(NSIErrorResponse.unknownNinoResponse(correlationId))
+      case _           ⇒ Left(NSIErrorResponse.unknownNinoError)
     }
 
   case class NSIGetAccountByNinoResponse(version:                   String,

@@ -20,6 +20,7 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.util.Base64
 
+import play.api.libs.json._
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
@@ -107,7 +108,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
         .withHeaders(authHeader)
       val result = await(NSIController.getAccount(Some("correlationId"), Some("EM000001A"), None, Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
-      (jsonBodyOf(result) \ "error" \ "errorMessageId").as[String] shouldBe "HTS-API015-002"
+      (jsonBodyOf(result) \ "error").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])) shouldBe List("HTS-API015-002")
       (jsonBodyOf(result) \ "correlationId").as[String] shouldBe "correlationId"
     }
 
@@ -116,7 +117,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
         .withHeaders(authHeader)
       val result = await(NSIController.getAccount(Some("correlationId"), Some("EM000001A"), Some("V1.5"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
-      (jsonBodyOf(result) \ "error" \ "errorMessageId").as[String] shouldBe "HTS-API015-003"
+      (jsonBodyOf(result) \ "error").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])) shouldBe List("HTS-API015-003")
       (jsonBodyOf(result) \ "correlationId").as[String] shouldBe "correlationId"
     }
 
@@ -125,7 +126,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
         .withHeaders(authHeader)
       val result = await(NSIController.getAccount(Some("correlationId"), None, Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
-      (jsonBodyOf(result) \ "error" \ "errorMessageId").as[String] shouldBe "HTS-API015-004"
+      (jsonBodyOf(result) \ "error").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])) shouldBe List("HTS-API015-004")
       (jsonBodyOf(result) \ "correlationId").as[String] shouldBe "correlationId"
     }
 
@@ -134,7 +135,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
         .withHeaders(authHeader)
       val result = await(NSIController.getAccount(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
-      (jsonBodyOf(result) \ "error" \ "errorMessageId").as[String] shouldBe "HTS-API015-005"
+      (jsonBodyOf(result) \ "error").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])) shouldBe List("HTS-API015-005")
       (jsonBodyOf(result) \ "correlationId").as[String] shouldBe "correlationId"
     }
 
@@ -143,7 +144,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
         .withHeaders(authHeader)
       val result = await(NSIController.getAccount(Some("correlationId"), Some("EZ000001A"), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
-      (jsonBodyOf(result) \ "error" \ "errorMessageId").as[String] shouldBe "HTS-API015-006"
+      (jsonBodyOf(result) \ "error").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])) shouldBe List("HTS-API015-006")
       (jsonBodyOf(result) \ "correlationId").as[String] shouldBe "correlationId"
     }
 
@@ -166,7 +167,16 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
         .withHeaders(authHeader)
       val result = await(NSIController.getAccount(Some("correlationId"), Some("EZ000001A"), Some("V1.0"), None)(request))
       status(result) shouldBe BAD_REQUEST
-      (jsonBodyOf(result) \ "error" \ "errorMessageId").as[String] shouldBe "HTS-API015-012"
+      (jsonBodyOf(result) \ "error").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])) shouldBe List("HTS-API015-012")
+      (jsonBodyOf(result) \ "correlationId").as[String] shouldBe "correlationId"
+    }
+
+    "return a 400 with two error responses when systemId is not present and the nino is in the incorrect format" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+      val result = await(NSIController.getAccount(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), None)(request))
+      status(result) shouldBe BAD_REQUEST
+      (jsonBodyOf(result) \ "error").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])) shouldBe List("HTS-API015-005", "HTS-API015-012")
       (jsonBodyOf(result) \ "correlationId").as[String] shouldBe "correlationId"
     }
 
