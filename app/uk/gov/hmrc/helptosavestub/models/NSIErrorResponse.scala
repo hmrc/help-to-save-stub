@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestub.models
 
 import play.api.libs.json.{Format, Json}
 
-case class NSIErrorResponse(version: Option[String], correlationId: Option[String], error: Seq[ErrorDetails])
+case class NSIErrorResponse(version: Option[String], correlationId: Option[String], errors: Seq[ErrorDetails])
 
 case class ErrorDetails(errorMessageId: String, errorMessage: String, errorDetail: String)
 
