@@ -70,6 +70,7 @@ class PayePersonalDetailsController extends BaseController with DESController wi
     date ← Gen.choose(100L, 1000L).map(LocalDate.ofEpochDay)
     address ← Gen.ukAddress
     postcode ← Gen.postcode
+    countryCode ← Gen.choose(1, 250)
   } yield s"""{
       |  "nino": "${nino.dropRight(1)}",
       |  "ninoSuffix": "${nino.takeRight(1)}",
@@ -91,6 +92,7 @@ class PayePersonalDetailsController extends BaseController with DESController wi
       |      "line3": "Sometown",
       |      "line4": "Anyshire",
       |      "line5": "Line 5",
+      |      "countryCode": $countryCode,
       |      "postcode": "$postcode",
       |      "sequenceNumber": 1,
       |      "startDate": "2000-01-01"
