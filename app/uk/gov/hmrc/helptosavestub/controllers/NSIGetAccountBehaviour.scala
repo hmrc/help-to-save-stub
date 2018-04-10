@@ -91,7 +91,7 @@ object NSIGetAccountBehaviour {
 
     val bethCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val bethTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 11, 1), "200.00", "100.00", "0.00"),
+    val bethTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "200.00", "100.00", "0.00"),
                                            Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 11, 1), "0.00", "0.00", "0.00"))
 
     def bethNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -101,7 +101,7 @@ object NSIGetAccountBehaviour {
 
     val peteCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("9.88", "50.00", LocalDate.of(2018, 3, 31))
 
-    val peteTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 9, 1), LocalDate.of(2019, 9, 1), "190.12", "95.06", "0.00"),
+    val peteTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 9, 1), LocalDate.of(2019, 8, 31), "190.12", "95.06", "0.00"),
                                            Term(2, LocalDate.of(2019, 9, 1), LocalDate.of(2021, 9, 1), "0.00", "0.00", "0.00"))
 
     def peteNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -111,7 +111,7 @@ object NSIGetAccountBehaviour {
 
     val lauraCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val lauraTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 3, 1), LocalDate.of(2019, 3, 1), "135.00", "67.50", "0.00"),
+    val lauraTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 3, 1), LocalDate.of(2019, 2, 28), "135.00", "67.50", "0.00"),
                                             Term(2, LocalDate.of(2019, 3, 1), LocalDate.of(2021, 3, 1), "0.00", "0.00", "0.00"))
 
     def lauraNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -121,7 +121,7 @@ object NSIGetAccountBehaviour {
 
     val tonyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val tonyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2018, 10, 1), LocalDate.of(2020, 10, 1), "75.00", "37.50", "0.00"),
+    val tonyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2018, 10, 1), LocalDate.of(2020, 9, 30), "75.00", "37.50", "0.00"),
                                            Term(2, LocalDate.of(2020, 10, 1), LocalDate.of(2022, 10, 1), "0.00", "0.00", "0.00"))
 
     def tonyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -131,7 +131,7 @@ object NSIGetAccountBehaviour {
 
     val monikaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val monikaTerms: List[Term] = List[Term](Term(1, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 3, 1), "0.00", "0.00", "0.00"),
+    val monikaTerms: List[Term] = List[Term](Term(1, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 2, 29), "0.00", "0.00", "0.00"),
                                              Term(2, LocalDate.of(2020, 3, 1), LocalDate.of(2022, 3, 1), "0.00", "0.00", "0.00"))
 
     def monikaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -141,7 +141,7 @@ object NSIGetAccountBehaviour {
 
     val happyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val happyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 3, 1), "1200.00", "600.00", "0.00"),
+    val happyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "1200.00", "600.00", "0.00"),
                                             Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "2400.00", "600.00", "0.00"))
 
     def happyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -151,7 +151,7 @@ object NSIGetAccountBehaviour {
 
     val takenCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val takenTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 3, 1), "1200.00", "600.00", "0.00"),
+    val takenTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "1200.00", "600.00", "0.00"),
                                             Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "0.00", "0.00", "0.00"))
 
     def takenNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -161,7 +161,7 @@ object NSIGetAccountBehaviour {
 
     val spencerCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("40.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val spencerTerms: List[Term] = List[Term](Term(1, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 3, 1), "832.00", "416.00", "0.00"),
+    val spencerTerms: List[Term] = List[Term](Term(1, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 2, 28), "832.00", "416.00", "0.00"),
                                               Term(2, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 3, 1), "0.00", "0.00", "0.00"))
 
     def spencerNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -171,7 +171,7 @@ object NSIGetAccountBehaviour {
 
     val alexCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("13.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val alexTerms: List[Term] = List[Term](Term(1, LocalDate.of(2015, 2, 1), LocalDate.of(2017, 2, 1), "900.00", "450.00", "0.00"),
+    val alexTerms: List[Term] = List[Term](Term(1, LocalDate.of(2015, 2, 1), LocalDate.of(2017, 1, 31), "900.00", "450.00", "0.00"),
                                            Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 2, 1), "1270.00", "185.00", "0.00"))
 
     def alexNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
@@ -181,7 +181,7 @@ object NSIGetAccountBehaviour {
 
     val annaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val annaTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 10, 1), LocalDate.of(2019, 10, 1), "75.00", "37.50", "0.00"),
+    val annaTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 10, 1), LocalDate.of(2019, 9, 30), "75.00", "37.50", "0.00"),
                                            Term(2, LocalDate.of(2019, 10, 1), LocalDate.of(2021, 10, 1), "0.00", "0.00", "0.00"))
 
     def annaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
