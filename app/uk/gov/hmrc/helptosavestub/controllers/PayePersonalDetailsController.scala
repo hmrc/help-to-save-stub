@@ -73,7 +73,7 @@ class PayePersonalDetailsController extends BaseController with DESController wi
     postcode ← Gen.postcode
     countryCode ← Gen.choose(1, 250)
     callingCode ← Gen.choose(1, 250)
-    telephoneType ← Gen.choose(1, 7)
+    telephoneType ← Gen.oneOf(1,2,7)
     dialingCode ← listOfN(5, numChar).map{ _.mkString }
     convertedAreaDiallingCode ← listOfN(3, numChar).map{ _.mkString }
     phoneNumber ← listOfN(8, numChar).map{ _.mkString }
