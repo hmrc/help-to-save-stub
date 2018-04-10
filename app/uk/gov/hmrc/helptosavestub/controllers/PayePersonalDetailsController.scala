@@ -20,6 +20,7 @@ import java.time.format.DateTimeFormatter
 import java.time.{LocalDate, LocalDateTime, ZoneId}
 
 import org.scalacheck.Gen
+import org.scalacheck.Gen.{listOfN, numChar}
 import uk.gov.hmrc.smartstub._
 import play.api.libs.json.{JsValue, Json}
 import play.api.mvc._
@@ -71,6 +72,11 @@ class PayePersonalDetailsController extends BaseController with DESController wi
     address ← Gen.ukAddress
     postcode ← Gen.postcode
     countryCode ← Gen.choose(1, 250)
+    callingCode ← Gen.choose(1, 250)
+    telephoneType ← Gen.choose(1, 7)
+    dialingCode ← listOfN(5, numChar).map{ _.mkString }
+    convertedAreaDiallingCode ← listOfN(3, numChar).map{ _.mkString }
+    phoneNumber ← listOfN(8, numChar).map{ _.mkString }
   } yield s"""{
       |  "nino": "${nino.dropRight(1)}",
       |  "ninoSuffix": "${nino.takeRight(1)}",
@@ -99,9 +105,12 @@ class PayePersonalDetailsController extends BaseController with DESController wi
       |    }
       |  },
       |  "phoneNumbers": {
-      |    "1": {
-      |      "telephoneNumber": "01999123456",
-      |      "telephoneType": 1
+      |    "$telephoneType": {
+      |      "callingCode": $callingCode,
+      |      "telephoneType": $telephoneType,
+      |      "areaDiallingCode": $dialingCode,
+      |      "convertedAreaDiallingCode": $convertedAreaDiallingCode,
+      |      "telephoneNumber": $phoneNumber
       |    }
       |  },
       |  "accountStatus": 0,
