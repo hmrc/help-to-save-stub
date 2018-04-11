@@ -76,7 +76,7 @@ class PayePersonalDetailsController extends BaseController with DESController wi
     telephoneType ← Gen.oneOf(1, 2, 7)
     dialingCode ← listOfN(5, numChar).map{ _.mkString }
     convertedAreaDiallingCode ← listOfN(3, numChar).map{ _.mkString }
-    phoneNumber ← listOfN(8, numChar).map{ _.mkString }
+    phoneNumber ← listOfN(6, numChar).map{ _.mkString }
   } yield s"""{
       |  "nino": "${nino.dropRight(1)}",
       |  "ninoSuffix": "${nino.takeRight(1)}",
