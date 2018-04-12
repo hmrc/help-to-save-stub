@@ -1,0 +1,51 @@
+{
+   "version": "V1.0",
+   "correlationId": "551485a3-001d-91e8-060e-890c40505bd7",
+   "accountNumber": "1100000192756",
+   "availableWithdrawal": "0.00",
+   "accountBalance": "0.00",
+   "accountClosedFlag": "",
+   "accountBlockingCode": "00",
+   "accountBlockingReasonCode": "00",
+   "currentInvestmentMonth":    {
+      "investmentRemaining": "50.00",
+      "investmentLimit": "50.00",
+      "endDate": "2018-04-30"
+   },
+   "clientForename": "Saxon",
+   "clientSurname": "Jake William",
+   "dateOfBirth": "1989-12-12",
+   "addressLine1": "32 Braeside Crescent",
+   "addressLine2": "Auchenback",
+   "addressLine3": "Barrhead",
+   "addressLine4": "Glasgow",
+   "addressLine5": " ",
+   "postcode": "G78 2QG",
+   "countryCode": "GB",
+   "emailAddress": " tony.owens@atos.net",
+   "commsPreference": "02",
+   "clientBlockingCode": "00",
+   "clientBlockingReasonCode": "00",
+   "clientCancellationStatus": "",
+   "nbaAccountNumber": "12345678",
+   "nbaPayee": "Saxon Jake William",
+   "nbaSortCode": "873748",
+   "terms":    [
+            {
+         "termNumber": 1,
+         "startDate": "2018-04-01",
+         "endDate": "2020-03-31",
+         "maxBalance": "0.00",
+         "bonusEstimate": "0.00",
+         "bonusPaid": "0.00"
+      },
+            {
+         "termNumber": 2,
+         "startDate": "2020-04-01",
+         "endDate": "2022-03-31",
+         "maxBalance": "0.00",
+         "bonusEstimate": "0.00",
+         "bonusPaid": "0.00"
+      }
+   ]
+}

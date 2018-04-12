@@ -103,6 +103,17 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
       Json.fromJson[NSIGetAccountByNinoResponse](Json.parse(json)).get shouldBe NSIGetAccountByNinoResponse.bethNSIResponse(Some("correlationId"))
     }
 
+    "return air gap test data provided by ATOS" in {
+      val request = FakeRequest()
+        .withHeaders(authHeader)
+      val result = NSIController.getAccount(correlationId = None, nino = Some("NB123533B"), version = Some("V1.0"), systemId = Some("systemId"))(request)
+      status(result) shouldBe OK
+      val json = contentAsJson(result)
+      // should return the data provided by ATOS unmodified so we know we're testing what they sent, not our stub's logic
+      (json \ "correlationId").as[String] shouldBe "551485a3-001d-91e8-060e-890c40505bd7"
+      (json \ "currentInvestmentMonth" \ "investmentRemaining").as[String] shouldBe "50.00"
+    }
+
     "return a 400 with errorMessageId HTS-API015-002 when the service version is missing" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
