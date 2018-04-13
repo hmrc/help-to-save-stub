@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.mvc.{Action, AnyContent}
 import uk.gov.hmrc.helptosavestub.util.Logging
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 object ITMPEnrolmentController extends BaseController with DESController with Logging {
 

@@ -18,11 +18,10 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.LocalDate
 
-import play.api.libs.json.{Format, Json}
 import ai.x.play.json.Jsonx
 import play.api.Logger
-import uk.gov.hmrc.helptosavestub.models.ErrorDetails
-import uk.gov.hmrc.helptosavestub.models.NSIErrorResponse
+import play.api.libs.json.{Format, Json}
+import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
 
 object NSIGetAccountBehaviour {
 

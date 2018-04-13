@@ -21,7 +21,7 @@ import cats.instances.string._
 import cats.syntax.eq._
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.helptosavestub.util.Logging
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 // trait for controllers mimicking DES
 trait DESController { this: BaseController with Logging ⇒

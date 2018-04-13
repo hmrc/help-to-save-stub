@@ -19,12 +19,10 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.util.UUID
 
 import play.api.http.Status
-import play.api.libs.json.Json
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-import play.api.test.Helpers._
 
 import scala.concurrent.Future
 
