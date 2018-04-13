@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package uk.gov.hmrc.helptosavestub.support
+package uk.gov.hmrc.helptosavestub.controllers.support
 
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer

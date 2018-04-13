@@ -20,13 +20,12 @@ import java.nio.charset.StandardCharsets
 import java.time.LocalDate
 import java.util.Base64
 
-import play.api.libs.json._
-import play.api.libs.json.Json
+import play.api.libs.json.{Json, _}
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.NSIGetAccountByNinoResponse
 import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
-import uk.gov.hmrc.helptosavestub.support.AkkaMaterializerSpec
+import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
 class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMaterializerSpec {

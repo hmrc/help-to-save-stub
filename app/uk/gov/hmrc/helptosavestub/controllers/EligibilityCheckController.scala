@@ -16,12 +16,12 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import cats.syntax.eq._
 import cats.instances.string._
+import cats.syntax.eq._
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.util.Logging
-import uk.gov.hmrc.play.microservice.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.util.Try
 

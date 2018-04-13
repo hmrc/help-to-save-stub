@@ -18,6 +18,7 @@ package uk.gov.hmrc.helptosavestub.models
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
+
 import play.api.libs.json._
 import uk.gov.hmrc.helptosavestub.models.NSIUserInfo.ContactDetails
 

@@ -18,9 +18,9 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.{Action, AnyContent}
-import uk.gov.hmrc.play.microservice.controller.BaseController
 import uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.EmailVerificationRequest
 import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 class EmailVerificationController extends BaseController with Logging {
 
