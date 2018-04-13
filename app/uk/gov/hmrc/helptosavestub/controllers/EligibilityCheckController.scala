@@ -50,30 +50,13 @@ class EligibilityCheckController extends BaseController with DESController with 
 
   private def getResponse(nino: String): Result = {
     val upperCaseNINO = nino.toUpperCase()
-    // Allow early system integration testing with DWP, with DES stubbed
-    if (upperCaseNINO.startsWith("LW634114")) {
-      Ok(ineligibleResult(9).toJson())
-    } else if (upperCaseNINO.startsWith("ZX368514")) {
-      Ok(ineligibleResult(3).toJson())
-    } else if (upperCaseNINO.startsWith("BJ825714")) {
-      Ok(eligibleResult(7).toJson())
-    } else if (upperCaseNINO.startsWith("HG737615")) {
-      Ok(ineligibleResult(5).toJson())
-    } else if (upperCaseNINO.startsWith("EK978215")) {
-      Ok(ineligibleResult(4).toJson())
-    } else if (upperCaseNINO.startsWith("KS384413")) {
-      Ok(eligibleResult(7).toJson())
-    } else if (upperCaseNINO.startsWith("GH987015") || upperCaseNINO.startsWith("LX405614")) {
-      Ok(eligibleResult(6).toJson())
-    } else if (upperCaseNINO.startsWith("EX535913")) {
-      Ok(eligibleResult(8).toJson())
-    } // Private BETA:
+    // Private BETA:
     // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
     //
     // After private BETA:
     // Start NINO with EL06 to specify an eligible applicant in receipt of UC (with reason code 6)
     // Start NINO with EL08 to specify an eligible applicant in receipt of WTC and UC (with reason code 8)
-    else if (upperCaseNINO.startsWith("EL")) {
+    if (upperCaseNINO.startsWith("EL")) {
       Ok(eligibleResult(getReasonCodeFromNino(nino)).toJson())
     } // Private BETA:
     // Start NINO with NE02 to specify an ineligible applicant in receipt of WTC (with reason code 2)
