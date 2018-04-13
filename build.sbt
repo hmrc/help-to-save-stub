@@ -13,7 +13,6 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 val dependencies = Seq(
   ws,
   "uk.gov.hmrc" %% "play-health" % "2.1.0",
-  "uk.gov.hmrc" %% "play-ui" % "7.4.0",
   "uk.gov.hmrc" %% "play-config" % "4.3.0",
   "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
   "uk.gov.hmrc" %% "domain" % "4.1.0",
@@ -27,7 +26,6 @@ val dependencies = Seq(
 def testDependencies(scope: String = "test,it") = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "2.3.0" % scope,
   "org.scalatest" %% "scalatest" % "2.2.6" % scope,
-  "org.pegdown" % "pegdown" % "1.6.0" % scope,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
 )
 
