@@ -31,21 +31,21 @@ trait DWPEligibilityBehaviour {
       Some(Profile(None, None))
     } else if (nino.startsWith("WP99")) {
       Some(Profile(None, Some(unknownResult(2))))
-    } else if (nino.startsWith("WP0011")) {
+    } else if (nino.startsWith("WP0011") || nino.startsWith("BJ825714")) {
       Some(Profile(notUCClaimant, eligibleResult(7)))
-    } else if (nino.startsWith("WP1011")) {
+    } else if (nino.startsWith("WP1011") || nino.startsWith("KS384413")) {
       Some(Profile(isUCClaimantAndNotEarningEnough, eligibleResult(7)))
-    } else if (nino.startsWith("WP1111")) {
+    } else if (nino.startsWith("WP1111") || nino.startsWith("EX535913")) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(8)))
-    } else if (nino.startsWith("WP0010")) {
+    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX368514")) {
       Some(Profile(notUCClaimant, ineligibleResult(3)))
-    } else if (nino.startsWith("WP1010")) {
+    } else if (nino.startsWith("WP1010") || nino.startsWith("EK978215")) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(4)))
-    } else if (nino.startsWith("WP00")) {
+    } else if (nino.startsWith("WP00") || nino.startsWith("LW634114")) {
       Some(Profile(notUCClaimant, ineligibleResult(9)))
-    } else if (nino.startsWith("WP10")) {
+    } else if (nino.startsWith("WP10") || nino.startsWith("HG737615")) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(5)))
-    } else if (nino.startsWith("WP11")) {
+    } else if (nino.startsWith("WP11") || nino.startsWith("LX405614") || nino.startsWith("GH987015")) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(6)))
     } else {
       None
