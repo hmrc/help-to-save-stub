@@ -80,7 +80,7 @@ object NSIController extends BaseController with Logging {
 
   def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
     withNSIUserInfo("update email or health check") { nsiUserInfo ⇒
-      val description = if (nsiUserInfo.nino === "XX999999X") "health check" else "update email"
+      val description = if (nsiUserInfo.nino === "XX999999X") "NS&I health check" else "update email"
       handleRequest(nsiUserInfo, Ok, description)
     }
   }
