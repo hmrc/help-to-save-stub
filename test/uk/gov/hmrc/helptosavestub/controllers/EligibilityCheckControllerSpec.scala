@@ -49,8 +49,8 @@ class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
 
       def verifyEligibility(nino:            String,
                             resultCode:      Int,
-                            ucClaimant:      Option[Boolean] = None,
-                            withinThreshold: Option[Boolean] = None): Unit = {
+                            ucClaimant:      Option[String] = None,
+                            withinThreshold: Option[String] = None): Unit = {
 
         val result = eligCheckController.eligibilityCheck(nino, ucClaimant, withinThreshold)(fakeRequest)
         status(result) shouldBe Status.OK
