@@ -21,7 +21,8 @@ import java.time.format.DateTimeFormatter
 
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
-import play.api.libs.json.{JsValue, Json}
+import uk.gov.hmrc.smartstub._
+import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
 import uk.gov.hmrc.helptosavestub.util.Logging
@@ -43,12 +44,11 @@ class PayePersonalDetailsController extends BaseController with DESController wi
         Status(s)(errorJson(s))
 
       case None ⇒
-        logger.info(s"returning paye-personal-details from nino: $nino")
         payeDetails(nino).seeded(nino).fold[Result]{
-          logger.warn("Could not generate PayeDetails")
+          logger.warn(s"Could not generate PayeDetails for NINO $nino")
           InternalServerError
         }{ s ⇒
-          println(s"\n\n$s\n\n")
+          logger.info(s"Returning PayePersonalDetails for NINO $nino:\n$s")
           Ok(Json.parse(s))
         }
     }
@@ -64,7 +64,15 @@ class PayePersonalDetailsController extends BaseController with DESController wi
 
   private val ninoStatusRegex = """PD(\d{3}).*""".r
 
-  private[controllers] def payeDetails(nino: String) = for {
+  private val telephoneNumberGen: Gen[TelephoneNumber] = for {
+    callingCode ← Gen.choose(1, 250)
+    telephoneType ← Gen.oneOf(1, 2, 7)
+    dialingCode ← listOfN(5, numChar).map(_.mkString)
+    convertedAreaDiallingCode ← listOfN(3, numChar).map(_.mkString)
+    phoneNumber ← listOfN(6, numChar).map(_.mkString)
+  } yield TelephoneNumber(callingCode, telephoneType, dialingCode, convertedAreaDiallingCode, phoneNumber)
+
+  private[controllers] def payeDetails(nino: String) = for { // scalastyle:ignore
     sex ← Gen.gender
     name ← Gen.forename(sex)
     surname ← Gen.surname
@@ -72,58 +80,45 @@ class PayePersonalDetailsController extends BaseController with DESController wi
     address ← Gen.ukAddress
     postcode ← Gen.postcode
     countryCode ← Gen.choose(1, 250)
-    callingCode ← Gen.choose(1, 250)
-    telephoneType ← Gen.oneOf(1, 2, 7)
-    dialingCode ← listOfN(5, numChar).map{ _.mkString }
-    convertedAreaDiallingCode ← listOfN(3, numChar).map{ _.mkString }
-    phoneNumber ← listOfN(6, numChar).map{ _.mkString }
+    telephone1 ← telephoneNumberGen
+    telephone2 ← Gen.option(telephoneNumberGen)
   } yield s"""{
-      |  "nino": "${nino.dropRight(1)}",
-      |  "ninoSuffix": "${nino.takeRight(1)}",
-      |  "names": {
-      |    "1": {
-      |      "sequenceNumber": 12345,
-      |      "firstForenameOrInitial": "$name",
-      |      "surname": "$surname",
-      |      "startDate": "2000-01-01"
-      |    }
-      |  },
-      |  "sex": "${sex.fold("F", "M")}",
-      |  "dateOfBirth": "${date.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
-      |  "deceased": false,
-      |  "addresses": {
-      |    "1": {
-      |      "line1": "${address.headOption.getOrElse("1 the road")}",
-      |      "line2": "${address.drop(1).headOption.getOrElse("The Place")}",
-      |      "line3": "Sometown",
-      |      "line4": "Anyshire",
-      |      "line5": "Line 5",
-      |      "countryCode": $countryCode,
-      |      "postcode": "$postcode",
-      |      "sequenceNumber": 1,
-      |      "startDate": "2000-01-01"
-      |    }
-      |  },
-      |  "phoneNumbers": {
-      |    "$telephoneType": {
-      |      "callingCode": $callingCode,
-      |      "telephoneType": $telephoneType,
-      |      "areaDiallingCode": "$dialingCode",
-      |      "convertedAreaDiallingCode": "$convertedAreaDiallingCode",
-      |      "telephoneNumber": "$phoneNumber"
-      |    }
-      |  },
-      |  "accountStatus": 0,
-      |  "manualCorrespondenceInd": false,
-      |  "dateOfEntry": "2000-01-01",
-      |  "dateOfRegistration": "2000-01-01",
-      |  "registrationType": 0,
-      |  "hasSelfAssessmentAccount": false,
-      |  "audioOutputRequired": false,
-      |  "brailleOutputRequired": false,
-      |  "largePrintOutputRequired": false,
-      |  "welshOutputRequired": false
-      |}""".stripMargin
+             |  "nino": "${nino.dropRight(1)}",
+             |  "ninoSuffix": "${nino.takeRight(1)}",
+             |  "names": {
+             |    "1": {
+             |      "sequenceNumber": 12345,
+             |      "firstForenameOrInitial": "$name",
+             |      "surname": "$surname",
+             |      "startDate": "2000-01-01"
+             |    }
+             |  },
+             |  "sex": "${sex.fold("F", "M")}",
+             |  "dateOfBirth": "${date.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
+             |  "deceased": false,
+             |  "addresses": {
+             |    "1": {
+             |      "line1": "${address.headOption.getOrElse("1 the road")}",
+             |      "line2": "${address.drop(1).headOption.getOrElse("The Place")}",
+             |      "line3": "Sometown",
+             |      "line4": "Anyshire",
+             |      "line5": "Line 5",
+             |      "countryCode": $countryCode,
+             |      "postcode": "$postcode",
+             |      "sequenceNumber": 1,
+             |      "startDate": "2000-01-01"
+             |    }
+             |  },
+             |  "phoneNumbers": {
+             |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${
+    telephone2.map { t ⇒
+      s""",
+                  |    "${t.telephoneType}": ${Json.toJson(t)}""".stripMargin
+    }.getOrElse("")
+  }
+             |  }
+             |}""".stripMargin
+
 }
 
 object PayePersonalDetailsController {
@@ -133,6 +128,12 @@ object PayePersonalDetailsController {
       case Female ⇒ female
       case Male   ⇒ male
     }
+  }
+
+  case class TelephoneNumber(callingCode: Int, telephoneType: Int, areaDiallingCode: String, convertedAreaDiallingCode: String, telephoneNumber: String)
+
+  object TelephoneNumber {
+    implicit val telephoneNumberWrites: Writes[TelephoneNumber] = Json.writes[TelephoneNumber]
   }
 
 }
