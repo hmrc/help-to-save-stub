@@ -16,10 +16,15 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import cats.data.Validated.{Invalid, Valid}
+import cats.data.ValidatedNel
+import cats.instances.option._
 import cats.instances.string._
+import cats.syntax.cartesian._
 import cats.syntax.eq._
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
+import uk.gov.hmrc.helptosavestub.controllers.DWPEligibilityBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -44,11 +49,11 @@ class EligibilityCheckController extends BaseController with DESController with 
           Status(s)(errorJson(s))
 
         case None ⇒
-          getResponse(nino)
+          getResponse(nino, universalCreditClaimant, withinThreshold)
       }
     }
 
-  private def getResponse(nino: String): Result = {
+  private def getResponse(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Result = {
     val upperCaseNINO = nino.toUpperCase()
     // Private BETA:
     // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
@@ -78,12 +83,49 @@ class EligibilityCheckController extends BaseController with DESController with 
       Ok(eligibleResult(7).toJson())
     } // Start NINO with anything else to specify an eligible applicant
     else {
-      getProfile(nino).
-        fold(Ok(eligibleResult(7).toJson())) {
-          _.eligibiltyCheckResult.fold[Result](InternalServerError)(r ⇒
-            Ok(r.toJson()))
-        }
+      getProfile(nino).fold(Ok(eligibleResult(7).toJson()))(handleProfile(_, nino, universalCreditClaimant, withinThreshold))
     }
+  }
+
+  private def handleProfile(profile: Profile, nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Result =
+    ucParametersValidation(profile)(universalCreditClaimant, withinThreshold).fold({
+      e ⇒
+        logger.warn(s"Invalid UC parameters passed into eligibility call for NINO $nino: " +
+          s"[universalCreditClaimant: ${universalCreditClaimant.getOrElse("-")}, withinThreshold: ${withinThreshold.getOrElse("-")}]. Errors were: " +
+          s"${e.toList.mkString("; ")}")
+        BadRequest
+    }, { _ ⇒
+      profile.eligibiltyCheckResult.fold[Result](InternalServerError)(r ⇒
+        Ok(r.toJson()))
+    })
+
+  private def ucParametersValidation(profile: Profile)(universalCreditClaimant: Option[String], withinThreshold: Option[String]): ValidatedNel[String, Unit] = {
+    profile.uCDetails match {
+      case None ⇒
+        if (universalCreditClaimant.isEmpty && withinThreshold.isEmpty) {
+          Valid(())
+        } else {
+          Invalid("eligibility profile had no ucDetails but received parameters in request").toValidatedNel
+        }
+
+      case Some(p) ⇒
+        val universalCreditClaimantCheck =
+          if (universalCreditClaimant.contains(p.ucClaimant)) {
+            Valid(())
+          } else {
+            Invalid(s"expected univeralCreditClaimant '${p.ucClaimant}' but received value '${universalCreditClaimant.getOrElse("")}'").toValidatedNel
+          }
+
+        val withinThresholdCheck =
+          if (p.withinThreshold === withinThreshold) {
+            Valid(())
+          } else {
+            Invalid(s"expected withinThresold '${p.withinThreshold.getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
+          }
+
+        (universalCreditClaimantCheck |@| withinThresholdCheck).map{ case _ ⇒ () }
+    }
+
   }
 
   private val ninoStatusRegex = """ES(\d{3}).*""".r
