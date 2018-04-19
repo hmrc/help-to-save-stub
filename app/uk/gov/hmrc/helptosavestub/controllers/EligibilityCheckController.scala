@@ -32,7 +32,7 @@ import scala.util.Try
 
 class EligibilityCheckController extends BaseController with DESController with Logging with DWPEligibilityBehaviour {
 
-  def eligibilityCheck(nino: String, universalCreditClaimant: Option[String] = None, withinThreshold: Option[String] = None): Action[AnyContent] =
+  def eligibilityCheck(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
       logger.info(s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
         s"ucClaimant: ${universalCreditClaimant.getOrElse("-")}, " +
