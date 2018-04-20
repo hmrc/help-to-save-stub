@@ -21,9 +21,8 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
 import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-class EligibilityCheckControllerSpec extends UnitSpec with WithFakeApplication {
+class EligibilityCheckControllerSpec extends TestSupport {
 
   val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" → "Bearer test")
 

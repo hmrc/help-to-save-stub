@@ -17,20 +17,31 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.mvc.{Action, AnyContent, Request, Result}
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
+import scala.collection.JavaConverters._
+
 // trait for controllers mimicking DES
 trait DESController {
-  this: BaseController with Logging ⇒
+  this: BaseController with Logging with AppConfig ⇒
+
+  private val expectedDESHeaders: List[String] =
+    runModeConfiguration
+      .underlying
+      .getStringList("microservice.expectedDESHeaders")
+      .asScala
+      .toList
+      .map(e ⇒ s"Bearer $e")
 
   def desAuthorisedAction(body: Request[AnyContent] ⇒ Result): Action[AnyContent] = Action { request ⇒
-    val authorisationHeaders = request.headers.getAll("Authorization")
+    val authHeaders = request.headers.getAll("Authorization")
 
-    if (authorisationHeaders.nonEmpty) {
+    if (expectedDESHeaders.containsSlice(authHeaders)) {
       body(request)
     } else {
-      logger.warn(s"Request did not contain expected authorisation header. Received: $authorisationHeaders")
+      logger.warn(s"Request did not contain expected authorisation header. Received: $authHeaders")
       Unauthorized
     }
   }

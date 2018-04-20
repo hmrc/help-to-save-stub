@@ -19,11 +19,13 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import com.google.inject.{Inject, Singleton}
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
-import uk.gov.hmrc.smartstub._
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc._
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
@@ -31,7 +33,10 @@ import uk.gov.hmrc.smartstub._
 
 import scala.util.Try
 
-class PayePersonalDetailsController extends BaseController with DESController with Logging {
+@Singleton
+class PayePersonalDetailsController @Inject() (implicit override val runModeConfiguration: Configuration,
+                                               override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
+  with BaseController with DESController with Logging {
 
   def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
     val status: Option[Int] = nino match {
@@ -44,10 +49,10 @@ class PayePersonalDetailsController extends BaseController with DESController wi
         Status(s)(errorJson(s))
 
       case None ⇒
-        payeDetails(nino).seeded(nino).fold[Result]{
+        payeDetails(nino).seeded(nino).fold[Result] {
           logger.warn(s"Could not generate PayeDetails for NINO $nino")
           InternalServerError
-        }{ s ⇒
+        } { s ⇒
           logger.info(s"Returning PayePersonalDetails for NINO $nino:\n$s")
           Ok(Json.parse(s))
         }
@@ -83,41 +88,41 @@ class PayePersonalDetailsController extends BaseController with DESController wi
     telephone1 ← telephoneNumberGen
     telephone2 ← Gen.option(telephoneNumberGen)
   } yield s"""{
-             |  "nino": "${nino.dropRight(1)}",
-             |  "ninoSuffix": "${nino.takeRight(1)}",
-             |  "names": {
-             |    "1": {
-             |      "sequenceNumber": 12345,
-             |      "firstForenameOrInitial": "$name",
-             |      "surname": "$surname",
-             |      "startDate": "2000-01-01"
-             |    }
-             |  },
-             |  "sex": "${sex.fold("F", "M")}",
-             |  "dateOfBirth": "${date.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
-             |  "deceased": false,
-             |  "addresses": {
-             |    "1": {
-             |      "line1": "${address.headOption.getOrElse("1 the road")}",
-             |      "line2": "${address.drop(1).headOption.getOrElse("The Place")}",
-             |      "line3": "Sometown",
-             |      "line4": "Anyshire",
-             |      "line5": "Line 5",
-             |      "countryCode": $countryCode,
-             |      "postcode": "$postcode",
-             |      "sequenceNumber": 1,
-             |      "startDate": "2000-01-01"
-             |    }
-             |  },
-             |  "phoneNumbers": {
-             |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${
+       |  "nino": "${nino.dropRight(1)}",
+       |  "ninoSuffix": "${nino.takeRight(1)}",
+       |  "names": {
+       |    "1": {
+       |      "sequenceNumber": 12345,
+       |      "firstForenameOrInitial": "$name",
+       |      "surname": "$surname",
+       |      "startDate": "2000-01-01"
+       |    }
+       |  },
+       |  "sex": "${sex.fold("F", "M")}",
+       |  "dateOfBirth": "${date.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
+       |  "deceased": false,
+       |  "addresses": {
+       |    "1": {
+       |      "line1": "${address.headOption.getOrElse("1 the road")}",
+       |      "line2": "${address.drop(1).headOption.getOrElse("The Place")}",
+       |      "line3": "Sometown",
+       |      "line4": "Anyshire",
+       |      "line5": "Line 5",
+       |      "countryCode": $countryCode,
+       |      "postcode": "$postcode",
+       |      "sequenceNumber": 1,
+       |      "startDate": "2000-01-01"
+       |    }
+       |  },
+       |  "phoneNumbers": {
+       |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${
     telephone2.map { t ⇒
       s""",
-                  |    "${t.telephoneType}": ${Json.toJson(t)}""".stripMargin
+           |    "${t.telephoneType}": ${Json.toJson(t)}""".stripMargin
     }.getOrElse("")
   }
-             |  }
-             |}""".stripMargin
+       |  }
+       |}""".stripMargin
 
 }
 

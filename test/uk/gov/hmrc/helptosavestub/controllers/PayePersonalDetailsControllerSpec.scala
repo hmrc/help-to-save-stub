@@ -20,10 +20,9 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 import uk.gov.hmrc.smartstub._
 
-class PayePersonalDetailsControllerSpec extends UnitSpec with WithFakeApplication {
+class PayePersonalDetailsControllerSpec extends TestSupport {
   private val fakeRequest = FakeRequest("GET", "/pay-as-you-earn/02.00.00/individuals/AE123456C")
     .withHeaders("Authorization" → "Bearer test")
 

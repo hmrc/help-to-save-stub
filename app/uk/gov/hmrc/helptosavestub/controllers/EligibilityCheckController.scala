@@ -22,15 +22,21 @@ import cats.instances.option._
 import cats.instances.string._
 import cats.syntax.cartesian._
 import cats.syntax.eq._
+import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.DWPEligibilityBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.util.Try
 
-class EligibilityCheckController extends BaseController with DESController with Logging with DWPEligibilityBehaviour {
+@Singleton
+class EligibilityCheckController @Inject() (implicit override val runModeConfiguration: Configuration,
+                                            override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
+  with BaseController with DESController with Logging with DWPEligibilityBehaviour {
 
   def eligibilityCheck(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
@@ -123,7 +129,7 @@ class EligibilityCheckController extends BaseController with DESController with 
             Invalid(s"expected withinThresold '${p.withinThreshold.getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
           }
 
-        (universalCreditClaimantCheck |@| withinThresholdCheck).map{ case _ ⇒ () }
+        (universalCreditClaimantCheck |@| withinThresholdCheck).map { case _ ⇒ () }
     }
 
   }
