@@ -21,7 +21,7 @@ import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
-import scala.collection.JavaConverters._
+import configs.syntax._
 
 // trait for controllers mimicking DES
 trait DESController {
@@ -30,9 +30,8 @@ trait DESController {
   private val expectedDESHeaders: List[String] =
     runModeConfiguration
       .underlying
-      .getStringList("microservice.expectedDESHeaders")
-      .asScala
-      .toList
+      .get[List[String]]("microservice.expectedDESHeaders")
+      .value
       .map(e ⇒ s"Bearer $e")
 
   def desAuthorisedAction(body: Request[AnyContent] ⇒ Result): Action[AnyContent] = Action { request ⇒
