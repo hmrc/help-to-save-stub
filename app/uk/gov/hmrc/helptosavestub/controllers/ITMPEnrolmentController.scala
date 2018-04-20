@@ -16,11 +16,17 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent}
+import play.api.{Configuration, Environment}
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
-object ITMPEnrolmentController extends BaseController with DESController with Logging {
+@Singleton
+class ITMPEnrolmentController @Inject() (implicit override val runModeConfiguration: Configuration,
+                                         override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
+  with BaseController with DESController with Logging {
 
   def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
     if (nino.startsWith("HS403")) {

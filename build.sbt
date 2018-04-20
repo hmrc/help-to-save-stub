@@ -20,7 +20,8 @@ val dependencies = Seq(
   "org.typelevel" %% "cats" % "0.9.0",
   "uk.gov.hmrc" %% "stub-data-generator" % "0.4.0",
   "ai.x" %% "play-json-extensions" % "0.9.0",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.4.0"
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.4.0",
+  "com.github.kxbmap" %% "configs" % "0.4.4"
 )
 
 def testDependencies(scope: String = "test,it") = Seq(
