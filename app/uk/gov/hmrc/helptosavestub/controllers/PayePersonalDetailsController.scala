@@ -44,7 +44,7 @@ class PayePersonalDetailsController @Inject() (implicit override val runModeConf
       case _                  ⇒ None
     }
 
-    status match {
+    val response = status match {
       case Some(s) ⇒
         Status(s)(errorJson(s))
 
@@ -57,6 +57,8 @@ class PayePersonalDetailsController @Inject() (implicit override val runModeConf
           Ok(Json.parse(s))
         }
     }
+
+    withDesCorrelationID(response)
   }
 
   private def errorJson(status: Int): JsValue = Json.parse(
