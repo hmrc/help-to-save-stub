@@ -29,7 +29,7 @@ class ITMPEnrolmentController @Inject() (implicit override val runModeConfigurat
   with BaseController with DESController with Logging {
 
   def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    if (nino.startsWith("HS403")) {
+    val response = if (nino.startsWith("HS403")) {
       logger.info("Received request to set ITMP flag: returning status 403 (FORBIDDEN)")
       Forbidden
     } else if (nino.startsWith("HS400")) {
@@ -52,5 +52,7 @@ class ITMPEnrolmentController @Inject() (implicit override val runModeConfigurat
       logger.info("Received request to set ITMP flag: returning status 200 (OK)")
       Ok
     }
+
+    withDesCorrelationID(response)
   }
 }

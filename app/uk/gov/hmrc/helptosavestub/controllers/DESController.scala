@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import java.util.UUID
+
+import configs.syntax._
 import play.api.mvc.{Action, AnyContent, Request, Result}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
-
-import configs.syntax._
 
 // trait for controllers mimicking DES
 trait DESController {
@@ -44,5 +45,7 @@ trait DESController {
       Unauthorized
     }
   }
+
+  def withDesCorrelationID(response: Result): Result = response.withHeaders("CorrelationId" -> UUID.randomUUID().toString)
 
 }

@@ -50,13 +50,15 @@ class EligibilityCheckController @Inject() (implicit override val runModeConfigu
         case _ ⇒ None
       }
 
-      status match {
+      val response = status match {
         case Some(s) ⇒
           Status(s)(errorJson(s))
 
         case None ⇒
           getResponse(nino, universalCreditClaimant, withinThreshold)
       }
+
+      withDesCorrelationID(response)
     }
 
   private def getResponse(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Result = {
