@@ -36,6 +36,7 @@ object NSIGetAccountBehaviour {
       case "EM000007A" ⇒ Right(NSIGetAccountByNinoResponse.takenNSIResponse(correlationId))
       case "EM000008A" ⇒ Right(NSIGetAccountByNinoResponse.spencerNSIResponse(correlationId))
       case "EM000009A" ⇒ Right(NSIGetAccountByNinoResponse.alexNSIResponse(correlationId))
+      case "EM000010A" ⇒ Right(NSIGetAccountByNinoResponse.closedAccountResponse(correlationId))
       case "TM739915A" ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
       case "NB123533B" ⇒ nsiGetAccountResponseFromFile("NB123533B.json")
       case _           ⇒ Left(NSIErrorResponse.unknownNinoError)
@@ -64,6 +65,8 @@ object NSIGetAccountBehaviour {
                                          availableWithdrawal:       String,
                                          accountBalance:            String,
                                          accountClosedFlag:         String,
+                                         accountClosureDate:        Option[LocalDate],
+                                         accountClosingBalance:     Option[String],
                                          accountBlockingCode:       String,
                                          accountBlockingReasonCode: String,
                                          currentInvestmentMonth:    CurrentInvestmentMonth,
@@ -113,7 +116,7 @@ object NSIGetAccountBehaviour {
                                            Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
 
     def bethNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112057", "175.00", "200.00", " ", "00", "00", bethCIM, "Beth", "Planner", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112057", "175.00", "200.00", " ", None, None, "00", "00", bethCIM, "Beth", "Planner", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mrs B Planner", None, "801497", bethTerms)
 
@@ -123,7 +126,7 @@ object NSIGetAccountBehaviour {
                                            Term(2, LocalDate.of(2019, 9, 1), LocalDate.of(2021, 8, 31), "0.00", "0.00", "0.00"))
 
     def peteNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112058", "165.12", "190.12", " ", "00", "00", peteCIM, "Pete", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112058", "165.12", "190.12", " ", None, None, "00", "00", peteCIM, "Pete", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", peteTerms)
 
@@ -133,7 +136,7 @@ object NSIGetAccountBehaviour {
                                             Term(2, LocalDate.of(2019, 3, 1), LocalDate.of(2021, 2, 28), "0.00", "0.00", "0.00"))
 
     def lauraNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112059", "110.00", "135.00", " ", "00", "00", lauraCIM, "Laura", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112059", "110.00", "135.00", " ", None, None, "00", "00", lauraCIM, "Laura", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", lauraTerms)
 
@@ -143,7 +146,7 @@ object NSIGetAccountBehaviour {
                                            Term(2, LocalDate.of(2020, 10, 1), LocalDate.of(2022, 9, 30), "0.00", "0.00", "0.00"))
 
     def tonyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112060", "50.00", "75.00", " ", "00", "00", tonyCIM, "Tony", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112060", "50.00", "75.00", " ", None, None, "00", "00", tonyCIM, "Tony", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", tonyTerms)
 
@@ -153,7 +156,7 @@ object NSIGetAccountBehaviour {
                                              Term(2, LocalDate.of(2020, 3, 1), LocalDate.of(2022, 2, 28), "0.00", "0.00", "0.00"))
 
     def monikaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112061", "0.00", "0.00", " ", "00", "00", monikaCIM, "Monika", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112061", "0.00", "0.00", " ", None, None, "00", "00", monikaCIM, "Monika", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", monikaTerms)
 
@@ -163,7 +166,7 @@ object NSIGetAccountBehaviour {
                                             Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 2, 28), "2400.00", "600.00", "0.00"))
 
     def happyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112062", "0.00", "2400.00", " ", "00", "00", happyCIM, "Happy", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112062", "0.00", "2400.00", " ", None, None, "00", "00", happyCIM, "Happy", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", happyTerms)
 
@@ -173,7 +176,7 @@ object NSIGetAccountBehaviour {
                                             Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 2, 28), "0.00", "0.00", "0.00"))
 
     def takenNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112063", "0.00", "0.00", " ", "00", "00", takenCIM, "Taken", "Out", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112063", "0.00", "0.00", " ", None, None, "00", "00", takenCIM, "Taken", "Out", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", takenTerms)
 
@@ -183,7 +186,7 @@ object NSIGetAccountBehaviour {
                                               Term(2, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 2, 29), "0.00", "0.00", "0.00"))
 
     def spencerNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112064", "0.00", "832.00", " ", "00", "00", spencerCIM, "Spencer", "Waller", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112064", "0.00", "832.00", " ", None, None, "00", "00", spencerCIM, "Spencer", "Waller", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", spencerTerms)
 
@@ -193,7 +196,7 @@ object NSIGetAccountBehaviour {
                                            Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 1, 31), "1270.00", "185.00", "0.00"))
 
     def alexNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112065", "0.00", "1270.00", " ", "00", "00", alexCIM, "Alex", "Millar", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112065", "0.00", "1270.00", " ", None, None, "00", "00", alexCIM, "Alex", "Millar", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", alexTerms)
 
@@ -203,10 +206,19 @@ object NSIGetAccountBehaviour {
                                            Term(2, LocalDate.of(2019, 10, 1), LocalDate.of(2021, 9, 30), "0.00", "0.00", "0.00"))
 
     def annaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112066", "0.00", "75.00", " ", "00", "00", annaCIM, "Anna", "Smith", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      "1100000112066", "0.00", "75.00", " ", None, None, "00", "00", annaCIM, "Anna", "Smith", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", annaTerms)
 
-  }
+    val closedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
+    val closedTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "200.00", "100.00", "0.00"),
+                                             Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
+
+    def closedAccountResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
+      "1100000112067", "175.00", "200.00", "C", Some(LocalDate.of(2018, 3, 5)), Some("200.00"), "00", "00", closedCIM,
+      "Closed", "Account", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      "02", "00", "00", " ", "11111111", "Mrs C Account", None, "801497", closedTerms)
+  }
 }
