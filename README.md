@@ -46,6 +46,5 @@ This microservice is deployed as per all MDTP microservices via Jenkins into a D
  If a valid emailVerificationRequest is given in the request body as json, then a 200 OK response is returned. Also if successful the continue URL is logged,
  as this was the reason this endpoint was placed here in the stub. If invalid or no json is given in the request body then a 400 BAD REQUEST response is returned.
  
- 
 ### License
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html") 
