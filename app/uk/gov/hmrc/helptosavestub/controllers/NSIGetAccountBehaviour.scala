@@ -216,7 +216,7 @@ object NSIGetAccountBehaviour {
                                              Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
 
     def closedAccountResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112067", "175.00", "200.00", "C", Some(LocalDate.of(2018, 3, 5)), Some("200.00"), "00", "00", closedCIM,
+      "1100000112067", "0.00", "0.00", "C", Some(LocalDate.of(2018, 3, 5)), Some("200.00"), "00", "00", closedCIM,
       "Closed", "Account", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mrs C Account", None, "801497", closedTerms)
