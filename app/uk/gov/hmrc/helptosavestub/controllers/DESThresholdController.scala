@@ -28,15 +28,17 @@ class DESThresholdController @Inject() (implicit override val runModeConfigurati
                                         override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
   with BaseController with DESController with Logging {
 
-  val thresholdAmount: JsValue =
+  val thresholdAmount: Double = runModeConfiguration.underlying.getDouble("microservice.ucThresholdAmount")
+
+  val thresholdAmountJson: JsValue =
     Json.parse(s"""
                  |{
-                 |  "thresholdAmount" : "${"microservice.thresholdAmount"}"
+                 |  "thresholdAmount" : "$thresholdAmount"
                  |}
                """.stripMargin)
 
   def getThresholdAmount(): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    Ok(thresholdAmount)
+    Ok(thresholdAmountJson)
   }
 
 }
