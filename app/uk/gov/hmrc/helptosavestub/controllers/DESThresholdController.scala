@@ -29,9 +29,9 @@ class DESThresholdController @Inject() (implicit override val runModeConfigurati
   with BaseController with DESController with Logging {
 
   val thresholdAmount: JsValue =
-    Json.parse("""
+    Json.parse(s"""
                  |{
-                 |  "thresholdAmount" : "100"
+                 |  "thresholdAmount" : "${"microservice.thresholdAmount"}"
                  |}
                """.stripMargin)
 
