@@ -43,7 +43,7 @@ trait DWPEligibilityBehaviour {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(4)))
     } else if (nino.startsWith("WP00") || nino.startsWith("LW634114")) {
       Some(Profile(notUCClaimant, ineligibleResult(9)))
-    } else if (nino.startsWith("WP10") || nino.startsWith("HG737615")) {
+    } else if (nino.startsWith("WP10") || nino.startsWith("HR156614")) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(5)))
     } else if (nino.startsWith("WP11") || nino.startsWith("LX405614") || nino.startsWith("EX535913")) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(6)))
