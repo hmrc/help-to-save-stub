@@ -35,11 +35,11 @@ class EligibilityCheckControllerSpec extends TestSupport {
     }
 
     "returns false when user is not eligible for reason code 2" in {
-      verifyEligibility("NE021111D", 2)
+      verifyEligibility("WP991011D", 2)
     }
 
     "returns false when user is not eligible for reason code 3" in {
-      verifyEligibility("NE031111D", 2)
+      verifyEligibility("WP001011D", 2)
     }
 
     "returns false when user already has an account" in {
