@@ -20,7 +20,7 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNel
 import cats.instances.option._
 import cats.instances.string._
-import cats.syntax.cartesian._
+import cats.syntax.apply._
 import cats.syntax.eq._
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{Format, JsValue, Json}
@@ -28,7 +28,7 @@ import play.api.mvc._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.DWPEligibilityBehaviour.Profile
-import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.helptosavestub.util.{Logging, ValidatedOrErrorStrings}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.util.Try
@@ -107,21 +107,21 @@ class EligibilityCheckController @Inject() (implicit override val runModeConfigu
         }
 
       case Some(p) ⇒
-        val universalCreditClaimantCheck =
+        val universalCreditClaimantCheck: ValidatedOrErrorStrings[Unit] =
           if (universalCreditClaimant.contains(p.ucClaimant)) {
             Valid(())
           } else {
             Invalid(s"expected univeralCreditClaimant '${p.ucClaimant}' but received value '${universalCreditClaimant.getOrElse("")}'").toValidatedNel
           }
 
-        val withinThresholdCheck =
+        val withinThresholdCheck: ValidatedOrErrorStrings[Unit] =
           if (p.withinThreshold === withinThreshold) {
             Valid(())
           } else {
             Invalid(s"expected withinThresold '${p.withinThreshold.getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
           }
 
-        (universalCreditClaimantCheck |@| withinThresholdCheck).map { case _ ⇒ () }
+        (universalCreditClaimantCheck, withinThresholdCheck).mapN { case _ ⇒ () }
     }
 
   }
@@ -145,6 +145,7 @@ object EligibilityCheckController {
    * @param result 1 = Eligible to HtS Account
    *               2 = Ineligible to HtS Account
    *               3 = HtS account already exists
+   *               4 = Unknown eligibility because call to DWP failed"
    * @param reason 1 = HtS account was previously created
    *               2 = Not entitled to WTC and UC not checked
    *               3 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC

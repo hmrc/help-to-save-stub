@@ -22,7 +22,7 @@ import java.util.Base64
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
-import cats.syntax.cartesian._
+import cats.syntax.apply._
 import cats.syntax.eq._
 import play.api.libs.json._
 import play.api.mvc._
@@ -137,18 +137,20 @@ object NSIController extends BaseController with Logging {
         })
   }
 
+  type ValidatedOrErrorDetails[A] = ValidatedNel[ErrorDetails, A]
+
   private def validateParams(correlationId: Option[String],
                              nino:          Option[String],
                              version:       Option[String],
                              systemId:      Option[String]): ValidatedNel[ErrorDetails, NINO] = {
 
-    val versionValidation: ValidatedNel[ErrorDetails, String] = version.fold[Validated[ErrorDetails, String]](
+    val versionValidation: ValidatedOrErrorDetails[String] = version.fold[Validated[ErrorDetails, String]](
       Validated.Invalid(NSIErrorResponse.missingVersionError)
     )(
         v ⇒ if (v =!= "V1.0") Validated.Invalid(NSIErrorResponse.unsupportedVersionError) else Validated.Valid(v)
       ).toValidatedNel
 
-    val ninoValidation: ValidatedNel[ErrorDetails, String] = nino.fold[Validated[ErrorDetails, String]]({
+    val ninoValidation: ValidatedOrErrorDetails[String] = nino.fold[Validated[ErrorDetails, String]]({
       Invalid(NSIErrorResponse.missingNinoError)
     }
     ){
@@ -157,15 +159,15 @@ object NSIController extends BaseController with Logging {
       } else { Valid(maybeNino) }
     }.toValidatedNel
 
-    val systemIdValidation: ValidatedNel[ErrorDetails, String] = systemId.fold[Validated[ErrorDetails, String]](
+    val systemIdValidation: ValidatedOrErrorDetails[String] = systemId.fold[Validated[ErrorDetails, String]](
       Validated.Invalid(NSIErrorResponse.missingSystemIdError)
     )(
         sid ⇒ Validated.Valid(sid)
       ).toValidatedNel
 
-    (versionValidation |@| ninoValidation |@| systemIdValidation)
-      .map {
-        case (v, validatedNino, sid) ⇒ validatedNino
+    (versionValidation, ninoValidation, systemIdValidation)
+      .mapN {
+        case (_, validatedNino, _) ⇒ validatedNino
       }
 
   }

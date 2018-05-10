@@ -17,8 +17,8 @@ val dependencies = Seq(
   "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
   "uk.gov.hmrc" %% "domain" % "4.1.0",
   "org.scalacheck" %% "scalacheck" % "1.13.5",
-  "org.typelevel" %% "cats" % "0.9.0",
-  "uk.gov.hmrc" %% "stub-data-generator" % "0.4.0",
+  "org.typelevel" %% "cats-core" % "1.1.0",
+  "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3",
   "ai.x" %% "play-json-extensions" % "0.9.0",
   "uk.gov.hmrc" %% "bootstrap-play-25" % "1.4.0",
   "com.github.kxbmap" %% "configs" % "0.4.4"
