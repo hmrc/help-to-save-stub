@@ -38,7 +38,7 @@ trait DESController {
   def desAuthorisedAction(body: Request[AnyContent] ⇒ Result): Action[AnyContent] = Action { request ⇒
     val authHeaders = request.headers.getAll("Authorization")
 
-    if (expectedDESHeaders.containsSlice(authHeaders)) {
+    if (expectedDESHeaders.intersect(authHeaders).nonEmpty) {
       body(request)
     } else {
       logger.warn(s"Request did not contain expected authorisation header. Received: $authHeaders")
