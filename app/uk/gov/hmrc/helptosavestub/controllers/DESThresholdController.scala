@@ -33,7 +33,7 @@ class DESThresholdController @Inject() (implicit override val runModeConfigurati
   val thresholdAmountJson: JsValue =
     Json.parse(s"""
                  |{
-                 |  "thresholdAmount" : "$thresholdAmount"
+                 |  "thresholdAmount" : $thresholdAmount
                  |}
                """.stripMargin)
 
