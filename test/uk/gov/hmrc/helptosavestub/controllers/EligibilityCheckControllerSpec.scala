@@ -35,11 +35,11 @@ class EligibilityCheckControllerSpec extends TestSupport {
     }
 
     "returns false when user is not eligible for reason code 2" in {
-      verifyEligibility("WP991011D", 2)
+      verifyEligibility("WP991011D", 4)
     }
 
     "returns false when user is not eligible for reason code 3" in {
-      verifyEligibility("WP001011D", 2)
+      verifyEligibility("WP001011D", 2, Some("N"), None)
     }
 
     "returns false when user already has an account" in {
@@ -58,6 +58,7 @@ class EligibilityCheckControllerSpec extends TestSupport {
           case 1 ⇒ "Eligible to HtS Account"
           case 2 ⇒ "Ineligible to HtS Account"
           case 3 ⇒ "HtS account already exists"
+          case 4 ⇒ "Unknown eligibility because call to DWP failed"
           case _ ⇒ sys.error("Invalid result code")
         }
 
