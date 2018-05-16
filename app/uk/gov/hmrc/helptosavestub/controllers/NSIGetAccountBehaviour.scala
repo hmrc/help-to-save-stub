@@ -37,6 +37,8 @@ object NSIGetAccountBehaviour {
       case "EM000008A" ⇒ Right(NSIGetAccountByNinoResponse.spencerNSIResponse(correlationId))
       case "EM000009A" ⇒ Right(NSIGetAccountByNinoResponse.alexNSIResponse(correlationId))
       case "EM000010A" ⇒ Right(NSIGetAccountByNinoResponse.closedAccountResponse(correlationId))
+      case "EM000011A" ⇒ Right(NSIGetAccountByNinoResponse.accountBlockedResponse(correlationId))
+      case "EM000012A" ⇒ Right(NSIGetAccountByNinoResponse.clientBlockedResponse(correlationId))
       case "TM739915A" ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
       case "NB123533B" ⇒ nsiGetAccountResponseFromFile("NB123533B.json")
       case _           ⇒ Left(NSIErrorResponse.unknownNinoError)
@@ -220,5 +222,27 @@ object NSIGetAccountBehaviour {
       "Closed", "Account", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mrs C Account", None, "801497", closedTerms)
+
+    val accountBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+
+    val accountBlockedTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "200.00", "100.00", "0.00"),
+                                                     Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
+
+    def accountBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
+      "1100000112068", "0.00", "200.00", " ", None, None, "4B", "12", accountBlockedCIM,
+      "Account", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      "02", "00", "00", " ", "11111111", "Mrs A Blocked", None, "801497", accountBlockedTerms)
+
+    val clientBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+
+    val clientBlockedTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "200.00", "100.00", "0.00"),
+                                                    Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
+
+    def clientBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
+      "1100000112069", "0.00", "200.00", " ", None, None, "00", "00", clientBlockedCIM,
+      "Client", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      "02", "4B", "12", " ", "11111111", "Mrs C Blocked", None, "801497", clientBlockedTerms)
   }
 }
