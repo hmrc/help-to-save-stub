@@ -42,7 +42,7 @@ class EligibilityCheckController @Inject() (implicit override val runModeConfigu
     desAuthorisedAction { implicit request ⇒
       logger.info(s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
         s"ucClaimant: ${universalCreditClaimant.getOrElse("-")}, " +
-        s"withinThresold: ${withinThreshold.getOrElse("-")}")
+        s"withinThreshold: ${withinThreshold.getOrElse("-")}")
 
       val status: Option[Int] = nino match {
         case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
@@ -118,7 +118,7 @@ class EligibilityCheckController @Inject() (implicit override val runModeConfigu
           if (p.withinThreshold === withinThreshold) {
             Valid(())
           } else {
-            Invalid(s"expected withinThresold '${p.withinThreshold.getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
+            Invalid(s"expected withinThreshold '${p.withinThreshold.getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
           }
 
         (universalCreditClaimantCheck, withinThresholdCheck).mapN { case _ ⇒ () }
