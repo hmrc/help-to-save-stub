@@ -41,7 +41,7 @@ object NSIGetAccountBehaviour {
       case "EM000012A" ⇒ Right(NSIGetAccountByNinoResponse.clientBlockedResponse(correlationId))
       case "TM739915A" ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
       case "NB123533B" ⇒ nsiGetAccountResponseFromFile("NB123533B.json")
-      case _           ⇒ Left(NSIErrorResponse.unknownNinoError)
+      case _           ⇒ Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
     }
 
   private def nsiGetAccountResponseFromFile(name: String): Either[ErrorDetails, NSIGetAccountByNinoResponse] = {
