@@ -39,6 +39,8 @@ object NSIGetAccountBehaviour {
       case "EM000010A" ⇒ Right(NSIGetAccountByNinoResponse.closedAccountResponse(correlationId))
       case "EM000011A" ⇒ Right(NSIGetAccountByNinoResponse.accountBlockedResponse(correlationId))
       case "EM000012A" ⇒ Right(NSIGetAccountByNinoResponse.clientBlockedResponse(correlationId))
+      case "EM000099A" ⇒ Right(NSIGetAccountByNinoResponse.positiveBonusZeroBalanceResponse(correlationId))
+      case "EM000098A" ⇒ Right(NSIGetAccountByNinoResponse.zeroBonusPositiveBalanceResponse(correlationId))
       case "TM739915A" ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
       case "NB123533B" ⇒ nsiGetAccountResponseFromFile("NB123533B.json")
       case "EZ000001A" ⇒ Left(NSIErrorResponse.unknownNinoError)
@@ -245,5 +247,28 @@ object NSIGetAccountBehaviour {
       "Client", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "4B", "12", " ", "11111111", "Mrs C Blocked", None, "801497", clientBlockedTerms)
+
+    val positiveBonusZeroBalanceCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+
+    // make sure term 2 lasts a long time so we are always in term 2 during testing
+    val positiveBonusZeroBalanceTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "2400.00", "600.00", "600.00"),
+                                                               Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2916, 2, 28), "2400.00", "600.00", "0.00"))
+
+    def positiveBonusZeroBalanceResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
+      "1100000112062", "0.00", "0.00", " ", None, None, "00", "00", positiveBonusZeroBalanceCIM, "FirstTerm", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", positiveBonusZeroBalanceTerms)
+
+    val zeroBonusPositiveBalanceCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+
+    // make sure term 2 lasts a long time so we are always in term 2 during testing
+    val zeroBonusPositiveBalanceTerms: List[Term] = List[Term](Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "2400.00", "600.00", "600.00"),
+                                                               Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2916, 2, 28), "2400.00", "0.00", "0.00"))
+
+    def zeroBonusPositiveBalanceResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
+      "1100000112062", "2400.00", "2400.00", " ", None, None, "00", "00", zeroBonusPositiveBalanceCIM, "FirstTerm", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", zeroBonusPositiveBalanceTerms)
+
   }
 }
