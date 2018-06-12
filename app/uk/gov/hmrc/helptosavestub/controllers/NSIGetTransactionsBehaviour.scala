@@ -44,8 +44,8 @@ object NSIGetTransactionsBehaviour {
 
   case class NSIGetTransactionsByNinoResponse(version:       String,
                                               correlationId: Option[String],
-                                              startBalance:  String,
                                               finalBalance:  String,
+                                              startBalance:  String,
                                               transactions:  List[Transaction])
 
   case class Transaction(sequence:             String,
