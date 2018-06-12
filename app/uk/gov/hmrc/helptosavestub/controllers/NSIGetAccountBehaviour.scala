@@ -147,8 +147,8 @@ object NSIGetAccountBehaviour {
 
     val tonyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
 
-    val tonyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2018, 10, 1), LocalDate.of(2020, 9, 30), "75.00", "37.50", "0.00"),
-                                           Term(2, LocalDate.of(2020, 10, 1), LocalDate.of(2022, 9, 30), "0.00", "0.00", "0.00"))
+    val tonyTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 10, 1), LocalDate.of(2019, 9, 30), "75.00", "37.50", "0.00"),
+                                           Term(2, LocalDate.of(2019, 10, 1), LocalDate.of(2021, 9, 30), "0.00", "0.00", "0.00"))
 
     def tonyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112060", "50.00", "75.00", " ", None, None, "00", "00", tonyCIM, "Tony", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
