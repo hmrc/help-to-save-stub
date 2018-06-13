@@ -28,6 +28,7 @@ import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.getAccountByNino
+import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.getTransactionsByNino
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIUserInfo}
 import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
@@ -129,6 +130,31 @@ object NSIController extends BaseController with Logging {
               InternalServerError
             } else {
               val maybeAccount = getAccountByNino(validatedNino, correlationId)
+              maybeAccount match {
+                case Right(a) ⇒ Ok(Json.toJson(a))
+                case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+              }
+            }
+        })
+  }
+
+  def getTransactions(correlationId: Option[String],
+                      nino:          Option[String],
+                      version:       Option[String],
+                      systemId:      Option[String]): Action[AnyContent] = Action {
+    implicit request ⇒
+      validateParams(correlationId, nino, version, systemId).fold(
+        errors ⇒ {
+          logger.warn("[Handle Transactions Query] invalid params")
+          BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
+        }, {
+          validatedNino ⇒
+            if (validatedNino.contains("401")) {
+              Unauthorized
+            } else if (validatedNino.contains("500")) {
+              InternalServerError
+            } else {
+              val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
               maybeAccount match {
                 case Right(a) ⇒ Ok(Json.toJson(a))
                 case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
