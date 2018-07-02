@@ -124,10 +124,20 @@ object NSIController extends BaseController with Logging {
           BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
         }, {
           validatedNino ⇒
-            if (validatedNino.contains("401")) {
+            if (validatedNino.contains("400")) {
+              BadRequest(Json.toJson(NSIErrorResponse.missingNinoError))
+            } else if (validatedNino.contains("401")) {
               Unauthorized
+            } else if (validatedNino.contains("404")) {
+              NotFound
+            } else if (validatedNino.contains("405")) {
+              MethodNotAllowed
+            } else if (validatedNino.contains("415")) {
+              UnsupportedMediaType
             } else if (validatedNino.contains("500")) {
               InternalServerError
+            } else if (validatedNino.contains("503")) {
+              ServiceUnavailable
             } else {
               val maybeAccount = getAccountByNino(validatedNino, correlationId)
               maybeAccount match {
