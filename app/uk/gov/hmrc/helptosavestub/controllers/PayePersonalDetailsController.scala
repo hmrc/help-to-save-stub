@@ -86,7 +86,7 @@ class PayePersonalDetailsController @Inject() (implicit override val runModeConf
     date ← Gen.choose(100L, 1000L).map(LocalDate.ofEpochDay)
     address ← Gen.ukAddress
     postcode ← Gen.postcode
-    countryCode ← Gen.choose(1, 250)
+    countryCode ← Gen.oneOf(1, 116, 250)
     telephone1 ← telephoneNumberGen
     telephone2 ← Gen.option(telephoneNumberGen)
   } yield s"""{
