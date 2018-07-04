@@ -44,6 +44,12 @@ object NSIGetAccountBehaviour {
       case "TM739915A"                ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
       case "NB123533B"                ⇒ nsiGetAccountResponseFromFile("NB123533B.json")
       case n if n.startsWith("EM200") ⇒ Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
+      case n if n.startsWith("GA02")  ⇒ Left(NSIErrorResponse.missingVersionError)
+      case n if n.startsWith("GA03")  ⇒ Left(NSIErrorResponse.unsupportedVersionError)
+      case n if n.startsWith("GA04")  ⇒ Left(NSIErrorResponse.missingNinoError)
+      case n if n.startsWith("GA05")  ⇒ Left(NSIErrorResponse.badNinoError)
+      case n if n.startsWith("GA06")  ⇒ Left(NSIErrorResponse.unknownNinoError)
+      case n if n.startsWith("GA12")  ⇒ Left(NSIErrorResponse.missingSystemIdError)
       case _                          ⇒ Left(NSIErrorResponse.unknownNinoError)
     }
 
