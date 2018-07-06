@@ -31,21 +31,21 @@ trait DWPEligibilityBehaviour {
       Some(Profile(None, None))
     } else if (nino.startsWith("WP99")) {
       Some(Profile(None, Some(unknownResult(2))))
-    } else if (nino.startsWith("WP0011") || nino.startsWith("BJ825714")) {
+    } else if (nino.startsWith("WP0011") || nino.startsWith("BJ8257")) {
       Some(Profile(notUCClaimant, eligibleResult(7)))
-    } else if (nino.startsWith("WP1011") || nino.startsWith("KS384413")) {
+    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || nino.startsWith("JK8450")) {
       Some(Profile(isUCClaimantAndNotEarningEnough, eligibleResult(7)))
-    } else if (nino.startsWith("WP1111") || nino.startsWith("GH987015")) {
+    } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || nino.startsWith("KA6652")) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(8)))
-    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX368514")) {
+    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX3685") || nino.startsWith("BK6489")) {
       Some(Profile(notUCClaimant, ineligibleResult(3)))
-    } else if (nino.startsWith("WP1010") || nino.startsWith("EK978215")) {
+    } else if (nino.startsWith("WP1010") || nino.startsWith("EK9782") || nino.startsWith("LA8349")) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(4)))
-    } else if (nino.startsWith("WP00") || nino.startsWith("LW634114")) {
+    } else if (nino.startsWith("WP00") || nino.startsWith("LW6341") || nino.startsWith("JK8450")) {
       Some(Profile(notUCClaimant, ineligibleResult(9)))
-    } else if (nino.startsWith("WP10") || nino.startsWith("HR156614")) {
+    } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || nino.startsWith("KA6652")) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(5)))
-    } else if (nino.startsWith("WP11") || nino.startsWith("LX405614") || nino.startsWith("EX535913")) {
+    } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || nino.startsWith("BK6489")) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(6)))
     } else {
       None
