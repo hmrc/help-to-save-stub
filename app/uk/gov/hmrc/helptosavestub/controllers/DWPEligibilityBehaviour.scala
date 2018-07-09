@@ -33,20 +33,22 @@ trait DWPEligibilityBehaviour {
       Some(Profile(None, Some(unknownResult(2))))
     } else if (nino.startsWith("WP0011") || nino.startsWith("BJ8257")) {
       Some(Profile(notUCClaimant, eligibleResult(7)))
-    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || nino.startsWith("JK8450")) {
+    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || (nino.startsWith("JK84") && nino.endsWith("25C")) || (nino.startsWith("JK84") && nino.endsWith("80C")) || (nino.startsWith("JK84") && nino.endsWith("81C"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, eligibleResult(7)))
-    } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || nino.startsWith("KA6652")) {
+    } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || (nino.startsWith("KA66") && nino.endsWith("77A")) || (nino.startsWith("KA66") && nino.endsWith("80A")) || (nino.startsWith("KA66") && nino.endsWith("81A"))) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(8)))
-    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX3685") || nino.startsWith("BK6489")) {
+    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX3685") || (nino.startsWith("BK64") && nino.endsWith("58A"))) {
       Some(Profile(notUCClaimant, ineligibleResult(3)))
-    } else if (nino.startsWith("WP1010") || nino.startsWith("EK9782") || nino.startsWith("LA8349")) {
+    } else if (nino.startsWith("WP1010") || nino.startsWith("EK9782") || (nino.startsWith("LA83") && nino.endsWith("15B"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(4)))
-    } else if (nino.startsWith("WP00") || nino.startsWith("LW6341") || nino.startsWith("JK8450")) {
+    } else if (nino.startsWith("WP00") || nino.startsWith("LW6341") || (nino.startsWith("JK84") && nino.endsWith("26C"))) {
       Some(Profile(notUCClaimant, ineligibleResult(9)))
-    } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || nino.startsWith("KA6652")) {
+    } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || (nino.startsWith("KA66") && nino.endsWith("78A"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(5)))
-    } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || nino.startsWith("BK6489")) {
+    } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || (nino.startsWith("BK64") && nino.endsWith("57A")) || (nino.startsWith("BK64") && nino.endsWith("80A")) || (nino.startsWith("BK64") && nino.endsWith("81A"))) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(6)))
+    } else if (nino.startsWith("LA83") && nino.endsWith("16B")) {
+      Some(Profile(notUCClaimant, accountAlreadyExists))
     } else {
       None
     }
@@ -90,6 +92,13 @@ trait DWPEligibilityBehaviour {
     val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
     EligibilityCheckResult("Ineligible to HtS Account", 2, reason, reasonCode)
   }
+
+  def accountAlreadyExists: EligibilityCheckResult = {
+    val reasonCode = 1
+    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
+    EligibilityCheckResult("HtS account already exists", 3, reason, reasonCode)
+  }
+
   def unknownResult(reasonCode: Int): EligibilityCheckResult = {
     val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
     EligibilityCheckResult("Unknown eligibility because call to DWP failed", 4, reason, reasonCode)
