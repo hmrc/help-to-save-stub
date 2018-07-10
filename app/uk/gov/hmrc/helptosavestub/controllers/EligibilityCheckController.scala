@@ -46,7 +46,7 @@ class EligibilityCheckController @Inject() (implicit override val runModeConfigu
 
       val status: Option[Int] = nino match {
         case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-        case s if s.startsWith("WP1144") || s === "AA123123A" ⇒ Some(404)
+        case s if s.startsWith("WP1144") || s.startsWith("AA123123") ⇒ Some(404)
         case _ ⇒ None
       }
 
