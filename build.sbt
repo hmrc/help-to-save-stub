@@ -13,20 +13,20 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 val dependencies = Seq(
   ws,
   "uk.gov.hmrc" %% "play-health" % "2.1.0",
-  "uk.gov.hmrc" %% "play-config" % "4.3.0",
-  "uk.gov.hmrc" %% "logback-json-logger" % "3.1.0",
-  "uk.gov.hmrc" %% "domain" % "4.1.0",
-  "org.scalacheck" %% "scalacheck" % "1.13.5",
+  "uk.gov.hmrc" %% "play-config" % "5.0.0",
+  "uk.gov.hmrc" %% "domain" % "5.1.0",
+  "org.scalacheck" %% "scalacheck" % "1.14.0",
   "org.typelevel" %% "cats-core" % "1.1.0",
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3",
-  "ai.x" %% "play-json-extensions" % "0.9.0",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.4.0",
-  "com.github.kxbmap" %% "configs" % "0.4.4"
+  "ai.x" %% "play-json-extensions" % "0.10.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.7.0",
+  "com.github.kxbmap" %% "configs" % "0.4.4",
+  "com.google.inject" % "guice" % "4.2.0"
 )
 
 def testDependencies(scope: String = "test,it") = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "2.3.0" % scope,
-  "org.scalatest" %% "scalatest" % "2.2.6" % scope,
+  "uk.gov.hmrc" %% "hmrctest" % "3.0.0" % scope,
+  "org.scalatest" %% "scalatest" % "3.0.5" % scope,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
 )
 
