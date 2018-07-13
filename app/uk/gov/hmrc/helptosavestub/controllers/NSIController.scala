@@ -23,6 +23,7 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
 import cats.syntax.apply._
+import cats.syntax.either._
 import cats.syntax.eq._
 import play.api.libs.json._
 import play.api.mvc._
@@ -37,29 +38,37 @@ import scala.util.{Failure, Success, Try}
 
 object NSIController extends BaseController with Logging {
 
-  val authorizationHeaderKey: String = "Authorization-test"
+  val authorizationHeaderKeys: List[String] = List("Authorization-test", "Authorization")
   val authorizationValuePrefix: String = "Basic: "
   val testAuthHeader: String = "username:password"
 
-  def isAuthorised(headers: Headers): Boolean = {
-    val decoded: Option[String] =
+  def isAuthorised(headers: Headers): Either[String, Unit] = {
+    val decoded: Either[String, String] =
       headers.headers
         .find(entry ⇒
-          entry._1 === authorizationHeaderKey && entry._2.startsWith(authorizationValuePrefix))
-        .flatMap{
-          case (_, h) ⇒
-            val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
-            decoded match {
-              case Success(bytes) ⇒
-                Some(new String(bytes, StandardCharsets.UTF_8))
+          authorizationHeaderKeys.exists(entry._1 === _ && entry._2.startsWith(authorizationValuePrefix)))
+        .fold[Either[String, String]](
+          Left("Could not find authorization header")
+        ){
+            case (_, h) ⇒
+              val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
+              decoded match {
+                case Success(bytes) ⇒
+                  Right(new String(bytes, StandardCharsets.UTF_8))
 
-              case Failure(error) ⇒
-                logger.error(s"Could not decode authorization details: header value was $h. ${error.getMessage}", error)
-                None
-            }
-        }
+                case Failure(error) ⇒
+                  Left(s"Could not decode authorization details: header value was $h. ${error.getMessage}")
 
-    decoded.contains(testAuthHeader)
+              }
+          }
+
+    decoded.flatMap{ s ⇒
+      if (s === testAuthHeader) {
+        Right(())
+      } else {
+        Left(s"Authorisation value '$s' was not equal to expected value")
+      }
+    }
   }
 
   def withNSIUserInfo(description: String)(body: NSIUserInfo ⇒ Result)(implicit request: Request[AnyContent]): Result = {
@@ -92,23 +101,24 @@ object NSIController extends BaseController with Logging {
   }
 
   def handleRequest(nsiUserInfo: NSIUserInfo, successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
-    if (isAuthorised(request.headers)) {
-      val status: Option[Int] = nsiUserInfo.nino match {
-        case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-        case _                  ⇒ None
-      }
+    isAuthorised(request.headers).fold(
+      { e ⇒
+        logger.error(e)
+        Unauthorized
+      }, { _ ⇒
+        val status: Option[Int] = nsiUserInfo.nino match {
+          case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
+          case _                  ⇒ None
+        }
 
-      logger.info(s"Responding to $description with ${status.getOrElse(successResult.header.status)}")
+        logger.info(s"Responding to $description with ${status.getOrElse(successResult.header.status)}")
 
-      status.fold(successResult){ s ⇒
-        Status(s)(Json.toJson(SubmissionFailureResponse(
-          SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiUserInfo.nino}"))
-        ))
-      }
-    } else {
-      logger.error(s"No authorisation data found in header for $description request")
-      Unauthorized
-    }
+        status.fold(successResult) { s ⇒
+          Status(s)(Json.toJson(SubmissionFailureResponse(
+            SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiUserInfo.nino}"))
+          ))
+        }
+      })
   }
 
   private val ninoStatusRegex = """AS(\d{3}).*""".r
