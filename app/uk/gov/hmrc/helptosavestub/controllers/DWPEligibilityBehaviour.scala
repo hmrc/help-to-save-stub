@@ -25,29 +25,41 @@ trait DWPEligibilityBehaviour {
   import DWPEligibilityBehaviour._
 
   def getProfile(nino: String): Option[Profile] = // scalastyle:ignore
+    // Scenario 6
     if (nino.startsWith("WP9911")) {
       Some(Profile(None, Some(eligibleResult(7))))
+      // Scenario 1
     } else if (nino.startsWith("WP9999")) {
       Some(Profile(None, None))
+      // Scenarios 4, 5
     } else if (nino.startsWith("WP99")) {
       Some(Profile(None, Some(unknownResult(2))))
+      // Scenario 9
     } else if (nino.startsWith("WP0011") || nino.startsWith("BJ8257")) {
       Some(Profile(notUCClaimant, eligibleResult(7)))
-    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || (nino.startsWith("JK84") && nino.endsWith("25C")) || (nino.startsWith("JK84") && nino.endsWith("80C")) || (nino.startsWith("JK84") && nino.endsWith("81C"))) {
+      // Scenario 12
+    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || nino.startsWith("SE12") || (nino.startsWith("JK84") && nino.endsWith("25C")) || (nino.startsWith("JK84") && nino.endsWith("80C")) || (nino.startsWith("JK84") && nino.endsWith("81C"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, eligibleResult(7)))
-    } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || (nino.startsWith("KA66") && nino.endsWith("77A")) || (nino.startsWith("KA66") && nino.endsWith("80A")) || (nino.startsWith("KA66") && nino.endsWith("81A"))) {
+      // Scenario 15
+    } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || nino.startsWith("SE15") || (nino.startsWith("KA66") && nino.endsWith("77A")) || (nino.startsWith("KA66") && nino.endsWith("80A")) || (nino.startsWith("KA66") && nino.endsWith("81A"))) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(8)))
-    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX3685") || (nino.startsWith("BK64") && nino.endsWith("58A"))) {
+      // Scenario 8
+    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX3685") || nino.startsWith("SE08") || (nino.startsWith("BK64") && nino.endsWith("58A"))) {
       Some(Profile(notUCClaimant, ineligibleResult(3)))
-    } else if (nino.startsWith("WP1010") || nino.startsWith("EK9782") || (nino.startsWith("LA83") && nino.endsWith("15B"))) {
+      // Scenario 11
+    } else if (nino.startsWith("WP1010") || nino.startsWith("EK9782") || nino.startsWith("SE11") || (nino.startsWith("LA83") && nino.endsWith("15B"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(4)))
-    } else if (nino.startsWith("WP00") || nino.startsWith("LW6341") || (nino.startsWith("JK84") && nino.endsWith("26C"))) {
+      // Scenario 7
+    } else if (nino.startsWith("WP00") || nino.startsWith("LW6341") || nino.startsWith("SE07") || (nino.startsWith("JK84") && nino.endsWith("26C"))) {
       Some(Profile(notUCClaimant, ineligibleResult(9)))
-    } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || (nino.startsWith("KA66") && nino.endsWith("78A"))) {
+      // Scenario 10
+    } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || nino.startsWith("SE10") || (nino.startsWith("KA66") && nino.endsWith("78A"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(5)))
-    } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || (nino.startsWith("BK64") && nino.endsWith("57A")) || (nino.startsWith("BK64") && nino.endsWith("80A")) || (nino.startsWith("BK64") && nino.endsWith("81A"))) {
+      // Scenarios 2, 13, 14
+    } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || nino.startsWith("SE14") || (nino.startsWith("BK64") && nino.endsWith("57A")) || (nino.startsWith("BK64") && nino.endsWith("80A")) || (nino.startsWith("BK64") && nino.endsWith("81A"))) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(6)))
-    } else if (nino.startsWith("LA83") && nino.endsWith("16B")) {
+      // Scenario 3
+    } else if (nino.startsWith("SE03") || nino.startsWith("LA83") && nino.endsWith("16B")) {
       Some(Profile(notUCClaimant, accountAlreadyExists))
     } else {
       None
