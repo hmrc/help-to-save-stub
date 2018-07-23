@@ -55,7 +55,7 @@ trait DWPEligibilityBehaviour {
       // Scenario 10
     } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || nino.startsWith("SE10") || (nino.startsWith("KA66") && nino.endsWith("78A"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(5)))
-      // Scenarios 2, 13, 14
+      // Scenarios 13, 14
     } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || nino.startsWith("SE14") || (nino.startsWith("BK64") && nino.endsWith("57A")) || (nino.startsWith("BK64") && nino.endsWith("80A")) || (nino.startsWith("BK64") && nino.endsWith("81A"))) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(6)))
       // Scenario 3
