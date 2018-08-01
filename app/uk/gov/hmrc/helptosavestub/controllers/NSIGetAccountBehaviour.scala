@@ -238,7 +238,7 @@ object NSIGetAccountBehaviour {
                                                      Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
 
     def accountBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
-      "1100000112068", "0.00", "250.00", " ", None, None, "4B", "12", accountBlockedCIM,
+      "1100000112068", "0.00", "250.00", " ", None, None, "12", "4B", accountBlockedCIM,
       "Account", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
       "02", "00", "00", " ", "11111111", "Mrs A Blocked", None, "801497", accountBlockedTerms)
@@ -252,7 +252,7 @@ object NSIGetAccountBehaviour {
       "1100000112069", "0.00", "250.00", " ", None, None, "00", "00", clientBlockedCIM,
       "Client", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
-      "02", "4B", "12", " ", "11111111", "Mrs C Blocked", None, "801497", clientBlockedTerms)
+      "02", "12", "4B", " ", "11111111", "Mrs C Blocked", None, "801497", clientBlockedTerms)
 
     val positiveBonusZeroBalanceCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
