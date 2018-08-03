@@ -98,7 +98,10 @@ class EligibilityCheckController @Inject() (implicit override val runModeConfigu
         Ok(r.toJson()))
     })
 
-  private def ucParametersValidation(profile: Profile)(universalCreditClaimant: Option[String], withinThreshold: Option[String]): ValidatedNel[String, Unit] = {
+  private def ucParametersValidation(profile: Profile)(universalCreditClaimant: Option[String], // scalastyle:ignore
+                                                       withinThreshold:         Option[String]): ValidatedNel[String, Unit] = {
+      def reasonCodeIs(code: Int): Boolean = profile.eligibiltyCheckResult.map(_.reasonCode).contains(code)
+
     profile.uCDetails match {
       case None ⇒
         if (universalCreditClaimant.isEmpty && withinThreshold.isEmpty) {
@@ -109,14 +112,15 @@ class EligibilityCheckController @Inject() (implicit override val runModeConfigu
 
       case Some(p) ⇒
         val universalCreditClaimantCheck: ValidatedOrErrorStrings[Unit] =
-          if (universalCreditClaimant.contains(p.ucClaimant)) {
+          // don't worry about the inputs if the eligibility reason is not entirely to do with UC
+          if (universalCreditClaimant.contains(p.ucClaimant) || reasonCodeIs(7) || reasonCodeIs(8)) {
             Valid(())
           } else {
-            Invalid(s"expected univeralCreditClaimant '${p.ucClaimant}' but received value '${universalCreditClaimant.getOrElse("")}'").toValidatedNel
+            Invalid(s"expected universalCreditClaimant '${p.ucClaimant}' but received value '${universalCreditClaimant.getOrElse("")}'").toValidatedNel
           }
 
         val withinThresholdCheck: ValidatedOrErrorStrings[Unit] =
-          if (p.withinThreshold === withinThreshold) {
+          if (p.withinThreshold === withinThreshold || reasonCodeIs(7) || reasonCodeIs(8)) {
             Valid(())
           } else {
             Invalid(s"expected withinThreshold '${p.withinThreshold.getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
