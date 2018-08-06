@@ -17,8 +17,8 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import java.time.LocalDate
+
 import ai.x.play.json.Jsonx
-import play.api.Logger
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
 
@@ -26,20 +26,20 @@ object NSIGetTransactionsBehaviour {
 
   def getTransactionsByNino(nino: String, correlationId: Option[String]): Either[ErrorDetails, NSIGetTransactionsByNinoResponse] =
     nino match {
-      case "EM000001A" ⇒ Right(NSIGetTransactionsByNinoResponse.bethResponse(correlationId))
-      case "EM000002A" ⇒ Right(NSIGetTransactionsByNinoResponse.peteResponse(correlationId))
-      case "EM000003A" ⇒ Right(NSIGetTransactionsByNinoResponse.lauraResponse(correlationId))
-      case "EM000004A" ⇒ Right(NSIGetTransactionsByNinoResponse.tonyResponse(correlationId))
-      case "EM000005A" ⇒ Right(NSIGetTransactionsByNinoResponse.monikaResponse(correlationId))
-      case "EM000006A" ⇒ Right(NSIGetTransactionsByNinoResponse.happyResponse(correlationId))
-      case "EM000007A" ⇒ Right(NSIGetTransactionsByNinoResponse.takenResponse(correlationId))
-      case "EM000008A" ⇒ Right(NSIGetTransactionsByNinoResponse.spencerResponse(correlationId))
-      case "EM000009A" ⇒ Right(NSIGetTransactionsByNinoResponse.alexResponse(correlationId))
-      case "EM000010A" ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccountResponse(correlationId))
-      case "EM000011A" ⇒ Right(NSIGetTransactionsByNinoResponse.accountBlockedResponse(correlationId))
-      case "EM000012A" ⇒ Right(NSIGetTransactionsByNinoResponse.clientBlockedResponse(correlationId))
-      case "TM739915A" ⇒ Right(NSIGetTransactionsByNinoResponse.annaResponse(correlationId))
-      case _           ⇒ Left(NSIErrorResponse.unknownNinoError)
+      case n if n.startsWith("EM0") && n.endsWith("001A") ⇒ Right(NSIGetTransactionsByNinoResponse.bethResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("002A") ⇒ Right(NSIGetTransactionsByNinoResponse.peteResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("003A") ⇒ Right(NSIGetTransactionsByNinoResponse.lauraResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("004A") ⇒ Right(NSIGetTransactionsByNinoResponse.tonyResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("005A") ⇒ Right(NSIGetTransactionsByNinoResponse.monikaResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("006A") ⇒ Right(NSIGetTransactionsByNinoResponse.happyResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("007A") ⇒ Right(NSIGetTransactionsByNinoResponse.takenResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("008A") ⇒ Right(NSIGetTransactionsByNinoResponse.spencerResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("009A") ⇒ Right(NSIGetTransactionsByNinoResponse.alexResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("010A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccountResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("011A") ⇒ Right(NSIGetTransactionsByNinoResponse.accountBlockedResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("012A") ⇒ Right(NSIGetTransactionsByNinoResponse.clientBlockedResponse(correlationId))
+      case n if n.startsWith("TM7") && n.endsWith("915A") ⇒ Right(NSIGetTransactionsByNinoResponse.annaResponse(correlationId))
+      case _ ⇒ Left(NSIErrorResponse.unknownNinoError)
     }
 
   case class NSIGetTransactionsByNinoResponse(version:       String,
