@@ -21,6 +21,7 @@ import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
 import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
+import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 
 class EligibilityCheckControllerSpec extends TestSupport {
 
@@ -31,19 +32,19 @@ class EligibilityCheckControllerSpec extends TestSupport {
   "GET /" should {
 
     "returns true when user is eligible" in {
-      verifyEligibility("EL071111D", 1)
+      verifyEligibility(randomNINO().withPrefixReplace("EL07"), 1)
     }
 
     "returns false when user is not eligible for reason code 2" in {
-      verifyEligibility("WP991011D", 4)
+      verifyEligibility(randomNINO().withPrefixReplace("WP99101"), 4)
     }
 
     "returns false when user is not eligible for reason code 3" in {
-      verifyEligibility("WP001011D", 2, Some("N"), None)
+      verifyEligibility(randomNINO().withPrefixReplace("WP00101"), 2, Some("N"), None)
     }
 
     "returns false when user already has an account" in {
-      verifyEligibility("AC111111D", 3)
+      verifyEligibility(randomNINO().withPrefixReplace("AC"), 3)
     }
 
       def verifyEligibility(nino:            String,
