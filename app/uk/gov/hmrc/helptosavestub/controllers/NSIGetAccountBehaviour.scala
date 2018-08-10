@@ -90,7 +90,7 @@ object NSIGetAccountBehaviour {
                                          addressLine5:              String,
                                          postcode:                  String,
                                          countryCode:               String,
-                                         emailAddress:              String,
+                                         emailAddress:              Option[String],
                                          commsPreference:           String,
                                          clientBlockingCode:        String,
                                          clientBlockingReasonCode:  String,
@@ -127,7 +127,7 @@ object NSIGetAccountBehaviour {
 
     def bethNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112057", "225.00", "250.00", " ", None, None, "00", "00", bethCIM, "Beth", "Planner", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mrs B Planner", None, "801497", bethTerms)
 
     val peteCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("9.88", "50.00", LocalDate.of(2018, 3, 31))
@@ -137,7 +137,7 @@ object NSIGetAccountBehaviour {
 
     def peteNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112058", "165.12", "190.12", " ", None, None, "00", "00", peteCIM, "Pete", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", peteTerms)
 
     val lauraCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -147,7 +147,7 @@ object NSIGetAccountBehaviour {
 
     def lauraNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112059", "110.00", "135.00", " ", None, None, "00", "00", lauraCIM, "Laura", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", lauraTerms)
 
     val tonyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -157,7 +157,7 @@ object NSIGetAccountBehaviour {
 
     def tonyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112060", "50.00", "75.00", " ", None, None, "00", "00", tonyCIM, "Tony", "Loveday", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", None,
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", tonyTerms)
 
     val monikaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -167,7 +167,7 @@ object NSIGetAccountBehaviour {
 
     def monikaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112061", "0.00", "0.00", " ", None, None, "00", "00", monikaCIM, "Monika", "Detavoidskiene", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", monikaTerms)
 
     val happyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -177,7 +177,7 @@ object NSIGetAccountBehaviour {
 
     def happyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112062", "0.00", "2400.00", " ", None, None, "00", "00", happyCIM, "Happy", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", happyTerms)
 
     val takenCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -187,7 +187,7 @@ object NSIGetAccountBehaviour {
 
     def takenNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112063", "0.00", "0.00", " ", None, None, "00", "00", takenCIM, "Taken", "Out", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", takenTerms)
 
     val spencerCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("40.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -197,7 +197,7 @@ object NSIGetAccountBehaviour {
 
     def spencerNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112064", "0.00", "832.00", " ", None, None, "00", "00", spencerCIM, "Spencer", "Waller", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", spencerTerms)
 
     val alexCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("13.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -207,7 +207,7 @@ object NSIGetAccountBehaviour {
 
     def alexNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112065", "0.00", "1270.00", " ", None, None, "00", "00", alexCIM, "Alex", "Millar", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", alexTerms)
 
     val annaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -217,7 +217,7 @@ object NSIGetAccountBehaviour {
 
     def annaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112066", "0.00", "75.00", " ", None, None, "00", "00", annaCIM, "Anna", "Smith", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", annaTerms)
 
     val closedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -228,7 +228,7 @@ object NSIGetAccountBehaviour {
     def closedAccountResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112067", "0.00", "0.00", "C", Some(LocalDate.of(2018, 3, 5)), Some("250.00"), "00", "00", closedCIM,
       "Closed", "Account", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mrs C Account", None, "801497", closedTerms)
 
     val accountBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -239,7 +239,7 @@ object NSIGetAccountBehaviour {
     def accountBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112068", "0.00", "250.00", " ", None, None, "12", "4B", accountBlockedCIM,
       "Account", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mrs A Blocked", None, "801497", accountBlockedTerms)
 
     val clientBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -250,7 +250,7 @@ object NSIGetAccountBehaviour {
     def clientBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112069", "0.00", "250.00", " ", None, None, "00", "00", clientBlockedCIM,
       "Client", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "12", "4B", " ", "11111111", "Mrs C Blocked", None, "801497", clientBlockedTerms)
 
     val positiveBonusZeroBalanceCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -261,7 +261,7 @@ object NSIGetAccountBehaviour {
 
     def positiveBonusZeroBalanceResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112062", "0.00", "0.00", " ", None, None, "00", "00", positiveBonusZeroBalanceCIM, "FirstTerm", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", positiveBonusZeroBalanceTerms)
 
     val zeroBonusPositiveBalanceCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
@@ -272,7 +272,7 @@ object NSIGetAccountBehaviour {
 
     def zeroBonusPositiveBalanceResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112062", "2400.00", "2400.00", " ", None, None, "00", "00", zeroBonusPositiveBalanceCIM, "FirstTerm", "Saver", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
-      " ", " ", " ", "SV1 1QA", "GB", "email.address@domain.com",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mr P Smith", None, "801497", zeroBonusPositiveBalanceTerms)
 
   }
