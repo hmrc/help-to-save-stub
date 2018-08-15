@@ -20,18 +20,19 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
+import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.smartstub._
 
 class PayePersonalDetailsControllerSpec extends TestSupport {
-  private val fakeRequest = FakeRequest("GET", "/pay-as-you-earn/02.00.00/individuals/AE123456C")
-    .withHeaders("Authorization" → "Bearer test")
+
+  private val fakeRequest = FakeRequest().withHeaders("Authorization" → "Bearer test")
 
   val payeDetailsController = new PayePersonalDetailsController
 
-  "GET /pay-as-you-earn/02.00.00/individuals/AE123456C" should {
+  "GET /pay-as-you-earn/02.00.00/individuals/{NINO}" should {
 
     "returns paye details for a valid NINO" in {
-      val nino = "AE123456C"
+      val nino = randomNINO()
       val result = payeDetailsController.getPayeDetails(nino)(fakeRequest)
 
       status(result) shouldBe Status.OK
@@ -42,13 +43,14 @@ class PayePersonalDetailsControllerSpec extends TestSupport {
     }
 
     "handles 404 cases when supplied NINO cant be found in DES" in {
-      val result = payeDetailsController.getPayeDetails("PD404123C")(fakeRequest)
+
+      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PD404"))(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "handles 500 cases when there is internal error" in {
-      val result = payeDetailsController.getPayeDetails("PD500123C")(fakeRequest)
+      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PD500"))(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }

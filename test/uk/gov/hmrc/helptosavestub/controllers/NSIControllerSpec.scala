@@ -27,21 +27,21 @@ import play.api.test.Helpers._
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.NSIGetAccountByNinoResponse
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.NSIGetTransactionsByNinoResponse
+import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
 
-class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMaterializerSpec {
+class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val generator = new Generator(1)
-  val ninoWithAccount: String = "EM0" + generator.nextNino.value.substring(3, 5) + "001A"
-  val ninoContaining500: String = "EM500" + generator.nextNino.value.substring(5)
-  val ninoContaining401: String = "EM" + generator.nextNino.value.substring(2, 5) + "401A"
+  val ninoWithAccount: String = randomNINO().withPrefixReplace("EM0").withSuffixReplace("001A")
+  val ninoContaining500: String = randomNINO().withPrefixReplace("EM500")
+  val ninoContaining401: String = randomNINO().withPrefixReplace("EM").withSuffixReplace("401A")
 
   import NSIUserInfo._
 
   val testCreateAccount = NSIUserInfo(
-    "Donald", "Duck", LocalDate.of(1990, 1, 1), "AA999999A", // scalastyle:ignore magic.number
+    "Donald", "Duck", LocalDate.of(1990, 1, 1), generator.nextNino.nino, // scalastyle:ignore magic.number
                       ContactDetails("1", ",Test Street 2", None, None, None, "BN124XH", Some("GB"), Some("dduck@email.com"), None, "02"),
     "online")
 
@@ -144,7 +144,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
     "return a 400 with errorMessageId HTS-API015-005 when given a nino in the incorrect format" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), Some("systemId"))(request))
+      val result = await(NSIController.getAccount(Some("correlationId"), Some("not-a-nino"), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-005")
       correlationIds(result) shouldBe "correlationId"
@@ -153,7 +153,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
     "return a 400 with errorMessageId HTS-API015-006 when given a nino not found" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some("EZ000001A"), Some("V1.0"), Some("systemId"))(request))
+      val result = await(NSIController.getAccount(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-006")
       correlationIds(result) shouldBe "correlationId"
@@ -241,7 +241,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
     "return a 400 with errorMessageId HTS-API015-006 when given a nino not found" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some("EZ000001A"), Some("V1.0"), Some("systemId"))(request))
+      val result = await(NSIController.getTransactions(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-006")
       correlationIds(result) shouldBe "correlationId"
@@ -264,7 +264,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
     "return a 400 with errorMessageId HTS-API015-012 when systemId is not present" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some("EZ000001A"), Some("V1.0"), None)(request))
+      val result = await(NSIController.getTransactions(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), None)(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-012")
       correlationIds(result) shouldBe "correlationId"
@@ -273,7 +273,7 @@ class NSIControllerSpec extends UnitSpec with WithFakeApplication with AkkaMater
     "return a 400 with two error responses when systemId is not present and the nino is in the incorrect format" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), None)(request))
+      val result = await(NSIController.getTransactions(Some("correlationId"), Some("not-a-nino"), Some("V1.0"), None)(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-005", "HTS-API015-012")
       correlationIds(result) shouldBe "correlationId"

@@ -22,11 +22,10 @@ import play.api.http.Status
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
-import uk.gov.hmrc.play.test.{UnitSpec, WithFakeApplication}
-
+import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import scala.concurrent.Future
 
-class DWPControllerSpec extends UnitSpec with WithFakeApplication {
+class DWPControllerSpec extends TestSupport {
 
   val fakeRequest = FakeRequest().withHeaders("Authorization" → "Bearer test")
 
@@ -43,22 +42,22 @@ class DWPControllerSpec extends UnitSpec with WithFakeApplication {
   "dwpEligibilityCheck" must {
 
     "return a 400 status with no json payload when given a nino starting with WS400" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("WS400123A", systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS400"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }
 
     "return a 404 status with no json payload when given a nino starting with WS404" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("WS404123A", systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS404"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return a 500 status with no json payload when given a nino starting with WS500" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("WS500123A", systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS500"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "return a 504 status with no json payload when given a nino starting with WS504" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck("WS504123A", systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS504"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.GATEWAY_TIMEOUT
     }
 
