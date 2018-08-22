@@ -32,10 +32,10 @@ class DESThresholdController @Inject() (implicit override val runModeConfigurati
 
   val thresholdAmountJson: JsValue =
     Json.parse(s"""
-                 |{
-                 |  "thresholdAmount" : $thresholdAmount
-                 |}
-               """.stripMargin)
+                   |{
+                   |  "thresholdAmount" : $thresholdAmount
+                   |}
+                 """.stripMargin)
 
   def getThresholdAmount(): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
     Ok(thresholdAmountJson)
