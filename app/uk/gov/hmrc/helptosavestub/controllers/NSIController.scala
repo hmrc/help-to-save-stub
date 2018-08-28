@@ -34,7 +34,7 @@ import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIUse
 import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
-import scala.util.{Failure, Success, Try}
+import scala.util.{Failure, Random, Success, Try}
 
 object NSIController extends BaseController with Logging {
 
@@ -97,7 +97,10 @@ object NSIController extends BaseController with Logging {
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
     val description = "create account"
-    withNSIUserInfo(description){ nsiUserInfo ⇒ handleRequest(nsiUserInfo, Created, description) }
+    withNSIUserInfo(description){ nsiUserInfo ⇒
+      val accountNumber = generateAccountNumberJson
+      handleRequest(nsiUserInfo, Created(accountNumber), description)
+    }
   }
 
   def handleRequest(nsiUserInfo: NSIUserInfo, successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
@@ -120,6 +123,12 @@ object NSIController extends BaseController with Logging {
         }
       })
   }
+
+  private def generateAccountNumberJson: JsValue = Json.parse(
+    s"""{
+      |"accountNumber": "${Random.nextLong().abs}"
+      |}
+    """.stripMargin)
 
   private val ninoStatusRegex = """AS(\d{3}).*""".r
 
