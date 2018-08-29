@@ -30,7 +30,7 @@ import play.api.mvc._
 import uk.gov.hmrc.helptosavestub
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.getAccountByNino
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.getTransactionsByNino
-import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIUserInfo}
+import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIPayload}
 import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -71,10 +71,10 @@ object NSIController extends BaseController with Logging {
     }
   }
 
-  def withNSIUserInfo(description: String)(body: NSIUserInfo ⇒ Result)(implicit request: Request[AnyContent]): Result = {
+  def withNSIPayload(description: String)(body: NSIPayload ⇒ Result)(implicit request: Request[AnyContent]): Result = {
     lazy val requestBodyText = request.body.asText.getOrElse("")
 
-    request.body.asJson.map(_.validate[NSIUserInfo]) match {
+    request.body.asJson.map(_.validate[NSIPayload]) match {
       case None ⇒
         logger.error(s"No JSON found for $description request: $requestBodyText")
         BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "No JSON found", ""))))
@@ -89,7 +89,7 @@ object NSIController extends BaseController with Logging {
   }
 
   def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
-    withNSIUserInfo("update email or health check") { nsiUserInfo ⇒
+    withNSIPayload("update email or health check") { nsiUserInfo ⇒
       val description = if (nsiUserInfo.nino === "XX999999X") "NS&I health check" else "update email"
       handleRequest(nsiUserInfo, Ok, description)
     }
@@ -97,28 +97,28 @@ object NSIController extends BaseController with Logging {
 
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
     val description = "create account"
-    withNSIUserInfo(description){ nsiUserInfo ⇒
+    withNSIPayload(description){ nsiPayload ⇒
       val accountNumber = generateAccountNumberJson
-      handleRequest(nsiUserInfo, Created(accountNumber), description)
+      handleRequest(nsiPayload, Created(accountNumber), description)
     }
   }
 
-  def handleRequest(nsiUserInfo: NSIUserInfo, successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
+  def handleRequest(nsiPayload: NSIPayload, successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
     isAuthorised(request.headers).fold(
       { e ⇒
         logger.error(e)
         Unauthorized
       }, { _ ⇒
-        val status: Option[Int] = nsiUserInfo.nino match {
+        val status: Option[Int] = nsiPayload.nino match {
           case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
           case _                  ⇒ None
         }
 
-        logger.info(s"Responding to $description with ${status.getOrElse(successResult.header.status)}")
+        logger.info(s"Responding to $description with status: ${status.getOrElse(successResult.header.status)}, nsiPayload from the request is: $nsiPayload ")
 
         status.fold(successResult) { s ⇒
           Status(s)(Json.toJson(SubmissionFailureResponse(
-            SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiUserInfo.nino}"))
+            SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiPayload.nino}"))
           ))
         }
       })
