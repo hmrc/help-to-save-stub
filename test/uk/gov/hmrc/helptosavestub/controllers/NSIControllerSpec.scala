@@ -45,9 +45,13 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
                       ContactDetails("1", ",Test Street 2", None, None, None, "BN124XH", Some("GB"), Some("dduck@email.com"), None, "02"),
     "online")
 
-  val authHeader = {
-    val encoded = new String(Base64.getEncoder().encode("username:password".getBytes(StandardCharsets.UTF_8)))
-    "Authorization-test" → s"Basic: $encoded"
+  val (authHeader, authHeaderDifferentCase) = {
+    val encoded = new String(Base64.getEncoder.encode("username:password".getBytes(StandardCharsets.UTF_8)))
+    val headerValue = s"Basic: $encoded"
+    (
+      "Authorization-test" → headerValue,
+      "aUtHoRiZaTiOn-test" → headerValue
+    )
   }
 
   def errorMessageIds(result: Result): List[String] = (jsonBodyOf(result) \ "errors").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])).toList
@@ -64,7 +68,16 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
       status(result) shouldBe CREATED
     }
 
-    "return a 401  UNAUTHORIZED" in {
+    "treat headers names case insensitively as per RFC 2616" in {
+      val request = FakeRequest()
+        .withHeaders(authHeaderDifferentCase)
+        .withJsonBody(Json.toJson(testCreateAccount))
+
+      val result = NSIController.createAccount()(request)
+      status(result) shouldBe CREATED
+    }
+
+    "return a 401 UNAUTHORIZED when request does not have the correct auth header is" in {
       val request = FakeRequest()
         .withJsonBody(Json.toJson(testCreateAccount))
       val result = NSIController.createAccount()(request)
