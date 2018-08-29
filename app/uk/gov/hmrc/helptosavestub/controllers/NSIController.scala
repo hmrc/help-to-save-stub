@@ -46,7 +46,7 @@ object NSIController extends BaseController with Logging {
     val decoded: Either[String, String] =
       headers.headers
         .find(entry ⇒
-          authorizationHeaderKeys.exists(entry._1 === _ && entry._2.startsWith(authorizationValuePrefix)))
+          authorizationHeaderKeys.exists(entry._1.toLowerCase === _.toLowerCase && entry._2.startsWith(authorizationValuePrefix)))
         .fold[Either[String, String]](
           Left("Could not find authorization header")
         ){
