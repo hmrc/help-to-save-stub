@@ -22,7 +22,7 @@ sbt test
 
 ## How to deploy
 
-This microservice is deployed as per all MDTP microservices via Jenkins into a Docker slug running on a Cloud Provider.
+This microservice is deployed as per all MDTP microservices via Jenkins into a Docker slug running on a AWS.
 
 ## Endpoints
 
