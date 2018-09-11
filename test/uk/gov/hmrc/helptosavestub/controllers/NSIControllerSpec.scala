@@ -47,7 +47,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val (authHeader, authHeaderDifferentCase) = {
     val encoded = new String(Base64.getEncoder.encode("username:password".getBytes(StandardCharsets.UTF_8)))
-    val headerValue = s"Basic: $encoded"
+    val headerValue = s"Basic $encoded"
     (
       "Authorization-test" → headerValue,
       "aUtHoRiZaTiOn-test" → headerValue
