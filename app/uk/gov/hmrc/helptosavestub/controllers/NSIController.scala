@@ -39,7 +39,7 @@ import scala.util.{Failure, Random, Success, Try}
 object NSIController extends BaseController with Logging {
 
   val authorizationHeaderKeys: List[String] = List("Authorization-test", "Authorization")
-  val authorizationValuePrefix: String = "Basic: "
+  val authorizationValuePrefix: String = "Basic "
   val testAuthHeader: String = "username:password"
 
   def isAuthorised(headers: Headers): Either[String, Unit] = {
