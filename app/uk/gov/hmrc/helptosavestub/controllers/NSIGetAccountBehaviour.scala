@@ -27,7 +27,7 @@ object NSIGetAccountBehaviour {
 
   def getAccountByNino(nino: String, correlationId: Option[String]): Either[ErrorDetails, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
     nino match {
-      case n if n.startsWith("EM200") ⇒ Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
+      case n if (n.startsWith("EM200") || n.startsWith("EL07")) ⇒ Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
       case n if n.startsWith("EM002") ⇒ Left(NSIErrorResponse.missingVersionError)
       case n if n.startsWith("EM003") ⇒ Left(NSIErrorResponse.unsupportedVersionError)
       case n if n.startsWith("EM004") ⇒ Left(NSIErrorResponse.missingNinoError)
