@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.org/hmrc/help-to-save-stub.svg)](https://travis-ci.org/hmrc/help-to-save-stub) [ ![Download](https://api.bintray.com/packages/hmrc/releases/help-to-save-stub/images/download.svg) ](https://bintray.com/hmrc/releases/help-to-save-stub/_latestVersion)
 
-## Help to Save Stub 
+## Help to Save Stub
 
 ## About Help to Save
 
