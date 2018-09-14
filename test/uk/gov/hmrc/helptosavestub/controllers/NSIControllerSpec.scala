@@ -29,7 +29,7 @@ import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.NSIGetAccou
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.NSIGetTransactionsByNinoResponse
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
-import uk.gov.hmrc.helptosavestub.models.NSIUserInfo
+import uk.gov.hmrc.helptosavestub.models.NSIPayload
 
 class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
@@ -38,16 +38,16 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
   val ninoContaining500: String = randomNINO().withPrefixReplace("EM500")
   val ninoContaining401: String = randomNINO().withPrefixReplace("EM").withSuffixReplace("401A")
 
-  import NSIUserInfo._
+  import NSIPayload._
 
-  val testCreateAccount = NSIUserInfo(
+  val testCreateAccount = NSIPayload(
     "Donald", "Duck", LocalDate.of(1990, 1, 1), generator.nextNino.nino, // scalastyle:ignore magic.number
                       ContactDetails("1", ",Test Street 2", None, None, None, "BN124XH", Some("GB"), Some("dduck@email.com"), None, "02"),
-    "online")
+    "online", None, "V2.0", "systemId")
 
   val (authHeader, authHeaderDifferentCase) = {
     val encoded = new String(Base64.getEncoder.encode("username:password".getBytes(StandardCharsets.UTF_8)))
-    val headerValue = s"Basic: $encoded"
+    val headerValue = s"Basic $encoded"
     (
       "Authorization-test" → headerValue,
       "aUtHoRiZaTiOn-test" → headerValue
