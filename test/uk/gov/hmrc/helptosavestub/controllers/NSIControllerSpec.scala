@@ -43,7 +43,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
   val testCreateAccount = NSIPayload(
     "Donald", "Duck", LocalDate.of(1990, 1, 1), generator.nextNino.nino, // scalastyle:ignore magic.number
                       ContactDetails("1", ",Test Street 2", None, None, None, "BN124XH", Some("GB"), Some("dduck@email.com"), None, "02"),
-    "online", None, "V2.0", "systemId")
+    "online", None, Some("V2.0"), Some("systemId"))
 
   val (authHeader, authHeaderDifferentCase) = {
     val encoded = new String(Base64.getEncoder.encode("username:password".getBytes(StandardCharsets.UTF_8)))
