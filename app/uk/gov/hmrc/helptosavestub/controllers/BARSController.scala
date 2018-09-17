@@ -29,8 +29,15 @@ class BARSController extends BaseController {
         case play.api.libs.json.JsError(errors) ⇒
           BadRequest(s"Could not parse JSON: ${errors.mkString(";")}")
 
-        case play.api.libs.json.JsSuccess(_, _) ⇒
-          Ok(Json.toJson(Response(true)))
+        case play.api.libs.json.JsSuccess(bankDetails, _) ⇒
+          if(bankDetails.accountNumber.startsWith("9")){
+            Ok(Json.toJson(Response(false)))
+          } else if(bankDetails.accountNumber.startsWith("5")) {
+            InternalServerError
+          } else {
+            Ok(Json.toJson(Response(true)))
+          }
+
 
       }
 
