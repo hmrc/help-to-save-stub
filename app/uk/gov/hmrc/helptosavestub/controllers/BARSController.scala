@@ -25,7 +25,7 @@ class BARSController extends BaseController {
 
   def validateBankDetails: Action[AnyContent] = Action { implicit request ⇒
     request.body.asJson.fold(BadRequest("No JSON in body")){ json ⇒
-      json.validate[BankDetails] match {
+      (json \ "account").validate[BankDetails] match {
         case play.api.libs.json.JsError(errors) ⇒
           BadRequest(s"Could not parse JSON: ${errors.mkString(";")}")
 
