@@ -17,7 +17,7 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import play.api.libs.json.{Json, Reads, Writes}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.helptosavestub.controllers.BARSController.{BankDetails, Response}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
@@ -30,14 +30,29 @@ class BARSController extends BaseController {
           BadRequest(s"Could not parse JSON: ${errors.mkString(";")}")
 
         case play.api.libs.json.JsSuccess(bankDetails, _) ⇒
-          if (bankDetails.accountNumber.startsWith("9")) {
-            Ok(Json.toJson(Response(false)))
-          } else if (bankDetails.accountNumber.startsWith("5")) {
-            InternalServerError
-          } else {
-            Ok(Json.toJson(Response(true)))
-          }
+          val accountNumberWithSortCodeIsValid =
+            if (bankDetails.accountNumber.startsWith("9")) {
+              Some(false)
+            } else if (bankDetails.accountNumber.startsWith("5")) {
+              None
+            } else {
+              Some(true)
+            }
 
+          val sortCodeIsPresentOnEISCD =
+            if (bankDetails.sortCode.startsWith("9")) {
+              "no"
+            } else if (bankDetails.sortCode.startsWith("5")) {
+              "whoopsie"
+            } else {
+              "yes"
+            }
+
+          accountNumberWithSortCodeIsValid.fold[Result](
+            InternalServerError
+          ){ a ⇒
+            Ok(Json.toJson(Response(a, sortCodeIsPresentOnEISCD)))
+          }
       }
 
     }
@@ -50,7 +65,7 @@ object BARSController {
 
   case class BankDetails(sortCode: String, accountNumber: String)
 
-  case class Response(accountNumberWithSortCodeIsValid: Boolean)
+  case class Response(accountNumberWithSortCodeIsValid: Boolean, sortCodeIsPresentOnEISCD: String)
 
   implicit val reads: Reads[BankDetails] = Json.reads[BankDetails]
 
