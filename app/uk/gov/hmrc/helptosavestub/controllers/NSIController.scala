@@ -22,12 +22,15 @@ import java.util.Base64
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
+import cats.instances.boolean._
 import cats.syntax.apply._
 import cats.syntax.either._
 import cats.syntax.eq._
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub
+import uk.gov.hmrc.helptosavestub.controllers.BARSController.BankDetails
+import uk.gov.hmrc.helptosavestub.controllers.BankDetailsBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.getAccountByNino
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.getTransactionsByNino
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIPayload}
@@ -36,7 +39,7 @@ import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.util.{Failure, Random, Success, Try}
 
-object NSIController extends BaseController with Logging {
+object NSIController extends BaseController with Logging with BankDetailsBehaviour {
 
   val authorizationHeaderKeys: List[String] = List("Authorization-test", "Authorization")
   val authorizationValuePrefix: String = "Basic "
@@ -98,8 +101,24 @@ object NSIController extends BaseController with Logging {
   def createAccount(): Action[AnyContent] = Action { implicit request ⇒
     val description = "create account"
     withNSIPayload(description){ nsiPayload ⇒
-      val accountNumber = generateAccountNumberJson
-      handleRequest(nsiPayload, Created(accountNumber), description)
+      nsiPayload.nbaDetails match {
+        case Some(bankDetails) ⇒ getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
+          case Profile(_, createAccountResponse) ⇒ createAccountResponse.response match {
+            case Right(()) ⇒ {
+              val accountNumber = generateAccountNumberJson
+              handleRequest(nsiPayload, Created(accountNumber), description)
+            }
+            case Left(error) ⇒ {
+              logger.warn(s"Create Account request failed, errorDetails are: $error")
+              BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(Some(error.errorMessageId), error.errorMessage, error.errorDetail))))
+            }
+          }
+        }
+
+        case None ⇒
+          val accountNumber = generateAccountNumberJson
+          handleRequest(nsiPayload, Created(accountNumber), description)
+      }
     }
   }
 
