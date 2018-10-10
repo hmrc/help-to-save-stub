@@ -52,23 +52,6 @@ object NSIGetAccountBehaviour {
       case _ ⇒ Left(NSIErrorResponse.unknownNinoError)
     }
 
-  private def nsiGetAccountResponseFromFile(name: String): Either[ErrorDetails, NSIGetAccountByNinoResponse] = {
-    val resourceName = s"/nsi/account/$name"
-    val inputStreamIfExists = Option(getClass.getResourceAsStream(resourceName))
-    inputStreamIfExists match {
-      case Some(inputStream) ⇒
-        try {
-          val response: NSIGetAccountByNinoResponse = Json.parse(inputStream).as[NSIGetAccountByNinoResponse]
-          Right(response)
-        } finally {
-          inputStream.close()
-        }
-      case None ⇒
-        Logger.warn(s"Could not find resource $resourceName")
-        Left(NSIErrorResponse.unknownNinoError)
-    }
-  }
-
   case class NSIGetAccountByNinoResponse(version:                   String,
                                          correlationId:             Option[String],
                                          accountNumber:             String,
