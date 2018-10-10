@@ -74,7 +74,7 @@ class DelaysSpec extends WordSpec with Matchers {
 
     "not delay actions if configured to do so" in new TestDelays(Delays.config("test", config("test", "false", "1 second", "0 seconds", "0 seconds"))) {
       val result: Future[String] = withDelay(delayConfig)(() ⇒ "hello")
-      // shouldn't need to advance time fr the future to complete
+      // shouldn't need to advance time for the future to complete
       Await.result(result, 1.second) shouldBe "hello"
     }
 
