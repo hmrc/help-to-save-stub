@@ -43,7 +43,7 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Random, Success, Try}
 
 @Singleton
-class NSIController @Inject() (val actorSystem: ActorSystem)(implicit ec: ExecutionContext)
+class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionContext)
   extends BaseController with Logging with BankDetailsBehaviour with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
