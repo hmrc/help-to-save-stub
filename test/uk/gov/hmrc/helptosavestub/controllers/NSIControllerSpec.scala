@@ -31,6 +31,8 @@ import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.helptosavestub.models.NSIPayload
 
+import scala.concurrent.ExecutionContext.Implicits.global
+
 class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val generator = new Generator(1)
@@ -58,13 +60,15 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   def correlationIds(result: Result): String = (jsonBodyOf(result) \ "correlationId").as[String]
 
+  val nsiController = new NSIController(actorSystem)
+
   "Post /nsi-services/account  " should {
     "return a successful Create Account" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
         .withJsonBody(Json.toJson(testCreateAccount))
 
-      val result = NSIController.createAccount()(request)
+      val result = nsiController.createAccount()(request)
       status(result) shouldBe CREATED
     }
 
@@ -73,21 +77,21 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
         .withHeaders(authHeaderDifferentCase)
         .withJsonBody(Json.toJson(testCreateAccount))
 
-      val result = NSIController.createAccount()(request)
+      val result = nsiController.createAccount()(request)
       status(result) shouldBe CREATED
     }
 
     "return a 401 UNAUTHORIZED when request does not have the correct auth header is" in {
       val request = FakeRequest()
         .withJsonBody(Json.toJson(testCreateAccount))
-      val result = NSIController.createAccount()(request)
+      val result = nsiController.createAccount()(request)
       status(result) shouldBe UNAUTHORIZED
     }
 
     "return a 400 for a bad request in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.createAccount()(request)
+      val result = nsiController.createAccount()(request)
       status(result) shouldBe BAD_REQUEST
     }
   }
@@ -98,21 +102,21 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
         .withHeaders(authHeader)
         .withJsonBody(Json.toJson(testCreateAccount))
 
-      val result = NSIController.updateEmailOrHealthCheck()(request)
+      val result = nsiController.updateEmailOrHealthCheck()(request)
       status(result) shouldBe OK
     }
 
     "return a 401  UNAUTHORIZED" in {
       val request = FakeRequest()
         .withJsonBody(Json.toJson(testCreateAccount))
-      val result = NSIController.updateEmailOrHealthCheck()(request)
+      val result = nsiController.updateEmailOrHealthCheck()(request)
       status(result) shouldBe UNAUTHORIZED
     }
 
     "return a 400 for a bad request in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.updateEmailOrHealthCheck()(request)
+      val result = nsiController.updateEmailOrHealthCheck()(request)
       status(result) shouldBe BAD_REQUEST
     }
   }
@@ -121,7 +125,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a successful status when given an existing nino" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.getAccount(Some("correlationId"), Some(ninoWithAccount), Some("V1.0"), Some("systemId"))(request)
+      val result = nsiController.getAccount(Some("correlationId"), Some(ninoWithAccount), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe OK
       val json = contentAsString(result)
       Json.fromJson[NSIGetAccountByNinoResponse](Json.parse(json)).get shouldBe NSIGetAccountByNinoResponse.bethNSIResponse(Some("correlationId"))
@@ -130,7 +134,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-002 when the service version is missing" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some(ninoWithAccount), None, Some("systemId"))(request))
+      val result = await(nsiController.getAccount(Some("correlationId"), Some(ninoWithAccount), None, Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-002")
       correlationIds(result) shouldBe "correlationId"
@@ -139,7 +143,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-003 when given an unsupported service version" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some(ninoWithAccount), Some("V1.5"), Some("systemId"))(request))
+      val result = await(nsiController.getAccount(Some("correlationId"), Some(ninoWithAccount), Some("V1.5"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-003")
       correlationIds(result) shouldBe "correlationId"
@@ -148,7 +152,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-004 when not given a nino" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), None, Some("V1.0"), Some("systemId"))(request))
+      val result = await(nsiController.getAccount(Some("correlationId"), None, Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-004")
       correlationIds(result) shouldBe "correlationId"
@@ -157,7 +161,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-005 when given a nino in the incorrect format" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some("not-a-nino"), Some("V1.0"), Some("systemId"))(request))
+      val result = await(nsiController.getAccount(Some("correlationId"), Some("not-a-nino"), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-005")
       correlationIds(result) shouldBe "correlationId"
@@ -166,7 +170,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-006 when given a nino not found" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), Some("systemId"))(request))
+      val result = await(nsiController.getAccount(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-006")
       correlationIds(result) shouldBe "correlationId"
@@ -175,21 +179,21 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 500 when given a nino with 500 in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.getAccount(Some("correlationId"), Some(ninoContaining500), Some("V1.0"), Some("systemId"))(request)
+      val result = nsiController.getAccount(Some("correlationId"), Some(ninoContaining500), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
 
     "return a 401 when given a nino with 401 in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.getAccount(Some("correlationId"), Some(ninoContaining401), Some("V1.0"), Some("systemId"))(request)
+      val result = nsiController.getAccount(Some("correlationId"), Some(ninoContaining401), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe UNAUTHORIZED
     }
 
     "return a 400 with errorMessageId HTS-API015-012 when systemId is not present" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some(ninoWithAccount), Some("V1.0"), None)(request))
+      val result = await(nsiController.getAccount(Some("correlationId"), Some(ninoWithAccount), Some("V1.0"), None)(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-012")
       correlationIds(result) shouldBe "correlationId"
@@ -198,7 +202,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with two error responses when systemId is not present and the nino is in the incorrect format" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getAccount(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), None)(request))
+      val result = await(nsiController.getAccount(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), None)(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-005", "HTS-API015-012")
       correlationIds(result) shouldBe "correlationId"
@@ -209,7 +213,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a successful status when given an existing nino" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.getTransactions(Some("correlationId"), Some(ninoWithAccount), Some("V1.0"), Some("systemId"))(request)
+      val result = nsiController.getTransactions(Some("correlationId"), Some(ninoWithAccount), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe OK
       val json = contentAsString(result)
       Json.fromJson[NSIGetTransactionsByNinoResponse](Json.parse(json)).get shouldBe NSIGetTransactionsByNinoResponse.bethResponse(Some("correlationId"))
@@ -218,7 +222,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-002 when the service version is missing" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some(ninoWithAccount), None, Some("systemId"))(request))
+      val result = await(nsiController.getTransactions(Some("correlationId"), Some(ninoWithAccount), None, Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-002")
       correlationIds(result) shouldBe "correlationId"
@@ -227,7 +231,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-003 when given an unsupported service version" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some(ninoWithAccount), Some("V1.5"), Some("systemId"))(request))
+      val result = await(nsiController.getTransactions(Some("correlationId"), Some(ninoWithAccount), Some("V1.5"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-003")
       correlationIds(result) shouldBe "correlationId"
@@ -236,7 +240,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-004 when not given a nino" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), None, Some("V1.0"), Some("systemId"))(request))
+      val result = await(nsiController.getTransactions(Some("correlationId"), None, Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-004")
       correlationIds(result) shouldBe "correlationId"
@@ -245,7 +249,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-005 when given a nino in the incorrect format" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), Some("systemId"))(request))
+      val result = await(nsiController.getTransactions(Some("correlationId"), Some("EZ00000A"), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-005")
       correlationIds(result) shouldBe "correlationId"
@@ -254,7 +258,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with errorMessageId HTS-API015-006 when given a nino not found" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), Some("systemId"))(request))
+      val result = await(nsiController.getTransactions(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), Some("systemId"))(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-006")
       correlationIds(result) shouldBe "correlationId"
@@ -263,21 +267,21 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 500 when given a nino with 500 in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.getTransactions(Some("correlationId"), Some(ninoContaining500), Some("V1.0"), Some("systemId"))(request)
+      val result = nsiController.getTransactions(Some("correlationId"), Some(ninoContaining500), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe INTERNAL_SERVER_ERROR
     }
 
     "return a 401 when given a nino with 401 in" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = NSIController.getTransactions(Some("correlationId"), Some(ninoContaining401), Some("V1.0"), Some("systemId"))(request)
+      val result = nsiController.getTransactions(Some("correlationId"), Some(ninoContaining401), Some("V1.0"), Some("systemId"))(request)
       status(result) shouldBe UNAUTHORIZED
     }
 
     "return a 400 with errorMessageId HTS-API015-012 when systemId is not present" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), None)(request))
+      val result = await(nsiController.getTransactions(Some("correlationId"), Some(generator.nextNino.nino), Some("V1.0"), None)(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-012")
       correlationIds(result) shouldBe "correlationId"
@@ -286,7 +290,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
     "return a 400 with two error responses when systemId is not present and the nino is in the incorrect format" in {
       val request = FakeRequest()
         .withHeaders(authHeader)
-      val result = await(NSIController.getTransactions(Some("correlationId"), Some("not-a-nino"), Some("V1.0"), None)(request))
+      val result = await(nsiController.getTransactions(Some("correlationId"), Some("not-a-nino"), Some("V1.0"), None)(request))
       status(result) shouldBe BAD_REQUEST
       errorMessageIds(result) shouldBe List("HTS-API015-005", "HTS-API015-012")
       correlationIds(result) shouldBe "correlationId"

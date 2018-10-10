@@ -28,7 +28,8 @@ val dependencies = Seq(
 def testDependencies(scope: String = "test,it") = Seq(
   "uk.gov.hmrc" %% "hmrctest" % "3.0.0" % scope,
   "org.scalatest" %% "scalatest" % "3.0.5" % scope,
-  "com.typesafe.play" %% "play-test" % PlayVersion.current % scope
+  "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
+  "com.miguno.akka" %% "akka-mock-scheduler" % "0.5.1" % scope
 )
 
 lazy val scoverageSettings = {

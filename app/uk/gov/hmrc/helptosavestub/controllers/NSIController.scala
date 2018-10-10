@@ -19,13 +19,14 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
+import akka.actor.{ActorSystem, Scheduler}
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
-import cats.instances.boolean._
 import cats.syntax.apply._
 import cats.syntax.either._
 import cats.syntax.eq._
+import com.google.inject.{Inject, Singleton}
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub
@@ -34,16 +35,25 @@ import uk.gov.hmrc.helptosavestub.controllers.BankDetailsBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.getAccountByNino
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.getTransactionsByNino
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIPayload}
-import uk.gov.hmrc.helptosavestub.util.{Logging, NINO}
+import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
+import uk.gov.hmrc.helptosavestub.util.{Delays, Logging, NINO}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Random, Success, Try}
 
-object NSIController extends BaseController with Logging with BankDetailsBehaviour {
+@Singleton
+class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionContext)
+  extends BaseController with Logging with BankDetailsBehaviour with Delays {
+
+  val scheduler: Scheduler = actorSystem.scheduler
 
   val authorizationHeaderKeys: List[String] = List("Authorization-test", "Authorization")
   val authorizationValuePrefix: String = "Basic "
   val testAuthHeader: String = "username:password"
+
+  val createAccountDelayConfig: DelayConfig = Delays.config("create-account", actorSystem.settings.config)
+  val getAccountDelayConfig: DelayConfig = Delays.config("get-account", actorSystem.settings.config)
 
   def isAuthorised(headers: Headers): Either[String, Unit] = {
     val decoded: Either[String, String] =
@@ -98,26 +108,28 @@ object NSIController extends BaseController with Logging with BankDetailsBehavio
     }
   }
 
-  def createAccount(): Action[AnyContent] = Action { implicit request ⇒
-    val description = "create account"
-    withNSIPayload(description){ nsiPayload ⇒
-      nsiPayload.nbaDetails match {
-        case Some(bankDetails) ⇒ getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
-          case Profile(_, createAccountResponse) ⇒ createAccountResponse.response match {
-            case Right(()) ⇒ {
-              val accountNumber = generateAccountNumberJson
-              handleRequest(nsiPayload, Created(accountNumber), description)
-            }
-            case Left(error) ⇒ {
-              logger.warn(s"Create Account request failed, errorDetails are: $error")
-              BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(Some(error.errorMessageId), error.errorMessage, error.errorDetail))))
+  def createAccount(): Action[AnyContent] = Action.async { implicit request ⇒
+    withDelay(createAccountDelayConfig) { () ⇒
+      val description = "create account"
+      withNSIPayload(description) { nsiPayload ⇒
+        nsiPayload.nbaDetails match {
+          case Some(bankDetails) ⇒ getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
+            case Profile(_, createAccountResponse) ⇒ createAccountResponse.response match {
+              case Right(()) ⇒ {
+                val accountNumber = generateAccountNumberJson
+                handleRequest(nsiPayload, Created(accountNumber), description)
+              }
+              case Left(error) ⇒ {
+                logger.warn(s"Create Account request failed, errorDetails are: $error")
+                BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(Some(error.errorMessageId), error.errorMessage, error.errorDetail))))
+              }
             }
           }
-        }
 
-        case None ⇒
-          val accountNumber = generateAccountNumberJson
-          handleRequest(nsiPayload, Created(accountNumber), description)
+          case None ⇒
+            val accountNumber = generateAccountNumberJson
+            handleRequest(nsiPayload, Created(accountNumber), description)
+        }
       }
     }
   }
@@ -154,26 +166,28 @@ object NSIController extends BaseController with Logging with BankDetailsBehavio
   def getAccount(correlationId: Option[String],
                  nino:          Option[String],
                  version:       Option[String],
-                 systemId:      Option[String]): Action[AnyContent] = Action {
+                 systemId:      Option[String]): Action[AnyContent] = Action.async {
     implicit request ⇒
-      validateParams(correlationId, nino, version, systemId).fold(
-        errors ⇒ {
-          logger.warn("[Handle Account Query] invalid params")
-          BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
-        }, {
-          validatedNino ⇒
-            if (validatedNino.contains("401")) {
-              Unauthorized
-            } else if (validatedNino.contains("500")) {
-              InternalServerError
-            } else {
-              val maybeAccount = getAccountByNino(validatedNino, correlationId)
-              maybeAccount match {
-                case Right(a) ⇒ Ok(Json.toJson(a))
-                case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+      withDelay[Result](getAccountDelayConfig){ () ⇒
+        validateParams(correlationId, nino, version, systemId).fold(
+          errors ⇒ {
+            logger.warn("[Handle Account Query] invalid params")
+            BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
+          }, {
+            validatedNino ⇒
+              if (validatedNino.contains("401")) {
+                Unauthorized
+              } else if (validatedNino.contains("500")) {
+                InternalServerError
+              } else {
+                val maybeAccount = getAccountByNino(validatedNino, correlationId)
+                maybeAccount match {
+                  case Right(a) ⇒ Ok(Json.toJson(a))
+                  case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+                }
               }
-            }
-        })
+          })
+      }
   }
 
   def getTransactions(correlationId: Option[String],
