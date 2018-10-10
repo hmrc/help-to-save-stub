@@ -23,6 +23,7 @@ import org.scalatest.{Matchers, WordSpec}
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 
 import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
 class DelaysSpec extends WordSpec with Matchers {
@@ -48,7 +49,6 @@ class DelaysSpec extends WordSpec with Matchers {
     val time = new VirtualTime
 
     override val scheduler: Scheduler = time.scheduler
-    override implicit val ec: ExecutionContext = ExecutionContext.global
   }
 
   "Delays" must {

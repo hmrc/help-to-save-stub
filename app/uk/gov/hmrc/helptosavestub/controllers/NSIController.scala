@@ -39,11 +39,11 @@ import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.helptosavestub.util.{Delays, Logging, NINO}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
-import scala.concurrent.{ExecutionContext, Future}
+import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Random, Success, Try}
 
 @Singleton
-class NSIController @Inject() (val actorSystem: ActorSystem)(implicit val ec: ExecutionContext)
+class NSIController @Inject() (val actorSystem: ActorSystem)(implicit ec: ExecutionContext)
   extends BaseController with Logging with BankDetailsBehaviour with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
