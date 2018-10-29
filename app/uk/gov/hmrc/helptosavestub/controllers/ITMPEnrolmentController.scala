@@ -16,43 +16,53 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import akka.actor.{ActorSystem, Scheduler}
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent}
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
-import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
+import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
+import scala.concurrent.ExecutionContext
+
 @Singleton
-class ITMPEnrolmentController @Inject() (implicit override val runModeConfiguration: Configuration,
-                                         override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
-  with BaseController with DESController with Logging {
+class ITMPEnrolmentController @Inject() (actorSystem: ActorSystem)(implicit override val runModeConfiguration: Configuration,
+                                                                   override val environment: Environment,
+                                                                   ec:                       ExecutionContext)
+  extends AppConfig(runModeConfiguration, environment) with BaseController with DESController with Logging with Delays {
+
+  val scheduler: Scheduler = actorSystem.scheduler
+  val setItmpFlagDelayConfig: DelayConfig = Delays.config("set-itmp-flag", actorSystem.settings.config)
 
   def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    val response = if (nino.startsWith("HS403")) {
-      logger.info("Received request to set ITMP flag: returning status 403 (FORBIDDEN)")
-      Forbidden
-    } else if (nino.startsWith("HS400")) {
-      logger.info("Received request to set ITMP flag: returning status 400 (BAD REQUEST)")
-      BadRequest
-    } else if (nino.startsWith("HS404")) {
-      logger.info("Received request to set ITMP flag: returning status 404 (NOT FOUND)")
-      NotFound
-    } else if (nino.startsWith("HS500")) {
-      logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
-      InternalServerError
-    } else if (nino.startsWith("HS503")) {
-      logger.info("Received request to set ITMP flag: returning status 503 (SERVICE UNAVAILABLE)")
-      ServiceUnavailable
-    } else if (nino.startsWith("TM04")) {
-      logger.info("Received request to set ITMP flag: returning status 200 (OK) after timeout")
-      Thread.sleep(90000)
-      Ok
-    } else {
-      logger.info("Received request to set ITMP flag: returning status 200 (OK)")
-      Ok
-    }
+    withDelay(setItmpFlagDelayConfig) { () ⇒
+      val response = if (nino.startsWith("HS403")) {
+        logger.info("Received request to set ITMP flag: returning status 403 (FORBIDDEN)")
+        Forbidden
+      } else if (nino.startsWith("HS400")) {
+        logger.info("Received request to set ITMP flag: returning status 400 (BAD REQUEST)")
+        BadRequest
+      } else if (nino.startsWith("HS404")) {
+        logger.info("Received request to set ITMP flag: returning status 404 (NOT FOUND)")
+        NotFound
+      } else if (nino.startsWith("HS500")) {
+        logger.info("Received request to set ITMP flag: returning status 500 (INTERNAL SERVER ERROR)")
+        InternalServerError
+      } else if (nino.startsWith("HS503")) {
+        logger.info("Received request to set ITMP flag: returning status 503 (SERVICE UNAVAILABLE)")
+        ServiceUnavailable
+      } else if (nino.startsWith("TM04")) {
+        logger.info("Received request to set ITMP flag: returning status 200 (OK) after timeout")
+        Thread.sleep(90000)
+        Ok
+      } else {
+        logger.info("Received request to set ITMP flag: returning status 200 (OK)")
+        Ok
+      }
 
-    withDesCorrelationID(response)
+      withDesCorrelationID(response)
+    }
   }
 }

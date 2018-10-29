@@ -54,6 +54,8 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
 
   val createAccountDelayConfig: DelayConfig = Delays.config("create-account", actorSystem.settings.config)
   val getAccountDelayConfig: DelayConfig = Delays.config("get-account", actorSystem.settings.config)
+  val updateAccountDelayConfig: DelayConfig = Delays.config("update-account", actorSystem.settings.config)
+  val getTransactionsDelayConfig: DelayConfig = Delays.config("get-transactions", actorSystem.settings.config)
 
   def isAuthorised(headers: Headers): Either[String, Unit] = {
     val decoded: Either[String, String] =
@@ -101,10 +103,12 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
     }
   }
 
-  def updateEmailOrHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
-    withNSIPayload("update email or health check") { nsiUserInfo ⇒
-      val description = if (nsiUserInfo.nino === "XX999999X") "NS&I health check" else "update email"
-      handleRequest(nsiUserInfo, Ok, description)
+  def updateEmailOrHealthCheck(): Action[AnyContent] = Action.async { implicit request ⇒
+    withDelay(updateAccountDelayConfig) { () ⇒
+      withNSIPayload("update email or health check") { nsiUserInfo ⇒
+        val description = if (nsiUserInfo.nino === "XX999999X") "NS&I health check" else "update email"
+        handleRequest(nsiUserInfo, Ok, description)
+      }
     }
   }
 
@@ -115,14 +119,12 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
         nsiPayload.nbaDetails match {
           case Some(bankDetails) ⇒ getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
             case Profile(_, createAccountResponse) ⇒ createAccountResponse.response match {
-              case Right(()) ⇒ {
+              case Right(()) ⇒
                 val accountNumber = generateAccountNumberJson
                 handleRequest(nsiPayload, Created(accountNumber), description)
-              }
-              case Left(error) ⇒ {
+              case Left(error) ⇒
                 logger.warn(s"Create Account request failed, errorDetails are: $error")
                 BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(Some(error.errorMessageId), error.errorMessage, error.errorDetail))))
-              }
             }
           }
 
@@ -193,26 +195,28 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
   def getTransactions(correlationId: Option[String],
                       nino:          Option[String],
                       version:       Option[String],
-                      systemId:      Option[String]): Action[AnyContent] = Action {
+                      systemId:      Option[String]): Action[AnyContent] = Action.async {
     implicit request ⇒
-      validateParams(correlationId, nino, version, systemId).fold(
-        errors ⇒ {
-          logger.warn("[Handle Transactions Query] invalid params")
-          BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
-        }, {
-          validatedNino ⇒
-            if (validatedNino.contains("401")) {
-              Unauthorized
-            } else if (validatedNino.contains("500")) {
-              InternalServerError
-            } else {
-              val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
-              maybeAccount match {
-                case Right(a) ⇒ Ok(Json.toJson(a))
-                case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+      withDelay(getTransactionsDelayConfig) { () ⇒
+        validateParams(correlationId, nino, version, systemId).fold(
+          errors ⇒ {
+            logger.warn("[Handle Transactions Query] invalid params")
+            BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
+          }, {
+            validatedNino ⇒
+              if (validatedNino.contains("401")) {
+                Unauthorized
+              } else if (validatedNino.contains("500")) {
+                InternalServerError
+              } else {
+                val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
+                maybeAccount match {
+                  case Right(a) ⇒ Ok(Json.toJson(a))
+                  case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+                }
               }
-            }
-        })
+          })
+      }
   }
 
   type ValidatedOrErrorDetails[A] = ValidatedNel[ErrorDetails, A]

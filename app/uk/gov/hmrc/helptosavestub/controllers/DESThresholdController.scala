@@ -24,6 +24,8 @@ import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
+import scala.concurrent.Future
+
 class DESThresholdController @Inject() (implicit override val runModeConfiguration: Configuration,
                                         override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
   with BaseController with DESController with Logging {
@@ -38,7 +40,7 @@ class DESThresholdController @Inject() (implicit override val runModeConfigurati
                  """.stripMargin)
 
   def getThresholdAmount(): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    Ok(thresholdAmountJson)
+    Future.successful(Ok(thresholdAmountJson))
   }
 
 }

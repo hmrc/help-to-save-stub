@@ -22,12 +22,14 @@ import play.api.test.FakeRequest
 import play.api.test.Helpers.{contentAsString, _}
 import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.EligibilityCheckResult
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
+import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
+import scala.concurrent.ExecutionContext.Implicits.global
 
-class EligibilityCheckControllerSpec extends TestSupport {
+class EligibilityCheckControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" → "Bearer test")
 
-  val eligCheckController = new EligibilityCheckController
+  val eligCheckController = new EligibilityCheckController(actorSystem)
 
   "GET /" should {
 
