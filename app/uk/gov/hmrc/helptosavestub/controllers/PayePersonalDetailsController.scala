@@ -19,6 +19,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
+import akka.actor.{ActorSystem, Scheduler}
 import com.google.inject.{Inject, Singleton}
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
@@ -27,38 +28,47 @@ import play.api.mvc._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
-import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
+import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.smartstub._
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class PayePersonalDetailsController @Inject() (implicit override val runModeConfiguration: Configuration,
-                                               override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
-  with BaseController with DESController with Logging {
+class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem)(implicit override val runModeConfiguration: Configuration,
+                                                                         override val environment: Environment,
+                                                                         ec:                       ExecutionContext)
+  extends AppConfig(runModeConfiguration, environment) with BaseController with DESController with Logging with Delays {
+
+  val scheduler: Scheduler = actorSystem.scheduler
+
+  val getPayeDetailsDelayConfig: DelayConfig = Delays.config("get-paye-personal-details", actorSystem.settings.config)
 
   def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
-    val status: Option[Int] = nino match {
-      case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-      case _                  ⇒ None
+    withDelay(getPayeDetailsDelayConfig) { () ⇒
+      val status: Option[Int] = nino match {
+        case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
+        case _                  ⇒ None
+      }
+
+      val response = status match {
+        case Some(s) ⇒
+          Status(s)(errorJson(s))
+
+        case None ⇒
+          payeDetails(nino).seeded(nino).fold[Result] {
+            logger.warn(s"Could not generate PayeDetails for NINO $nino")
+            InternalServerError
+          } { s ⇒
+            logger.info(s"Returning PayePersonalDetails for NINO $nino:\n$s")
+            Ok(Json.parse(s))
+          }
+      }
+
+      withDesCorrelationID(response)
     }
-
-    val response = status match {
-      case Some(s) ⇒
-        Status(s)(errorJson(s))
-
-      case None ⇒
-        payeDetails(nino).seeded(nino).fold[Result] {
-          logger.warn(s"Could not generate PayeDetails for NINO $nino")
-          InternalServerError
-        } { s ⇒
-          logger.info(s"Returning PayePersonalDetails for NINO $nino:\n$s")
-          Ok(Json.parse(s))
-        }
-    }
-
-    withDesCorrelationID(response)
   }
 
   private def errorJson(status: Int): JsValue = Json.parse(

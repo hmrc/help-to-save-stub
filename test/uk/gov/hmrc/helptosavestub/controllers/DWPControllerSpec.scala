@@ -23,13 +23,16 @@ import play.api.mvc.Result
 import play.api.test.FakeRequest
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
+import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
+import scala.concurrent.ExecutionContext.Implicits.global
+
 import scala.concurrent.Future
 
-class DWPControllerSpec extends TestSupport {
+class DWPControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val fakeRequest = FakeRequest().withHeaders("Authorization" → "Bearer test")
 
-  val dwpController = new DWPController
+  val dwpController = new DWPController(actorSystem)
 
   val wp01Json = UCDetails("Y", Some("Y"))
   val wp02Json = UCDetails("Y", Some("N"))

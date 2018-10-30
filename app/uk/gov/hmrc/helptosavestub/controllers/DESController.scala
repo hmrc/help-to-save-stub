@@ -24,6 +24,8 @@ import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
+import scala.concurrent.Future
+
 // trait for controllers mimicking DES
 trait DESController {
   this: BaseController with Logging with AppConfig ⇒
@@ -35,14 +37,14 @@ trait DESController {
       .value
       .map(e ⇒ s"Bearer $e")
 
-  def desAuthorisedAction(body: Request[AnyContent] ⇒ Result): Action[AnyContent] = Action { request ⇒
+  def desAuthorisedAction(body: Request[AnyContent] ⇒ Future[Result]): Action[AnyContent] = Action.async { request ⇒
     val authHeaders = request.headers.getAll("Authorization")
 
     if (expectedDESHeaders.intersect(authHeaders).nonEmpty) {
       body(request)
     } else {
       logger.warn(s"Request did not contain expected authorisation header. Received: $authHeaders")
-      Unauthorized
+      Future.successful(Unauthorized)
     }
   }
 

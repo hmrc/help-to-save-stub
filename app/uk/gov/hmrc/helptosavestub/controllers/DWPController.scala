@@ -18,16 +18,26 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.util.UUID
 
+import akka.actor.{ActorSystem, Scheduler}
 import cats.instances.string._
 import cats.syntax.eq._
+import com.google.inject.Inject
 import org.scalacheck.Gen
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc.{Action, AnyContent, Result}
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
-import uk.gov.hmrc.helptosavestub.util.Logging
+import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
+import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
-class DWPController extends BaseController with Logging with DWPEligibilityBehaviour {
+import scala.concurrent.ExecutionContext
+
+class DWPController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionContext)
+  extends BaseController with Logging with DWPEligibilityBehaviour with Delays {
+
+  val scheduler: Scheduler = actorSystem.scheduler
+
+  val checkUCStatusDelayConfig: DelayConfig = Delays.config("check-uc-status", actorSystem.settings.config)
 
   val ucGen: Gen[UCDetails] = {
     val booleanGen = Gen.oneOf("Y", "N")
@@ -53,19 +63,20 @@ class DWPController extends BaseController with Logging with DWPEligibilityBehav
     Status(result)
   }
 
-  def dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Double, transactionId: Option[UUID]): Action[AnyContent] = Action {
+  def dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Double, transactionId: Option[UUID]): Action[AnyContent] = Action.async {
     implicit request ⇒
-      {
+      withDelay(checkUCStatusDelayConfig) { () ⇒
         logger.info(s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
           s"thresholdAmount: $thresholdAmount, transactionId: $transactionId")
 
-        if (nino.startsWith("WS")) { getHttpStatus(nino) }
-        else if (nino.startsWith("WT")) {
+        if (nino.startsWith("WS")) {
+          getHttpStatus(nino)
+        } else if (nino.startsWith("WT")) {
           Thread.sleep(43000) // scalastyle:ignore magic.number
           Ok("Timeout")
         } else {
           getProfile(nino).
-            fold(Ok(Json.toJson(randomUCDetails()))){
+            fold(Ok(Json.toJson(randomUCDetails()))) {
               _.uCDetails.fold[Result](InternalServerError)(ucDetails ⇒
                 Ok(Json.toJson(ucDetails)))
             }

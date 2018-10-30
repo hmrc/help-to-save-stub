@@ -16,6 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import akka.actor.{ActorSystem, Scheduler}
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNel
 import cats.instances.option._
@@ -28,38 +29,46 @@ import play.api.mvc._
 import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.DWPEligibilityBehaviour.Profile
-import uk.gov.hmrc.helptosavestub.util.{Logging, ValidatedOrErrorStrings}
+import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
+import uk.gov.hmrc.helptosavestub.util.{Delays, Logging, ValidatedOrErrorStrings}
 import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
+import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class EligibilityCheckController @Inject() (implicit override val runModeConfiguration: Configuration,
-                                            override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
-  with BaseController with DESController with Logging with DWPEligibilityBehaviour {
+class EligibilityCheckController @Inject() (actorSystem: ActorSystem)(implicit override val runModeConfiguration: Configuration,
+                                                                      override val environment: Environment,
+                                                                      ec:                       ExecutionContext)
+  extends AppConfig(runModeConfiguration, environment) with BaseController with DESController with Logging with DWPEligibilityBehaviour with Delays {
+
+  val scheduler: Scheduler = actorSystem.scheduler
+  val checkEligibilityDelayConfig: DelayConfig = Delays.config("check-eligibility", actorSystem.settings.config)
 
   def eligibilityCheck(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
-      logger.info(s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
-        s"ucClaimant: ${universalCreditClaimant.getOrElse("-")}, " +
-        s"withinThreshold: ${withinThreshold.getOrElse("-")}")
+      withDelay(checkEligibilityDelayConfig) { () ⇒
+        logger.info(s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
+          s"ucClaimant: ${universalCreditClaimant.getOrElse("-")}, " +
+          s"withinThreshold: ${withinThreshold.getOrElse("-")}")
 
-      val status: Option[Int] = nino match {
-        case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-        // Scenario 2
-        case s if s.startsWith("WP1144") || s.startsWith("AA1231") ⇒ Some(404)
-        case _ ⇒ None
+        val status: Option[Int] = nino match {
+          case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
+          // Scenario 2
+          case s if s.startsWith("WP1144") || s.startsWith("AA1231") ⇒ Some(404)
+          case _ ⇒ None
+        }
+
+        val response = status match {
+          case Some(s) ⇒
+            Status(s)(errorJson(s))
+
+          case None ⇒
+            getResponse(nino, universalCreditClaimant, withinThreshold)
+        }
+
+        withDesCorrelationID(response)
       }
-
-      val response = status match {
-        case Some(s) ⇒
-          Status(s)(errorJson(s))
-
-        case None ⇒
-          getResponse(nino, universalCreditClaimant, withinThreshold)
-      }
-
-      withDesCorrelationID(response)
     }
 
   private def getResponse(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Result = {
