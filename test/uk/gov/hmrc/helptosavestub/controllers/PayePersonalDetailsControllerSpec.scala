@@ -46,13 +46,13 @@ class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterialize
 
     "handles 404 cases when supplied NINO cant be found in DES" in {
 
-      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PD404"))(fakeRequest)
+      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PY404"))(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "handles 500 cases when there is internal error" in {
-      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PD500"))(fakeRequest)
+      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PY500"))(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
