@@ -38,7 +38,7 @@ trait DWPEligibilityBehaviour {
     } else if (nino.startsWith("WP0011") || nino.startsWith("BJ8257")) {
       Some(Profile(notUCClaimant, eligibleResult(7)))
       // Scenario 12
-    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || nino.startsWith("SE12") || (nino.startsWith("JK84") && nino.endsWith("25C")) || (nino.startsWith("JK84") && nino.endsWith("80C")) || (nino.startsWith("JK84") && nino.endsWith("81C"))) {
+    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || nino.startsWith("SE12") || nino.startsWith("PY500") || (nino.startsWith("JK84") && nino.endsWith("25C")) || (nino.startsWith("JK84") && nino.endsWith("80C")) || (nino.startsWith("JK84") && nino.endsWith("81C"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, eligibleResult(7)))
       // Scenario 15
     } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || nino.startsWith("SE15") || (nino.startsWith("KA66") && nino.endsWith("77A")) || (nino.startsWith("KA66") && nino.endsWith("80A")) || (nino.startsWith("KA66") && nino.endsWith("81A"))) {

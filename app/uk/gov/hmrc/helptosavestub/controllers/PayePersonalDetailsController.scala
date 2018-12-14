@@ -79,7 +79,7 @@ class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem)(implici
        |}
        """.stripMargin)
 
-  private val ninoStatusRegex = """PD(\d{3}).*""".r
+  private val ninoStatusRegex = """PY(\d{3}).*""".r
 
   private val telephoneNumberGen: Gen[TelephoneNumber] = for {
     callingCode ← Gen.choose(1, 250)
