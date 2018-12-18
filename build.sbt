@@ -20,7 +20,7 @@ val dependencies = Seq(
   "org.typelevel" %% "cats-core" % "1.1.0",
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3",
   "ai.x" %% "play-json-extensions" % "0.10.0",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "1.7.0",
+  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.4.0",
   "com.github.kxbmap" %% "configs" % "0.4.4",
   "com.google.inject" % "guice" % "4.2.0"
 )
