@@ -38,6 +38,9 @@ object NSIGetTransactionsBehaviour {
       case n if n.startsWith("EM0") && n.endsWith("010A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccountResponse(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("011A") ⇒ Right(NSIGetTransactionsByNinoResponse.accountBlockedResponse(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("012A") ⇒ Right(NSIGetTransactionsByNinoResponse.clientBlockedResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("013A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccount2Response(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("014A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccount3Response(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("015A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccount4Response(correlationId))
       case n if n.startsWith("TM7") && n.endsWith("915A") ⇒ Right(NSIGetTransactionsByNinoResponse.annaResponse(correlationId))
       case _ ⇒ Left(NSIErrorResponse.unknownNinoError)
     }
@@ -303,5 +306,24 @@ object NSIGetTransactionsBehaviour {
                                                                Transaction("21", "5.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 3, 2), LocalDate.of(2018, 3, 2)))
     def annaResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse = NSIGetTransactionsByNinoResponse("V1.0", correlationId,
       "75.00", "0.00", annaTransaction)
+
+    val closedAccount2Transaction: List[Transaction] = List.empty
+
+    def closedAccount2Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse = NSIGetTransactionsByNinoResponse("V1.0", correlationId,
+      "0.00", "0.00", closedAccount2Transaction)
+
+    val closedAccount3Transaction: List[Transaction] = List[Transaction](Transaction("1", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2017, 12, 1), LocalDate.of(2017, 12, 1)),
+                                                                         Transaction("2", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 1)))
+
+    def closedAccount3Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse = NSIGetTransactionsByNinoResponse("V1.0", correlationId,
+      "100.00", "0.00", closedAccount3Transaction)
+
+    val closedAccount4Transaction: List[Transaction] = List[Transaction](Transaction("1", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2015, 5, 1), LocalDate.of(2015, 5, 1)),
+                                                                         Transaction("2", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2015, 6, 1), LocalDate.of(2015, 6, 1)),
+                                                                         Transaction("3", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2017, 12, 1), LocalDate.of(2017, 12, 1)),
+                                                                         Transaction("4", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 1, 1), LocalDate.of(2018, 1, 1)))
+
+    def closedAccount4Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse = NSIGetTransactionsByNinoResponse("V1.0", correlationId,
+      "200.00", "0.00", closedAccount4Transaction)
   }
 }
