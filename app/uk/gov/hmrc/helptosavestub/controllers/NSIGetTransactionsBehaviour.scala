@@ -41,7 +41,7 @@ object NSIGetTransactionsBehaviour {
       case n if n.startsWith("EM0") && n.endsWith("013A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccount2Response(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("014A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccount3Response(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("015A") ⇒ Right(NSIGetTransactionsByNinoResponse.closedAccount4Response(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("016A") ⇒ Right(NSIGetTransactionsByNinoResponse.accountPaymentBlockedResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("016A") ⇒ Right(NSIGetTransactionsByNinoResponse.accountUnspecifiedBlockedResponse(correlationId))
       case n if n.startsWith("TM7") && n.endsWith("915A") ⇒ Right(NSIGetTransactionsByNinoResponse.annaResponse(correlationId))
       case _ ⇒ Left(NSIErrorResponse.unknownNinoError)
     }
@@ -326,14 +326,14 @@ object NSIGetTransactionsBehaviour {
 
     def closedAccount4Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse = NSIGetTransactionsByNinoResponse("V1.0", correlationId,
       "200.00", "0.00", closedAccount4Transaction)
+
+    val accountUnspecifiedBlockedTransaction: List[Transaction] = List[Transaction](Transaction("1", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2017, 11, 7), LocalDate.of(2017, 11, 7)),
+                                                                                    Transaction("2", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2017, 12, 9), LocalDate.of(2017, 12, 9)),
+                                                                                    Transaction("3", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 1, 16), LocalDate.of(2018, 1, 16)),
+                                                                                    Transaction("4", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 2, 3), LocalDate.of(2018, 2, 3)),
+                                                                                    Transaction("5", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 3, 1), LocalDate.of(2018, 3, 1)))
+
+    def accountUnspecifiedBlockedResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse = NSIGetTransactionsByNinoResponse("V1.0", correlationId,
+      "250.00", "0.00", accountUnspecifiedBlockedTransaction)
   }
-
-  val accountUnspecifiedBlockedTransaction: List[Transaction] = List[Transaction](Transaction("1", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2017, 11, 7), LocalDate.of(2017, 11, 7)),
-    Transaction("2", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2017, 12, 9), LocalDate.of(2017, 12, 9)),
-    Transaction("3", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 1, 16), LocalDate.of(2018, 1, 16)),
-    Transaction("4", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 2, 3), LocalDate.of(2018, 2, 3)),
-    Transaction("5", "50.00", "C", "Debit card online deposit", "B8C29ZY4A00A0018", LocalDate.of(2018, 3, 1), LocalDate.of(2018, 3, 1)))
-
-  def accountPaymentBlockedResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse = NSIGetTransactionsByNinoResponse("V1.0", correlationId,
-    "250.00", "0.00", accountUnspecifiedBlockedTransaction)
 }
