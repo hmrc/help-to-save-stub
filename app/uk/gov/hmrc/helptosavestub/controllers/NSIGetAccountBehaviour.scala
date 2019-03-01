@@ -297,7 +297,7 @@ object NSIGetAccountBehaviour {
     val accountUnspecifiedBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
     val accountUnspecifiedBlockedTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "250.00", "125.00", "0.00"),
-                                                            Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
+                                                                Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
 
     def accountUnspecifiedBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
       "1100000112075", "0.00", "250.00", " ", None, None, "11", "4B", accountUnspecifiedBlockedCIM,
