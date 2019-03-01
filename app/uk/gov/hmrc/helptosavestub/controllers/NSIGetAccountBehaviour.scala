@@ -19,7 +19,6 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.time.LocalDate
 
 import ai.x.play.json.Jsonx
-import play.api.Logger
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
 
@@ -49,6 +48,7 @@ object NSIGetAccountBehaviour {
       case n if n.startsWith("EM0") && n.endsWith("013A") ⇒ Right(NSIGetAccountByNinoResponse.closedAccount2Response(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("014A") ⇒ Right(NSIGetAccountByNinoResponse.closedAccount3Response(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("015A") ⇒ Right(NSIGetAccountByNinoResponse.closedAccount4Response(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("016A") ⇒ Right(NSIGetAccountByNinoResponse.accountUnspecifiedBlockedResponse(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("099A") ⇒ Right(NSIGetAccountByNinoResponse.positiveBonusZeroBalanceResponse(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("098A") ⇒ Right(NSIGetAccountByNinoResponse.zeroBonusPositiveBalanceResponse(correlationId))
       case n if n.startsWith("TM7") && n.endsWith("915A") ⇒ Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
@@ -293,5 +293,16 @@ object NSIGetAccountBehaviour {
       "Closed", "Account Four", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
       " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
       "02", "00", "00", " ", "11111111", "Mrs C Account Four", None, "801497", closed4Terms)
+
+    val accountUnspecifiedBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+
+    val accountUnspecifiedBlockedTerms: List[Term] = List[Term](Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "250.00", "125.00", "0.00"),
+                                                            Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00"))
+
+    def accountUnspecifiedBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse = NSIGetAccountByNinoResponse("V1.0", correlationId,
+      "1100000112075", "0.00", "250.00", " ", None, None, "11", "4B", accountUnspecifiedBlockedCIM,
+      "AccountPayment", "Blocked", LocalDate.of(1963, 11, 1), "Line 1", "Line 2",
+      " ", " ", " ", "SV1 1QA", "GB", Some("email.address@domain.com"),
+      "02", "00", "00", " ", "11111111", "Mrs A P Blocked", None, "801497", accountUnspecifiedBlockedTerms)
   }
 }
