@@ -27,6 +27,7 @@ import cats.syntax.apply._
 import cats.syntax.either._
 import cats.syntax.eq._
 import com.google.inject.{Inject, Singleton}
+import org.scalacheck.Gen
 import play.api.libs.json._
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub
@@ -159,7 +160,7 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
 
   private def generateAccountNumberJson: JsValue = Json.parse(
     s"""{
-      |"accountNumber": "${Random.nextLong().abs}"
+      |"accountNumber": "${Gen.listOfN(10, Gen.numChar).sample.map(_.mkString("")).getOrElse(sys.error("Could not generate account number"))}"
       |}
     """.stripMargin)
 
@@ -171,7 +172,7 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
                  systemId:      Option[String]): Action[AnyContent] = Action.async {
     implicit request ⇒
       withDelay[Result](getAccountDelayConfig){ () ⇒
-        validateParams(correlationId, nino, version, systemId).fold(
+        validateParams(nino, version, systemId).fold(
           errors ⇒ {
             logger.warn("[Handle Account Query] invalid params")
             BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
@@ -198,7 +199,7 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
                       systemId:      Option[String]): Action[AnyContent] = Action.async {
     implicit request ⇒
       withDelay(getTransactionsDelayConfig) { () ⇒
-        validateParams(correlationId, nino, version, systemId).fold(
+        validateParams(nino, version, systemId).fold(
           errors ⇒ {
             logger.warn("[Handle Transactions Query] invalid params")
             BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
@@ -221,10 +222,9 @@ class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionC
 
   type ValidatedOrErrorDetails[A] = ValidatedNel[ErrorDetails, A]
 
-  private def validateParams(correlationId: Option[String],
-                             nino:          Option[String],
-                             version:       Option[String],
-                             systemId:      Option[String]): ValidatedNel[ErrorDetails, NINO] = {
+  private def validateParams(nino:     Option[String],
+                             version:  Option[String],
+                             systemId: Option[String]): ValidatedNel[ErrorDetails, NINO] = {
 
     val versionValidation: ValidatedOrErrorDetails[String] = version.fold[Validated[ErrorDetails, String]](
       Validated.Invalid(NSIErrorResponse.missingVersionError)
