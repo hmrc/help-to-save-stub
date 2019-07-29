@@ -16,12 +16,17 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import cats.implicits._
 import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.helptosavestub.controllers.BARSController.{BARSResponse, BankDetails}
 import uk.gov.hmrc.helptosavestub.controllers.BankDetailsBehaviour.{CreateAccountResponse, Profile}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
 
+import scala.util.{Success, Try}
+
 trait BankDetailsBehaviour {
+
+  val allowedSeparators: Set[Char] = Set(' ', '-', '–', '−', '—')
 
   def getBankProfile(bankDetails: BankDetails): Profile = {
     val accountNumberWithSortCodeIsValid =
@@ -29,6 +34,10 @@ trait BankDetailsBehaviour {
         Some(false)
       } else if (bankDetails.accountNumber.startsWith("5")) {
         None
+      } else if (!validateSortCode(bankDetails.sortCode)) {
+        Some(false)
+      } else if (!validateAccountNumber(bankDetails.accountNumber)) {
+        Some(false)
       } else {
         Some(true)
       }
@@ -51,6 +60,26 @@ trait BankDetailsBehaviour {
       Profile(barsResponse, CreateAccountResponse(Left(NSIErrorResponse.incorrectSortCode)))
     } else {
       Profile(barsResponse, CreateAccountResponse(Right(())))
+    }
+  }
+
+  // same validation as bank-account-reputation
+  private def validateSortCode(sc: String): Boolean = {
+    if (sc.length =!= 6) false else {
+      Try(sc.toInt) match {
+        case Success(_) ⇒ true
+        case _          ⇒ false
+      }
+    }
+  }
+
+  // same validation as bank-account-reputation
+  private def validateAccountNumber(ac: String): Boolean = {
+    if (ac.length =!= 8) false else {
+      Try(ac.toInt) match {
+        case Success(_) ⇒ true
+        case _          ⇒ false
+      }
     }
   }
 
