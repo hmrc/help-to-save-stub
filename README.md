@@ -16,8 +16,6 @@ Table of Contents
    * [GetPAYEPersonDetails stubs](#getpayepersondetails-stubs)
    * [Bank Account Reputation Service stubs](#bank-account-reputation-service-stubs)
 
-* [License](#license)
-
 About Help to Save
 ==================
 Please click [here](https://github.com/hmrc/help-to-save#about-help-to-save) for more information.
@@ -88,3 +86,4 @@ Bank Account Reputation Service stubs
 License
 =======
 This code is open source software licensed under the [Apache 2.0 License]("http://www.apache.org/licenses/LICENSE-2.0.html") 
+* [License](#license)
