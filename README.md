@@ -15,7 +15,7 @@ Table of Contents
    * [DWP stubs](#dwp-stubs)
    * [GetPAYEPersonDetails stubs](#getpayepersondetails-stubs)
    * [Bank Account Reputation Service stubs](#bank-account-reputation-service-stubs)
-   
+
 * [License](#license)
 
 About Help to Save
