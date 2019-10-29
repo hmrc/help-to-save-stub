@@ -25,22 +25,20 @@ import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
 import play.api.libs.json.{JsValue, Json, Writes}
 import play.api.mvc._
-import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
 import uk.gov.hmrc.smartstub._
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem)(implicit override val runModeConfiguration: Configuration,
-                                                                         override val environment: Environment,
-                                                                         ec:                       ExecutionContext)
-  extends AppConfig(runModeConfiguration, environment) with BaseController with DESController with Logging with Delays {
+class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem,
+                                               appConfig:   AppConfig,
+                                               cc:          ControllerComponents)(implicit ec: ExecutionContext)
+  extends DESController(cc, appConfig) with Logging with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
 

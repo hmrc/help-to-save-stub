@@ -38,14 +38,15 @@ import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.getTra
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIPayload}
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.helptosavestub.util.{Delays, Logging, NINO}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext
-import scala.util.{Failure, Random, Success, Try}
+import scala.util.{Failure, Success, Try}
 
 @Singleton
-class NSIController @Inject() (actorSystem: ActorSystem)(implicit ec: ExecutionContext)
-  extends BaseController with Logging with BankDetailsBehaviour with Delays {
+class NSIController @Inject() (actorSystem: ActorSystem,
+                               cc:          ControllerComponents)(implicit ec: ExecutionContext)
+  extends BackendController(cc) with Logging with BankDetailsBehaviour with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
 

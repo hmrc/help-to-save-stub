@@ -60,7 +60,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   def correlationIds(result: Result): String = (jsonBodyOf(result) \ "correlationId").as[String]
 
-  val nsiController = new NSIController(actorSystem)
+  val nsiController = new NSIController(actorSystem, testCC)
 
   "Post /nsi-services/account  " should {
     "return a successful Create Account" in {

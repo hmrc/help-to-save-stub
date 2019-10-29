@@ -19,11 +19,13 @@ package uk.gov.hmrc.helptosavestub.config
 import com.google.inject.{Inject, Singleton}
 import play.api.Mode.Mode
 import play.api.{Configuration, Environment}
-import uk.gov.hmrc.play.config.ServicesConfig
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject() (override val runModeConfiguration: Configuration, val environment: Environment) extends ServicesConfig {
+class AppConfig @Inject() (val runModeConfiguration: Configuration,
+                           val environment:          Environment,
+                           val servicesConfig:       ServicesConfig) {
 
-  override protected def mode: Mode = environment.mode
+  protected def mode: Mode = environment.mode
 
 }

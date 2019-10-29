@@ -26,21 +26,19 @@ import cats.syntax.eq._
 import com.google.inject.{Inject, Singleton}
 import play.api.libs.json.{Format, JsValue, Json}
 import play.api.mvc._
-import play.api.{Configuration, Environment}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.DWPEligibilityBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
-import uk.gov.hmrc.helptosavestub.util.{Delays, Logging, ValidatedOrErrorStrings}
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.helptosavestub.util.{Delays, ValidatedOrErrorStrings}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class EligibilityCheckController @Inject() (actorSystem: ActorSystem)(implicit override val runModeConfiguration: Configuration,
-                                                                      override val environment: Environment,
-                                                                      ec:                       ExecutionContext)
-  extends AppConfig(runModeConfiguration, environment) with BaseController with DESController with Logging with DWPEligibilityBehaviour with Delays {
+class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
+                                            appConfig:   AppConfig,
+                                            cc:          ControllerComponents)(implicit ec: ExecutionContext)
+  extends DESController(cc, appConfig) with DWPEligibilityBehaviour with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
   val checkEligibilityDelayConfig: DelayConfig = Delays.config("check-eligibility", actorSystem.settings.config)

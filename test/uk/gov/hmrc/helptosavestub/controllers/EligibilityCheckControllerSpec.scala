@@ -29,7 +29,7 @@ class EligibilityCheckControllerSpec extends TestSupport with AkkaMaterializerSp
 
   val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" → "Bearer test")
 
-  val eligCheckController = new EligibilityCheckController(actorSystem)
+  val eligCheckController = new EligibilityCheckController(actorSystem, testAppConfig, testCC)
 
   "GET /" should {
 

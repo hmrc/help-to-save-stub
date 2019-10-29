@@ -32,7 +32,7 @@ class DWPControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val fakeRequest = FakeRequest().withHeaders("Authorization" → "Bearer test")
 
-  val dwpController = new DWPController(actorSystem)
+  val dwpController = new DWPController(actorSystem, testCC)
 
   val wp01Json = UCDetails("Y", Some("Y"))
   val wp02Json = UCDetails("Y", Some("N"))

@@ -13,25 +13,24 @@ lazy val playSettings: Seq[Setting[_]] = Seq.empty
 
 val dependencies = Seq(
   ws,
-  "uk.gov.hmrc" %% "play-health" % "3.10.0-play-25",
-  "uk.gov.hmrc" %% "play-config" % "7.2.0",
-  "uk.gov.hmrc" %% "domain" % "5.3.0",
+  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0",
+  "uk.gov.hmrc" %% "play-config" % "7.5.0",
+  "uk.gov.hmrc" %% "domain" % "5.6.0-play-26",
   "org.scalacheck" %% "scalacheck" % "1.14.0",
-  "org.typelevel" %% "cats-core" % "1.5.0",
+  "org.typelevel" %% "cats-core" % "2.0.0",
   "uk.gov.hmrc" %% "stub-data-generator" % "0.5.3",
   "ai.x" %% "play-json-extensions" % "0.10.0",
-  "uk.gov.hmrc" %% "bootstrap-play-25" % "4.11.0",
   "com.github.kxbmap" %% "configs" % "0.4.4",
   "com.google.inject" % "guice" % "4.2.0"
 )
 
 def testDependencies(scope: String = "test,it") = Seq(
-  "uk.gov.hmrc" %% "hmrctest" % "3.4.0-play-25" % scope,
-  "org.scalatest" %% "scalatest" % "3.0.5" % scope,
+  "uk.gov.hmrc" %% "bootstrap-play-26" % "1.1.0" % scope,
+  "uk.gov.hmrc" %% "hmrctest" % "3.9.0-play-26" % scope,
+  "org.scalatest" %% "scalatest" % "3.0.8" % scope,
   "com.typesafe.play" %% "play-test" % PlayVersion.current % scope,
   "com.miguno.akka" %% "akka-mock-scheduler" % "0.5.1" % scope
 )
-
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
@@ -118,8 +117,7 @@ lazy val microservice = Project(appName, file("."))
   .settings(
     libraryDependencies ++= appDependencies,
     retrieveManaged := true,
-    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false),
-    routesGenerator := StaticRoutesGenerator
+    evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
   )
   .settings(scalacOptions += "-Xcheckinit")
   .configs(IntegrationTest)

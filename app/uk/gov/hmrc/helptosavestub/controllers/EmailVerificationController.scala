@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import com.google.inject.Inject
 import play.api.libs.json.{Format, Json}
-import play.api.mvc.{Action, AnyContent}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.EmailVerificationRequest
 import uk.gov.hmrc.helptosavestub.util.Logging
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
-class EmailVerificationController extends BaseController with Logging {
+class EmailVerificationController @Inject() (cc: ControllerComponents) extends BackendController(cc) with Logging {
 
   def verify: Action[AnyContent] = Action {
     implicit request ⇒

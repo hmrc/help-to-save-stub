@@ -18,20 +18,20 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.util.UUID
 
+import com.google.inject.Inject
 import configs.syntax._
-import play.api.mvc.{Action, AnyContent, Request, Result}
+import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.Future
 
-// trait for controllers mimicking DES
-trait DESController {
-  this: BaseController with Logging with AppConfig ⇒
+// class for controllers mimicking DES to extend
+class DESController @Inject() (cc: ControllerComponents, appConfig: AppConfig) extends BackendController(cc) with Logging {
 
   private val expectedDESHeaders: List[String] =
-    runModeConfiguration
+    appConfig.runModeConfiguration
       .underlying
       .get[List[String]]("microservice.expectedDESHeaders")
       .value
