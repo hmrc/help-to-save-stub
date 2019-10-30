@@ -18,19 +18,15 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import com.google.inject.Inject
 import play.api.libs.json.{JsValue, Json}
-import play.api.mvc.{Action, AnyContent}
-import play.api.{Configuration, Environment}
+import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
-import uk.gov.hmrc.helptosavestub.util.Logging
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
 
 import scala.concurrent.Future
 
-class DESThresholdController @Inject() (implicit override val runModeConfiguration: Configuration,
-                                        override val environment: Environment) extends AppConfig(runModeConfiguration, environment)
-  with BaseController with DESController with Logging {
+class DESThresholdController @Inject() (appConfig: AppConfig,
+                                        cc:        ControllerComponents) extends DESController(cc, appConfig) {
 
-  val thresholdAmount: Double = runModeConfiguration.underlying.getDouble("microservice.ucThresholdAmount")
+  val thresholdAmount: Double = appConfig.runModeConfiguration.underlying.getDouble("microservice.ucThresholdAmount")
 
   val thresholdAmountJson: JsValue =
     Json.parse(s"""

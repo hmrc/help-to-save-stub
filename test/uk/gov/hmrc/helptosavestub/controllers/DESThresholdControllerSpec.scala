@@ -29,7 +29,7 @@ class DESThresholdControllerSpec extends TestSupport {
   val fakeRequestWithIncorrectHeader = FakeRequest("GET", "/universal-credits/threshold-amount")
     .withHeaders("Authorization" → "Incorrect")
 
-  val controller = new DESThresholdController
+  val controller = new DESThresholdController(testAppConfig, testCC)
 
   "getThresholdAmount" should {
     "Return Ok status containing json body with the threshold" in {

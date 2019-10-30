@@ -22,7 +22,7 @@ import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 
 class BARSControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
-  val controller = new BARSController
+  val controller = new BARSController(testCC)
 
   "validateBankDetails" should {
     "return accountNumberWithSortCodeIsValid as true when the given sort code and account number are in the correct format" in {

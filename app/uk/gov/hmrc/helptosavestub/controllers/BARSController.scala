@@ -16,12 +16,13 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import com.google.inject.Inject
 import play.api.libs.json.{Json, Reads, Writes}
-import play.api.mvc.{Action, AnyContent, Result}
+import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.helptosavestub.controllers.BARSController.BankDetails
-import uk.gov.hmrc.play.bootstrap.controller.BaseController
+import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
-class BARSController extends BaseController with BankDetailsBehaviour {
+class BARSController @Inject() (cc: ControllerComponents) extends BackendController(cc) with BankDetailsBehaviour {
 
   def validateBankDetails: Action[AnyContent] = Action { implicit request ⇒
     request.body.asJson.fold(BadRequest("No JSON in body")){ json ⇒

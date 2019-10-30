@@ -20,7 +20,8 @@ import com.typesafe.config.ConfigFactory
 import org.scalatest.{BeforeAndAfterAll, Matchers, WordSpecLike}
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Configuration, Environment, Play}
-import uk.gov.hmrc.domain.{Generator, Nino}
+import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.play.test.UnitSpec
 
 trait TestSupport extends WordSpecLike with Matchers with UnitSpec with BeforeAndAfterAll {
@@ -53,6 +54,9 @@ trait TestSupport extends WordSpecLike with Matchers with UnitSpec with BeforeAn
   implicit lazy val configuration: Configuration = fakeApplication.injector.instanceOf[Configuration]
 
   implicit lazy val env: Environment = fakeApplication.injector.instanceOf[Environment]
+
+  val testCC = play.api.test.Helpers.stubControllerComponents()
+  val testAppConfig = fakeApplication.injector.instanceOf[AppConfig]
 
   private val generator = new Generator(1)
 

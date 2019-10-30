@@ -29,7 +29,7 @@ class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterialize
 
   private val fakeRequest = FakeRequest().withHeaders("Authorization" → "Bearer test")
 
-  val payeDetailsController = new PayePersonalDetailsController(actorSystem)
+  val payeDetailsController = new PayePersonalDetailsController(actorSystem, testAppConfig, testCC)
 
   "GET /pay-as-you-earn/02.00.00/individuals/{NINO}" should {
 
