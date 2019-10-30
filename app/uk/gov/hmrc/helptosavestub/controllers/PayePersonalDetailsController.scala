@@ -20,6 +20,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import akka.actor.{ActorSystem, Scheduler}
+import akka.http.scaladsl.model.StatusCode
 import com.google.inject.{Inject, Singleton}
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
@@ -72,7 +73,7 @@ class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem,
   private def errorJson(status: Int): JsValue = Json.parse(
     s"""
        |{
-       |  "code":   "${io.netty.handler.codec.http.HttpResponseStatus.valueOf(status).reasonPhrase()}",
+       |  "code":   "${StatusCode.int2StatusCode(status).reason()}",
        |  "reason": "intentional error"
        |}
        """.stripMargin)

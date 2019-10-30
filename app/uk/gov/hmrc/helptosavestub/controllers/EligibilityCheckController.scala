@@ -17,6 +17,7 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import akka.actor.{ActorSystem, Scheduler}
+import akka.http.scaladsl.model.StatusCode
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNel
 import cats.instances.option._
@@ -143,7 +144,7 @@ class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
   private def errorJson(status: Int): JsValue = Json.parse(
     s"""
        |{
-       |  "code":   "${io.netty.handler.codec.http.HttpResponseStatus.valueOf(status).reasonPhrase()}",
+       |  "code":   "${StatusCode.int2StatusCode(status).reason()}",
        |  "reason": "intentional error"
        |}
        """.stripMargin)
