@@ -28,16 +28,15 @@ trait TestSupport extends WordSpecLike with Matchers with UnitSpec with BeforeAn
 
   lazy val additionalConfig = Configuration()
 
-  def buildFakeApplication(additionalConfig: Configuration): Application = {
+  def buildFakeApplication(additionalConfig: Configuration): Application =
     new GuiceApplicationBuilder()
-      .configure(Configuration(
-        ConfigFactory.parseString(
-          """
+      .configure(
+        Configuration(
+          ConfigFactory.parseString("""
             | metrics.enabled       = false
           """.stripMargin)
-      ) ++ additionalConfig)
+        ) ++ additionalConfig)
       .build()
-  }
 
   lazy val fakeApplication: Application = buildFakeApplication(additionalConfig)
 
@@ -55,7 +54,7 @@ trait TestSupport extends WordSpecLike with Matchers with UnitSpec with BeforeAn
 
   implicit lazy val env: Environment = fakeApplication.injector.instanceOf[Environment]
 
-  val testCC = play.api.test.Helpers.stubControllerComponents()
+  val testCC        = play.api.test.Helpers.stubControllerComponents()
   val testAppConfig = fakeApplication.injector.instanceOf[AppConfig]
 
   private val generator = new Generator(1)
@@ -77,4 +76,3 @@ object TestSupport {
   }
 
 }
-
