@@ -57,5 +57,11 @@ class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterialize
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
+
+    "handles non-standard error code cases when there is internal error" in {
+      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PY924"))(fakeRequest)
+
+      status(result) shouldBe 924
+    }
   }
 }
