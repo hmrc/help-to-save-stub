@@ -38,25 +38,35 @@ trait DWPEligibilityBehaviour {
     } else if (nino.startsWith("WP0011") || nino.startsWith("BJ8257")) {
       Some(Profile(notUCClaimant, eligibleResult(7)))
       // Scenario 12
-    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || nino.startsWith("SE12") || nino.startsWith("PY500") || (nino.startsWith("JK84") && nino.endsWith("25C")) || (nino.startsWith("JK84") && nino.endsWith("80C")) || (nino.startsWith("JK84") && nino.endsWith("81C"))) {
+    } else if (nino.startsWith("WP1011") || nino.startsWith("KS3844") || nino.startsWith("SE12") || nino.startsWith(
+                 "PY500") || (nino.startsWith("JK84") && nino.endsWith("25C")) || (nino.startsWith("JK84") && nino
+                 .endsWith("80C")) || (nino.startsWith("JK84") && nino.endsWith("81C"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, eligibleResult(7)))
       // Scenario 15
-    } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || nino.startsWith("SE15") || (nino.startsWith("KA66") && nino.endsWith("77A")) || (nino.startsWith("KA66") && nino.endsWith("80A")) || (nino.startsWith("KA66") && nino.endsWith("81A"))) {
+    } else if (nino.startsWith("WP1111") || nino.startsWith("GH9870") || nino.startsWith("SE15") || (nino.startsWith(
+                 "KA66") && nino.endsWith("77A")) || (nino.startsWith("KA66") && nino.endsWith("80A")) || (nino
+                 .startsWith("KA66") && nino.endsWith("81A"))) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(8)))
       // Scenario 8
-    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX3685") || nino.startsWith("SE08") || (nino.startsWith("BK64") && nino.endsWith("58A"))) {
+    } else if (nino.startsWith("WP0010") || nino.startsWith("ZX3685") || nino.startsWith("SE08") || (nino.startsWith(
+                 "BK64") && nino.endsWith("58A"))) {
       Some(Profile(notUCClaimant, ineligibleResult(3)))
       // Scenario 11
-    } else if (nino.startsWith("WP1010") || nino.startsWith("EK9782") || nino.startsWith("SE11") || (nino.startsWith("LA83") && nino.endsWith("15B"))) {
+    } else if (nino.startsWith("WP1010") || nino.startsWith("EK9782") || nino.startsWith("SE11") || (nino.startsWith(
+                 "LA83") && nino.endsWith("15B"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(4)))
       // Scenario 7
-    } else if (nino.startsWith("WP00") || nino.startsWith("LW6341") || nino.startsWith("SE07") || (nino.startsWith("JK84") && nino.endsWith("26C"))) {
+    } else if (nino.startsWith("WP00") || nino.startsWith("LW6341") || nino.startsWith("SE07") || (nino.startsWith(
+                 "JK84") && nino.endsWith("26C"))) {
       Some(Profile(notUCClaimant, ineligibleResult(9)))
       // Scenario 10
-    } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || nino.startsWith("SE10") || (nino.startsWith("KA66") && nino.endsWith("78A"))) {
+    } else if (nino.startsWith("WP10") || nino.startsWith("HR1566") || nino.startsWith("SE10") || (nino.startsWith(
+                 "KA66") && nino.endsWith("78A"))) {
       Some(Profile(isUCClaimantAndNotEarningEnough, ineligibleResult(5)))
       // Scenarios 13, 14
-    } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || nino.startsWith("SE14") || (nino.startsWith("BK64") && nino.endsWith("57A")) || (nino.startsWith("BK64") && nino.endsWith("80A")) || (nino.startsWith("BK64") && nino.endsWith("81A"))) {
+    } else if (nino.startsWith("WP11") || nino.startsWith("LX4056") || nino.startsWith("EX5359") || nino.startsWith(
+                 "SE14") || (nino.startsWith("BK64") && nino.endsWith("57A")) || (nino.startsWith("BK64") && nino
+                 .endsWith("80A")) || (nino.startsWith("BK64") && nino.endsWith("81A"))) {
       Some(Profile(isUCClaimantAndEarningEnough, eligibleResult(6)))
       // Scenario 3
     } else if (nino.startsWith("SE03") || nino.startsWith("LA83") && nino.endsWith("16B")) {
@@ -65,9 +75,9 @@ trait DWPEligibilityBehaviour {
       None
     }
 
-  val isUCClaimantAndEarningEnough: UCDetails = UCDetails("Y", Some("Y"))
+  val isUCClaimantAndEarningEnough: UCDetails    = UCDetails("Y", Some("Y"))
   val isUCClaimantAndNotEarningEnough: UCDetails = UCDetails("Y", Some("N"))
-  val notUCClaimant: UCDetails = UCDetails("N", None)
+  val notUCClaimant: UCDetails                   = UCDetails("N", None)
 
   val reasonMappings: Map[Int, String] = Map(
     1 → "HtS account was previously created",
@@ -93,26 +103,34 @@ trait DWPEligibilityBehaviour {
     EligibilityCheckResult("HtS account already exists", 3, "HtS account was previously created", 1)
 
   val invalidResultCode: EligibilityCheckResult =
-    EligibilityCheckResult("INVALID RESULT WHICH DES SHOULD NEVER SEND", 99, "Not entitled to WTC and not in receipt of UC", 2)
+    EligibilityCheckResult(
+      "INVALID RESULT WHICH DES SHOULD NEVER SEND",
+      99,
+      "Not entitled to WTC and not in receipt of UC",
+      2)
 
   def eligibleResult(reasonCode: Int): EligibilityCheckResult = {
-    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
+    val reason =
+      reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
     EligibilityCheckResult("Eligible to HtS Account", 1, reason, reasonCode)
   }
 
   def ineligibleResult(reasonCode: Int): EligibilityCheckResult = {
-    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
+    val reason =
+      reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
     EligibilityCheckResult("Ineligible to HtS Account", 2, reason, reasonCode)
   }
 
   def accountAlreadyExists: EligibilityCheckResult = {
     val reasonCode = 1
-    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
+    val reason =
+      reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
     EligibilityCheckResult("HtS account already exists", 3, reason, reasonCode)
   }
 
   def unknownResult(reasonCode: Int): EligibilityCheckResult = {
-    val reason = reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
+    val reason =
+      reasonMappings.getOrElse(reasonCode, sys.error(s"Could not find eligibility reason for code $reasonCode"))
     EligibilityCheckResult("Unknown eligibility because call to DWP failed", 4, reason, reasonCode)
   }
 
@@ -124,13 +142,11 @@ trait DWPEligibilityBehaviour {
 
 object DWPEligibilityBehaviour {
 
-  case class Profile(uCDetails:             Option[UCDetails],
-                     eligibiltyCheckResult: Option[EligibilityCheckResult])
+  case class Profile(uCDetails: Option[UCDetails], eligibiltyCheckResult: Option[EligibilityCheckResult])
 
   object Profile {
 
-    def apply(uCDetails:             UCDetails,
-              eligibiltyCheckResult: EligibilityCheckResult): Profile =
+    def apply(uCDetails: UCDetails, eligibiltyCheckResult: EligibilityCheckResult): Profile =
       Profile(Some(uCDetails), Some(eligibiltyCheckResult))
   }
 

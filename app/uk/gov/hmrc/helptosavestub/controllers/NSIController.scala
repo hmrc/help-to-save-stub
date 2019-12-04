@@ -44,42 +44,45 @@ import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class NSIController @Inject() (actorSystem: ActorSystem,
-                               cc:          ControllerComponents)(implicit ec: ExecutionContext)
-  extends BackendController(cc) with Logging with BankDetailsBehaviour with Delays {
+class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext)
+    extends BackendController(cc)
+    with Logging
+    with BankDetailsBehaviour
+    with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
 
   val authorizationHeaderKeys: List[String] = List("Authorization-test", "Authorization")
-  val authorizationValuePrefix: String = "Basic "
-  val testAuthHeader: String = "username:password"
+  val authorizationValuePrefix: String      = "Basic "
+  val testAuthHeader: String                = "username:password"
 
-  val createAccountDelayConfig: DelayConfig = Delays.config("create-account", actorSystem.settings.config)
-  val getAccountDelayConfig: DelayConfig = Delays.config("get-account", actorSystem.settings.config)
-  val updateAccountDelayConfig: DelayConfig = Delays.config("update-account", actorSystem.settings.config)
+  val createAccountDelayConfig: DelayConfig   = Delays.config("create-account", actorSystem.settings.config)
+  val getAccountDelayConfig: DelayConfig      = Delays.config("get-account", actorSystem.settings.config)
+  val updateAccountDelayConfig: DelayConfig   = Delays.config("update-account", actorSystem.settings.config)
   val getTransactionsDelayConfig: DelayConfig = Delays.config("get-transactions", actorSystem.settings.config)
 
   def isAuthorised(headers: Headers): Either[String, Unit] = {
     val decoded: Either[String, String] =
       headers.headers
         .find(entry ⇒
-          authorizationHeaderKeys.exists(entry._1.toLowerCase === _.toLowerCase && entry._2.startsWith(authorizationValuePrefix)))
+          authorizationHeaderKeys.exists(
+            entry._1.toLowerCase === _.toLowerCase && entry._2.startsWith(authorizationValuePrefix)))
         .fold[Either[String, String]](
           Left("Could not find authorization header")
-        ){
-            case (_, h) ⇒
-              val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
-              decoded match {
-                case Success(bytes) ⇒
-                  Right(new String(bytes, StandardCharsets.UTF_8))
+        ) {
+          case (_, h) ⇒
+            val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
+            decoded match {
+              case Success(bytes) ⇒
+                Right(new String(bytes, StandardCharsets.UTF_8))
 
-                case Failure(error) ⇒
-                  Left(s"Could not decode authorization details: header value was $h. ${error.getMessage}")
+              case Failure(error) ⇒
+                Left(s"Could not decode authorization details: header value was $h. ${error.getMessage}")
 
-              }
-          }
+            }
+        }
 
-    decoded.flatMap{ s ⇒
+    decoded.flatMap { s ⇒
       if (s === testAuthHeader) {
         Right(())
       } else {
@@ -119,16 +122,20 @@ class NSIController @Inject() (actorSystem: ActorSystem,
       val description = "create account"
       withNSIPayload(description) { nsiPayload ⇒
         nsiPayload.nbaDetails match {
-          case Some(bankDetails) ⇒ getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
-            case Profile(_, createAccountResponse) ⇒ createAccountResponse.response match {
-              case Right(()) ⇒
-                val accountNumber = generateAccountNumberJson
-                handleRequest(nsiPayload, Created(accountNumber), description)
-              case Left(error) ⇒
-                logger.warn(s"Create Account request failed, errorDetails are: $error")
-                BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(Some(error.errorMessageId), error.errorMessage, error.errorDetail))))
+          case Some(bankDetails) ⇒
+            getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
+              case Profile(_, createAccountResponse) ⇒
+                createAccountResponse.response match {
+                  case Right(()) ⇒
+                    val accountNumber = generateAccountNumberJson
+                    handleRequest(nsiPayload, Created(accountNumber), description)
+                  case Left(error) ⇒
+                    logger.warn(s"Create Account request failed, errorDetails are: $error")
+                    BadRequest(
+                      Json.toJson(SubmissionFailureResponse(
+                        SubmissionFailure(Some(error.errorMessageId), error.errorMessage, error.errorDetail))))
+                }
             }
-          }
 
           case None ⇒
             val accountNumber = generateAccountNumberJson
@@ -138,7 +145,8 @@ class NSIController @Inject() (actorSystem: ActorSystem,
     }
   }
 
-  def handleRequest(nsiPayload: NSIPayload, successResult: Result, description: String)(implicit request: Request[AnyContent]): Result = {
+  def handleRequest(nsiPayload: NSIPayload, successResult: Result, description: String)(
+    implicit request: Request[AnyContent]): Result =
     isAuthorised(request.headers).fold(
       { e ⇒
         logger.error(e)
@@ -146,107 +154,119 @@ class NSIController @Inject() (actorSystem: ActorSystem,
       }, { _ ⇒
         val status: Option[Int] = nsiPayload.nino match {
           case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-          case _                  ⇒ None
+          case _ ⇒ None
         }
 
-        logger.info(s"Responding to $description with status: ${status.getOrElse(successResult.header.status)}, nsiPayload from the request is: $nsiPayload ")
+        logger.info(
+          s"Responding to $description with status: ${status.getOrElse(successResult.header.status)}, nsiPayload from the request is: $nsiPayload ")
 
         status.fold(successResult) { s ⇒
-          Status(s)(Json.toJson(SubmissionFailureResponse(
-            SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiPayload.nino}"))
-          ))
+          Status(s)(
+            Json.toJson(SubmissionFailureResponse(
+              SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiPayload.nino}"))))
         }
-      })
-  }
+      }
+    )
 
-  private def generateAccountNumberJson: JsValue = Json.parse(
-    s"""{
-      |"accountNumber": "${Gen.listOfN(10, Gen.numChar).sample.map(_.mkString("")).getOrElse(sys.error("Could not generate account number"))}"
+  private def generateAccountNumberJson: JsValue =
+    Json.parse(s"""{
+      |"accountNumber": "${Gen
+                    .listOfN(10, Gen.numChar)
+                    .sample
+                    .map(_.mkString(""))
+                    .getOrElse(sys.error("Could not generate account number"))}"
       |}
     """.stripMargin)
 
   private val ninoStatusRegex = """AS(\d{3}).*""".r
 
-  def getAccount(correlationId: Option[String],
-                 nino:          Option[String],
-                 version:       Option[String],
-                 systemId:      Option[String]): Action[AnyContent] = Action.async {
-    implicit request ⇒
-      withDelay[Result](getAccountDelayConfig){ () ⇒
-        validateParams(nino, version, systemId).fold(
-          errors ⇒ {
-            logger.warn("[Handle Account Query] invalid params")
-            BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
-          }, {
-            validatedNino ⇒
-              if (validatedNino.contains("401")) {
-                Unauthorized
-              } else if (validatedNino.contains("500")) {
-                InternalServerError
-              } else {
-                val maybeAccount = getAccountByNino(validatedNino, correlationId)
-                maybeAccount match {
-                  case Right(a) ⇒ Ok(Json.toJson(a))
-                  case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
-                }
-              }
-          })
-      }
+  def getAccount(
+    correlationId: Option[String],
+    nino: Option[String],
+    version: Option[String],
+    systemId: Option[String]): Action[AnyContent] = Action.async { implicit request ⇒
+    withDelay[Result](getAccountDelayConfig) { () ⇒
+      validateParams(nino, version, systemId).fold(
+        errors ⇒ {
+          logger.warn("[Handle Account Query] invalid params")
+          BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
+        }, { validatedNino ⇒
+          if (validatedNino.contains("401")) {
+            Unauthorized
+          } else if (validatedNino.contains("500")) {
+            InternalServerError
+          } else {
+            val maybeAccount = getAccountByNino(validatedNino, correlationId)
+            maybeAccount match {
+              case Right(a) ⇒ Ok(Json.toJson(a))
+              case Left(e) ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+            }
+          }
+        }
+      )
+    }
   }
 
-  def getTransactions(correlationId: Option[String],
-                      nino:          Option[String],
-                      version:       Option[String],
-                      systemId:      Option[String]): Action[AnyContent] = Action.async {
-    implicit request ⇒
-      withDelay(getTransactionsDelayConfig) { () ⇒
-        validateParams(nino, version, systemId).fold(
-          errors ⇒ {
-            logger.warn("[Handle Transactions Query] invalid params")
-            BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
-          }, {
-            validatedNino ⇒
-              if (validatedNino.contains("401")) {
-                Unauthorized
-              } else if (validatedNino.contains("500")) {
-                InternalServerError
-              } else {
-                val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
-                maybeAccount match {
-                  case Right(a) ⇒ Ok(Json.toJson(a))
-                  case Left(e)  ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
-                }
-              }
-          })
-      }
+  def getTransactions(
+    correlationId: Option[String],
+    nino: Option[String],
+    version: Option[String],
+    systemId: Option[String]): Action[AnyContent] = Action.async { implicit request ⇒
+    withDelay(getTransactionsDelayConfig) { () ⇒
+      validateParams(nino, version, systemId).fold(
+        errors ⇒ {
+          logger.warn("[Handle Transactions Query] invalid params")
+          BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
+        }, { validatedNino ⇒
+          if (validatedNino.contains("401")) {
+            Unauthorized
+          } else if (validatedNino.contains("500")) {
+            InternalServerError
+          } else {
+            val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
+            maybeAccount match {
+              case Right(a) ⇒ Ok(Json.toJson(a))
+              case Left(e) ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+            }
+          }
+        }
+      )
+    }
   }
 
   type ValidatedOrErrorDetails[A] = ValidatedNel[ErrorDetails, A]
 
-  private def validateParams(nino:     Option[String],
-                             version:  Option[String],
-                             systemId: Option[String]): ValidatedNel[ErrorDetails, NINO] = {
+  private def validateParams(
+    nino: Option[String],
+    version: Option[String],
+    systemId: Option[String]): ValidatedNel[ErrorDetails, NINO] = {
 
-    val versionValidation: ValidatedOrErrorDetails[String] = version.fold[Validated[ErrorDetails, String]](
-      Validated.Invalid(NSIErrorResponse.missingVersionError)
-    )(
+    val versionValidation: ValidatedOrErrorDetails[String] = version
+      .fold[Validated[ErrorDetails, String]](
+        Validated.Invalid(NSIErrorResponse.missingVersionError)
+      )(
         v ⇒ if (v =!= "V1.0") Validated.Invalid(NSIErrorResponse.unsupportedVersionError) else Validated.Valid(v)
-      ).toValidatedNel
+      )
+      .toValidatedNel
 
-    val ninoValidation: ValidatedOrErrorDetails[String] = nino.fold[Validated[ErrorDetails, String]]({
-      Invalid(NSIErrorResponse.missingNinoError)
-    }
-    ){
-      case maybeNino ⇒ if (!maybeNino.matches(helptosavestub.util.ninoRegex.regex)) {
-        Invalid(NSIErrorResponse.badNinoError)
-      } else { Valid(maybeNino) }
-    }.toValidatedNel
+    val ninoValidation: ValidatedOrErrorDetails[String] = nino
+      .fold[Validated[ErrorDetails, String]]({
+        Invalid(NSIErrorResponse.missingNinoError)
+      }) {
+        case maybeNino ⇒
+          if (!maybeNino.matches(helptosavestub.util.ninoRegex.regex)) {
+            Invalid(NSIErrorResponse.badNinoError)
+          } else { Valid(maybeNino) }
+      }
+      .toValidatedNel
 
-    val systemIdValidation: ValidatedOrErrorDetails[String] = systemId.fold[Validated[ErrorDetails, String]](
-      Validated.Invalid(NSIErrorResponse.missingSystemIdError)
-    )(
+    val systemIdValidation: ValidatedOrErrorDetails[String] = systemId
+      .fold[Validated[ErrorDetails, String]](
+        Validated.Invalid(NSIErrorResponse.missingSystemIdError)
+      )(
         sid ⇒ Validated.Valid(sid)
-      ).toValidatedNel
+      )
+      .toValidatedNel
 
     (versionValidation, ninoValidation, systemIdValidation)
       .mapN {
@@ -266,5 +286,6 @@ object SubmissionFailure {
 case class SubmissionFailureResponse(error: SubmissionFailure)
 
 object SubmissionFailureResponse {
-  implicit val submissionFailureResponseFormat: Writes[SubmissionFailureResponse] = Json.writes[SubmissionFailureResponse]
+  implicit val submissionFailureResponseFormat: Writes[SubmissionFailureResponse] =
+    Json.writes[SubmissionFailureResponse]
 }

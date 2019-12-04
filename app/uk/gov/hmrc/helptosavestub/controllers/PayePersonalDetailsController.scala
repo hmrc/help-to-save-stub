@@ -36,10 +36,11 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem,
-                                               appConfig:   AppConfig,
-                                               cc:          ControllerComponents)(implicit ec: ExecutionContext)
-  extends DESController(cc, appConfig) with Logging with Delays {
+class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, cc: ControllerComponents)(
+  implicit ec: ExecutionContext)
+    extends DESController(cc, appConfig)
+    with Logging
+    with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
 
@@ -49,7 +50,7 @@ class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem,
     withDelay(getPayeDetailsDelayConfig) { () ⇒
       val status: Option[Int] = nino match {
         case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-        case _                  ⇒ None
+        case _ ⇒ None
       }
 
       val response = status match {
@@ -57,21 +58,22 @@ class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem,
           Status(s)(errorJson(s))
 
         case None ⇒
-          payeDetails(nino).seeded(nino).fold[Result] {
-            logger.warn(s"Could not generate PayeDetails for NINO $nino")
-            InternalServerError
-          } { s ⇒
-            logger.info(s"Returning PayePersonalDetails for NINO $nino:\n$s")
-            Ok(Json.parse(s))
-          }
+          payeDetails(nino)
+            .seeded(nino)
+            .fold[Result] {
+              logger.warn(s"Could not generate PayeDetails for NINO $nino")
+              InternalServerError
+            } { s ⇒
+              logger.info(s"Returning PayePersonalDetails for NINO $nino:\n$s")
+              Ok(Json.parse(s))
+            }
       }
 
       withDesCorrelationID(response)
     }
   }
 
-  private def errorJson(status: Int): JsValue = Json.parse(
-    s"""
+  private def errorJson(status: Int): JsValue = Json.parse(s"""
        |{
        |  "code":   "${StatusCode.int2StatusCode(status).reason()}",
        |  "reason": "intentional error"
@@ -88,17 +90,19 @@ class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem,
     phoneNumber ← listOfN(6, numChar).map(_.mkString)
   } yield TelephoneNumber(callingCode, telephoneType, dialingCode, convertedAreaDiallingCode, phoneNumber)
 
-  private[controllers] def payeDetails(nino: String) = for { // scalastyle:ignore
-    sex ← Gen.gender
-    name ← Gen.forename(sex)
-    surname ← Gen.surname
-    date ← Gen.choose(100L, 1000L).map(LocalDate.ofEpochDay)
-    address ← Gen.ukAddress
-    postcode ← Gen.postcode
-    countryCode ← Gen.choose(1, 250)
-    telephone1 ← telephoneNumberGen
-    telephone2 ← Gen.option(telephoneNumberGen)
-  } yield s"""{
+  private[controllers] def payeDetails(nino: String) =
+    for { // scalastyle:ignore
+      sex ← Gen.gender
+      name ← Gen.forename(sex)
+      surname ← Gen.surname
+      date ← Gen.choose(100L, 1000L).map(LocalDate.ofEpochDay)
+      address ← Gen.ukAddress
+      postcode ← Gen.postcode
+      countryCode ← Gen.choose(1, 250)
+      telephone1 ← telephoneNumberGen
+      telephone2 ← Gen.option(telephoneNumberGen)
+    } yield
+      s"""{
        |  "nino": "${nino.dropRight(1)}",
        |  "ninoSuffix": "${nino.takeRight(1)}",
        |  "names": {
@@ -126,12 +130,12 @@ class PayePersonalDetailsController @Inject() (actorSystem: ActorSystem,
        |    }
        |  },
        |  "phoneNumbers": {
-       |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${
-    telephone2.map { t ⇒
-      s""",
+       |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${telephone2
+           .map { t ⇒
+             s""",
            |    "${t.telephoneType}": ${Json.toJson(t)}""".stripMargin
-    }.getOrElse("")
-  }
+           }
+           .getOrElse("")}
        |  }
        |}""".stripMargin
 
@@ -142,11 +146,16 @@ object PayePersonalDetailsController {
   implicit class GenderOps(val gender: Gender) extends AnyVal {
     def fold[A](female: ⇒ A, male: ⇒ A): A = gender match {
       case Female ⇒ female
-      case Male   ⇒ male
+      case Male ⇒ male
     }
   }
 
-  case class TelephoneNumber(callingCode: Int, telephoneType: Int, areaDiallingCode: String, convertedAreaDiallingCode: String, telephoneNumber: String)
+  case class TelephoneNumber(
+    callingCode: Int,
+    telephoneType: Int,
+    areaDiallingCode: String,
+    convertedAreaDiallingCode: String,
+    telephoneNumber: String)
 
   object TelephoneNumber {
     implicit val telephoneNumberWrites: Writes[TelephoneNumber] = Json.writes[TelephoneNumber]

@@ -36,20 +36,25 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
-                                            appConfig:   AppConfig,
-                                            cc:          ControllerComponents)(implicit ec: ExecutionContext)
-  extends DESController(cc, appConfig) with DWPEligibilityBehaviour with Delays {
+class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, cc: ControllerComponents)(
+  implicit ec: ExecutionContext)
+    extends DESController(cc, appConfig)
+    with DWPEligibilityBehaviour
+    with Delays {
 
-  val scheduler: Scheduler = actorSystem.scheduler
+  val scheduler: Scheduler                     = actorSystem.scheduler
   val checkEligibilityDelayConfig: DelayConfig = Delays.config("check-eligibility", actorSystem.settings.config)
 
-  def eligibilityCheck(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Action[AnyContent] =
+  def eligibilityCheck(
+    nino: String,
+    universalCreditClaimant: Option[String],
+    withinThreshold: Option[String]): Action[AnyContent] =
     desAuthorisedAction { implicit request ⇒
       withDelay(checkEligibilityDelayConfig) { () ⇒
-        logger.info(s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
-          s"ucClaimant: ${universalCreditClaimant.getOrElse("-")}, " +
-          s"withinThreshold: ${withinThreshold.getOrElse("-")}")
+        logger.info(
+          s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
+            s"ucClaimant: ${universalCreditClaimant.getOrElse("-")}, " +
+            s"withinThreshold: ${withinThreshold.getOrElse("-")}")
 
         val status: Option[Int] = nino match {
           case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
@@ -70,7 +75,10 @@ class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
       }
     }
 
-  private def getResponse(nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Result = {
+  private def getResponse(
+    nino: String,
+    universalCreditClaimant: Option[String],
+    withinThreshold: Option[String]): Result = {
     val upperCaseNINO = nino.toUpperCase()
     // Private BETA:
     // Start NINO with EL07 to specify an eligible applicant in receipt of WTC (with reason code 7)
@@ -90,25 +98,33 @@ class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
       Ok(eligibleResult(7).toJson())
     } // Start NINO with anything else to specify an eligible applicant
     else {
-      getProfile(nino).fold(Ok(eligibleResult(7).toJson()))(handleProfile(_, nino, universalCreditClaimant, withinThreshold))
+      getProfile(nino).fold(Ok(eligibleResult(7).toJson()))(
+        handleProfile(_, nino, universalCreditClaimant, withinThreshold))
     }
   }
 
-  private def handleProfile(profile: Profile, nino: String, universalCreditClaimant: Option[String], withinThreshold: Option[String]): Result =
-    ucParametersValidation(profile)(universalCreditClaimant, withinThreshold).fold({
-      e ⇒
-        logger.warn(s"Invalid UC parameters passed into eligibility call for NINO $nino: " +
-          s"[universalCreditClaimant: ${universalCreditClaimant.getOrElse("-")}, withinThreshold: ${withinThreshold.getOrElse("-")}]. Errors were: " +
-          s"${e.toList.mkString("; ")}")
+  private def handleProfile(
+    profile: Profile,
+    nino: String,
+    universalCreditClaimant: Option[String],
+    withinThreshold: Option[String]): Result =
+    ucParametersValidation(profile)(universalCreditClaimant, withinThreshold).fold(
+      { e ⇒
+        logger.warn(
+          s"Invalid UC parameters passed into eligibility call for NINO $nino: " +
+            s"[universalCreditClaimant: ${universalCreditClaimant.getOrElse("-")}, withinThreshold: ${withinThreshold
+              .getOrElse("-")}]. Errors were: " +
+            s"${e.toList.mkString("; ")}")
         BadRequest
-    }, { _ ⇒
-      profile.eligibiltyCheckResult.fold[Result](InternalServerError)(r ⇒
-        Ok(r.toJson()))
-    })
+      }, { _ ⇒
+        profile.eligibiltyCheckResult.fold[Result](InternalServerError)(r ⇒ Ok(r.toJson()))
+      }
+    )
 
-  private def ucParametersValidation(profile: Profile)(universalCreditClaimant: Option[String], // scalastyle:ignore
-                                                       withinThreshold:         Option[String]): ValidatedNel[String, Unit] = {
-      def reasonCodeIs(code: Int): Boolean = profile.eligibiltyCheckResult.map(_.reasonCode).contains(code)
+  private def ucParametersValidation(profile: Profile)(
+    universalCreditClaimant: Option[String], // scalastyle:ignore
+    withinThreshold: Option[String]): ValidatedNel[String, Unit] = {
+    def reasonCodeIs(code: Int): Boolean = profile.eligibiltyCheckResult.map(_.reasonCode).contains(code)
 
     profile.uCDetails match {
       case None ⇒
@@ -124,14 +140,16 @@ class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
           if (universalCreditClaimant.contains(p.ucClaimant) || reasonCodeIs(7) || reasonCodeIs(8)) {
             Valid(())
           } else {
-            Invalid(s"expected universalCreditClaimant '${p.ucClaimant}' but received value '${universalCreditClaimant.getOrElse("")}'").toValidatedNel
+            Invalid(s"expected universalCreditClaimant '${p.ucClaimant}' but received value '${universalCreditClaimant
+              .getOrElse("")}'").toValidatedNel
           }
 
         val withinThresholdCheck: ValidatedOrErrorStrings[Unit] =
           if (p.withinThreshold === withinThreshold || reasonCodeIs(7) || reasonCodeIs(8)) {
             Valid(())
           } else {
-            Invalid(s"expected withinThreshold '${p.withinThreshold.getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
+            Invalid(s"expected withinThreshold '${p.withinThreshold
+              .getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
           }
 
         (universalCreditClaimantCheck, withinThresholdCheck).mapN { case _ ⇒ () }
@@ -141,8 +159,7 @@ class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
 
   private val ninoStatusRegex = """ES(\d{3}).*""".r
 
-  private def errorJson(status: Int): JsValue = Json.parse(
-    s"""
+  private def errorJson(status: Int): JsValue = Json.parse(s"""
        |{
        |  "code":   "${StatusCode.int2StatusCode(status).reason()}",
        |  "reason": "intentional error"
@@ -153,23 +170,23 @@ class EligibilityCheckController @Inject() (actorSystem: ActorSystem,
 object EligibilityCheckController {
 
   /**
-   * Response from ITMP eligibility check
-   *
-   * @param result 1 = Eligible to HtS Account
-   *               2 = Ineligible to HtS Account
-   *               3 = HtS account already exists
-   *               4 = Unknown eligibility because call to DWP failed"
-   * @param reason 1 = HtS account was previously created
-   *               2 = Not entitled to WTC and UC not checked
-   *               3 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC
-   *               4 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient
-   *               5 = Ineligible to HtS Account: Not entitled to WTC and in receipt of UC but income is insufficient
-   *               6 = In receipt of UC and income sufficient
-   *               7 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit
-   *               8 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient
-   *               9 = Not entitled to WTC and not in receipt of UC
-   *               N.B. 1-5 & 9 represent reasons for ineligibility and 6-8 repesents reasons for eligibility
-   */
+    * Response from ITMP eligibility check
+    *
+    * @param result 1 = Eligible to HtS Account
+    *               2 = Ineligible to HtS Account
+    *               3 = HtS account already exists
+    *               4 = Unknown eligibility because call to DWP failed"
+    * @param reason 1 = HtS account was previously created
+    *               2 = Not entitled to WTC and UC not checked
+    *               3 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC
+    *               4 = Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient
+    *               5 = Ineligible to HtS Account: Not entitled to WTC and in receipt of UC but income is insufficient
+    *               6 = In receipt of UC and income sufficient
+    *               7 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit
+    *               8 = Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient
+    *               9 = Not entitled to WTC and not in receipt of UC
+    *               N.B. 1-5 & 9 represent reasons for ineligibility and 6-8 repesents reasons for eligibility
+    */
   case class EligibilityCheckResult(result: String, resultCode: Int, reason: String, reasonCode: Int)
 
   object EligibilityCheckResult {

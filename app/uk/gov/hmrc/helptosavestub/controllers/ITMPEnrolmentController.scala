@@ -26,12 +26,12 @@ import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class ITMPEnrolmentController @Inject() (actorSystem: ActorSystem,
-                                         appConfig:   AppConfig,
-                                         cc:          ControllerComponents)(implicit ec: ExecutionContext)
-  extends DESController(cc, appConfig) with Delays {
+class ITMPEnrolmentController @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, cc: ControllerComponents)(
+  implicit ec: ExecutionContext)
+    extends DESController(cc, appConfig)
+    with Delays {
 
-  val scheduler: Scheduler = actorSystem.scheduler
+  val scheduler: Scheduler                = actorSystem.scheduler
   val setItmpFlagDelayConfig: DelayConfig = Delays.config("set-itmp-flag", actorSystem.settings.config)
 
   def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒

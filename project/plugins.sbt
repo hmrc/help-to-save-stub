@@ -22,6 +22,6 @@ addSbtPlugin("org.scoverage" %% "sbt-scoverage" % "1.5.1")
 
 addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "1.0.0")
 
-addSbtPlugin("org.scalariform" % "sbt-scalariform" % "1.8.2")
+addSbtPlugin("com.lucidchart" % "sbt-scalafmt" % "1.16")
 
 addSbtPlugin("org.wartremover" % "sbt-wartremover" % "2.2.1")

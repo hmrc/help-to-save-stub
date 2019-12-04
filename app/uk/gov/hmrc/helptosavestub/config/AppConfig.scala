@@ -22,9 +22,10 @@ import play.api.{Configuration, Environment}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
-class AppConfig @Inject() (val runModeConfiguration: Configuration,
-                           val environment:          Environment,
-                           val servicesConfig:       ServicesConfig) {
+class AppConfig @Inject()(
+  val runModeConfiguration: Configuration,
+  val environment: Environment,
+  val servicesConfig: ServicesConfig) {
 
   protected def mode: Mode = environment.mode
 

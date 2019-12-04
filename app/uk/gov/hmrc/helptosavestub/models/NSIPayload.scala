@@ -24,28 +24,30 @@ import uk.gov.hmrc.helptosavestub.models.NSIPayload.ContactDetails
 
 import scala.util.{Failure, Success, Try}
 
-case class NSIPayload(forename:            String,
-                      surname:             String,
-                      dateOfBirth:         LocalDate,
-                      nino:                String,
-                      contactDetails:      ContactDetails,
-                      registrationChannel: String              = "online",
-                      nbaDetails:          Option[BankDetails] = None,
-                      version:             Option[String],
-                      systemId:            Option[String])
+case class NSIPayload(
+  forename: String,
+  surname: String,
+  dateOfBirth: LocalDate,
+  nino: String,
+  contactDetails: ContactDetails,
+  registrationChannel: String     = "online",
+  nbaDetails: Option[BankDetails] = None,
+  version: Option[String],
+  systemId: Option[String])
 
 object NSIPayload {
 
-  case class ContactDetails(address1:                String,
-                            address2:                String,
-                            address3:                Option[String],
-                            address4:                Option[String],
-                            address5:                Option[String],
-                            postcode:                String,
-                            countryCode:             Option[String],
-                            email:                   Option[String],
-                            phoneNumber:             Option[String] = None,
-                            communicationPreference: String         = "02")
+  case class ContactDetails(
+    address1: String,
+    address2: String,
+    address3: Option[String],
+    address4: Option[String],
+    address5: Option[String],
+    postcode: String,
+    countryCode: Option[String],
+    email: Option[String],
+    phoneNumber: Option[String]     = None,
+    communicationPreference: String = "02")
 
   implicit val dateFormat: Format[LocalDate] = new Format[LocalDate] {
     val formatter: DateTimeFormatter = DateTimeFormatter.ofPattern("yyyyMMdd")
@@ -55,7 +57,7 @@ object NSIPayload {
     override def reads(json: JsValue): JsResult[LocalDate] = json match {
       case JsString(s) ⇒
         Try(LocalDate.parse(s, formatter)) match {
-          case Success(date)  ⇒ JsSuccess(date)
+          case Success(date) ⇒ JsSuccess(date)
           case Failure(error) ⇒ JsError(s"Could not parse date as yyyyMMdd: ${error.getMessage}")
         }
 
@@ -68,4 +70,3 @@ object NSIPayload {
   implicit val nsiPayloadFormat: Format[NSIPayload] = Json.format[NSIPayload]
 
 }
-
