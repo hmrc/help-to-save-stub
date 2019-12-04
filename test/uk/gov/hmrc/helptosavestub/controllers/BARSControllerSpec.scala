@@ -26,8 +26,7 @@ class BARSControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   "validateBankDetails" should {
     "return accountNumberWithSortCodeIsValid as true when the given sort code and account number are in the correct format" in {
-      val fakeRequest = FakeRequest("POST", "/").withJsonBody(Json.parse(
-        """{
+      val fakeRequest = FakeRequest("POST", "/").withJsonBody(Json.parse("""{
           |  "account": {
           |    "sortCode": "123456",
           |    "accountNumber": "12345678"
@@ -42,8 +41,7 @@ class BARSControllerSpec extends TestSupport with AkkaMaterializerSpec {
     }
 
     "return accountNumberWithSortCodeIsValid as false when the given sort code is in the incorrect format" in {
-      val fakeRequest = FakeRequest("POST", "/").withJsonBody(Json.parse(
-        """{
+      val fakeRequest = FakeRequest("POST", "/").withJsonBody(Json.parse("""{
            |  "account": {
            |    "sortCode": "12-34-56",
            |    "accountNumber": "12345678"
@@ -58,8 +56,7 @@ class BARSControllerSpec extends TestSupport with AkkaMaterializerSpec {
     }
 
     "return accountNumberWithSortCodeIsValid as false when the given account number is in the incorrect format" in {
-      val fakeRequest = FakeRequest("POST", "/").withJsonBody(Json.parse(
-        """{
+      val fakeRequest = FakeRequest("POST", "/").withJsonBody(Json.parse("""{
           |  "account": {
           |    "sortCode": "123456",
           |    "accountNumber": "123-45678"

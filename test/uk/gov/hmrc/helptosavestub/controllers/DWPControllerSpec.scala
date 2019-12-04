@@ -38,29 +38,33 @@ class DWPControllerSpec extends TestSupport with AkkaMaterializerSpec {
   val wp02Json = UCDetails("Y", Some("N"))
   val wp03Json = UCDetails("N", None)
 
-  val systemId = "607"
+  val systemId  = "607"
   val threshold = 650
-  val newUUID = UUID.randomUUID()
+  val newUUID   = UUID.randomUUID()
 
   "dwpEligibilityCheck" must {
 
     "return a 400 status with no json payload when given a nino starting with WS400" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS400"), systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController
+        .dwpClaimantCheck(randomNINO.withPrefixReplace("WS400"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.BAD_REQUEST
     }
 
     "return a 404 status with no json payload when given a nino starting with WS404" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS404"), systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController
+        .dwpClaimantCheck(randomNINO.withPrefixReplace("WS404"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.NOT_FOUND
     }
 
     "return a 500 status with no json payload when given a nino starting with WS500" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS500"), systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController
+        .dwpClaimantCheck(randomNINO.withPrefixReplace("WS500"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
     "return a 504 status with no json payload when given a nino starting with WS504" in {
-      val result: Future[Result] = dwpController.dwpClaimantCheck(randomNINO.withPrefixReplace("WS504"), systemId, threshold, Some(newUUID))(fakeRequest)
+      val result: Future[Result] = dwpController
+        .dwpClaimantCheck(randomNINO.withPrefixReplace("WS504"), systemId, threshold, Some(newUUID))(fakeRequest)
       status(result) shouldBe Status.GATEWAY_TIMEOUT
     }
 

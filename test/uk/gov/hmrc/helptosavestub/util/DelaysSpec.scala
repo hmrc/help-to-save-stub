@@ -28,13 +28,13 @@ import scala.concurrent.duration._
 
 class DelaysSpec extends WordSpec with Matchers {
 
-  def config(name:              String,
-             delayEnabled:      String,
-             meanDelay:         String,
-             standardDeviation: String,
-             minimumDelay:      String): Config =
-    ConfigFactory.parseString(
-      s"""
+  def config(
+    name: String,
+    delayEnabled: String,
+    meanDelay: String,
+    standardDeviation: String,
+    minimumDelay: String): Config =
+    ConfigFactory.parseString(s"""
          |delays {
          |  $name {
          |    enabled: $delayEnabled,
@@ -55,14 +55,19 @@ class DelaysSpec extends WordSpec with Matchers {
 
     "read parameters from config correctly" in {
       Delays.config(
-        "test", config("test", "true", "1 second", "2 seconds", "0 seconds")
+        "test",
+        config("test", "true", "1 second", "2 seconds", "0 seconds")
       ) shouldBe DelayConfig(true, 1.second, 2.seconds, 0.seconds)
 
-      Delays.config("test", config("test", "false", "1 minute", "2 minutes", "0 minutes")
-      ) shouldBe DelayConfig(false, 1.minute, 2.minutes, 0.minutes)
+      Delays.config("test", config("test", "false", "1 minute", "2 minutes", "0 minutes")) shouldBe DelayConfig(
+        false,
+        1.minute,
+        2.minutes,
+        0.minutes)
     }
 
-    "delay actions if configured to do so" in new TestDelays(Delays.config("test", config("test", "true", "1 second", "0 seconds", "0 seconds"))) {
+    "delay actions if configured to do so" in new TestDelays(
+      Delays.config("test", config("test", "true", "1 second", "0 seconds", "0 seconds"))) {
       val result: Future[String] = withDelay(delayConfig)(() ⇒ "hello")
 
       time.advance(1.second - 1.millisecond)
@@ -72,7 +77,8 @@ class DelaysSpec extends WordSpec with Matchers {
       Await.result(result, 1.second) shouldBe "hello"
     }
 
-    "not delay actions if configured to do so" in new TestDelays(Delays.config("test", config("test", "false", "1 second", "0 seconds", "0 seconds"))) {
+    "not delay actions if configured to do so" in new TestDelays(
+      Delays.config("test", config("test", "false", "1 second", "0 seconds", "0 seconds"))) {
       val result: Future[String] = withDelay(delayConfig)(() ⇒ "hello")
       // shouldn't need to advance time for the future to complete
       Await.result(result, 1.second) shouldBe "hello"

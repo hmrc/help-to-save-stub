@@ -49,24 +49,25 @@ class EligibilityCheckControllerSpec extends TestSupport with AkkaMaterializerSp
       verifyEligibility(randomNINO().withPrefixReplace("AC"), 3)
     }
 
-      def verifyEligibility(nino:            String,
-                            resultCode:      Int,
-                            ucClaimant:      Option[String] = None,
-                            withinThreshold: Option[String] = None): Unit = {
+    def verifyEligibility(
+      nino: String,
+      resultCode: Int,
+      ucClaimant: Option[String]      = None,
+      withinThreshold: Option[String] = None): Unit = {
 
-        val result = eligCheckController.eligibilityCheck(nino, ucClaimant, withinThreshold)(fakeRequest)
-        status(result) shouldBe Status.OK
-        val json = contentAsString(result)
-        val expected = resultCode match {
-          case 1 ⇒ "Eligible to HtS Account"
-          case 2 ⇒ "Ineligible to HtS Account"
-          case 3 ⇒ "HtS account already exists"
-          case 4 ⇒ "Unknown eligibility because call to DWP failed"
-          case _ ⇒ sys.error("Invalid result code")
-        }
-
-        Json.fromJson[EligibilityCheckResult](Json.parse(json)).get.result shouldBe expected
-
+      val result = eligCheckController.eligibilityCheck(nino, ucClaimant, withinThreshold)(fakeRequest)
+      status(result) shouldBe Status.OK
+      val json = contentAsString(result)
+      val expected = resultCode match {
+        case 1 ⇒ "Eligible to HtS Account"
+        case 2 ⇒ "Ineligible to HtS Account"
+        case 3 ⇒ "HtS account already exists"
+        case 4 ⇒ "Unknown eligibility because call to DWP failed"
+        case _ ⇒ sys.error("Invalid result code")
       }
+
+      Json.fromJson[EligibilityCheckResult](Json.parse(json)).get.result shouldBe expected
+
+    }
   }
 }

@@ -34,13 +34,14 @@ class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterialize
   "GET /pay-as-you-earn/02.00.00/individuals/{NINO}" should {
 
     "returns paye details for a valid NINO" in {
-      val nino = randomNINO()
+      val nino   = randomNINO()
       val result = payeDetailsController.getPayeDetails(nino)(fakeRequest)
 
       status(result) shouldBe Status.OK
       val json = contentAsString(result)
 
-      json === Json.toJson(payeDetailsController.payeDetails(nino).seeded(nino).getOrElse(sys.error("Could not generate details")))
+      json === Json.toJson(
+        payeDetailsController.payeDetails(nino).seeded(nino).getOrElse(sys.error("Could not generate details")))
 
     }
 
