@@ -48,10 +48,14 @@ trait Delays {
 
 object Delays {
 
-  case class DelayConfig(enabled: Boolean, meanDelay: FiniteDuration, standardDeviation: FiniteDuration, minimumDelay: FiniteDuration) {
-    val meanDelayNanos: Long = meanDelay.toNanos
+  case class DelayConfig(
+    enabled: Boolean,
+    meanDelay: FiniteDuration,
+    standardDeviation: FiniteDuration,
+    minimumDelay: FiniteDuration) {
+    val meanDelayNanos: Long         = meanDelay.toNanos
     val standardDeviationNanos: Long = standardDeviation.toNanos
-    val minimumDelayNanos: Long = minimumDelay.toNanos
+    val minimumDelayNanos: Long      = minimumDelay.toNanos
   }
 
   def config(name: String, config: Config): DelayConfig =

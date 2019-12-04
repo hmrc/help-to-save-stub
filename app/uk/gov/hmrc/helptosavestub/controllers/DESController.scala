@@ -28,11 +28,12 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 import scala.concurrent.Future
 
 // class for controllers mimicking DES to extend
-class DESController @Inject() (cc: ControllerComponents, appConfig: AppConfig) extends BackendController(cc) with Logging {
+class DESController @Inject()(cc: ControllerComponents, appConfig: AppConfig)
+    extends BackendController(cc)
+    with Logging {
 
   private val expectedDESHeaders: List[String] =
-    appConfig.runModeConfiguration
-      .underlying
+    appConfig.runModeConfiguration.underlying
       .get[List[String]]("microservice.expectedDESHeaders")
       .value
       .map(e ⇒ s"Bearer $e")
@@ -48,6 +49,7 @@ class DESController @Inject() (cc: ControllerComponents, appConfig: AppConfig) e
     }
   }
 
-  def withDesCorrelationID(response: Result): Result = response.withHeaders("CorrelationId" -> UUID.randomUUID().toString)
+  def withDesCorrelationID(response: Result): Result =
+    response.withHeaders("CorrelationId" -> UUID.randomUUID().toString)
 
 }

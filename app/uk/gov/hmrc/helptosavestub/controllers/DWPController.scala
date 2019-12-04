@@ -32,9 +32,11 @@ import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
 import scala.concurrent.ExecutionContext
 
-class DWPController @Inject() (actorSystem: ActorSystem,
-                               cc:          ControllerComponents)(implicit ec: ExecutionContext)
-  extends BackendController(cc) with Logging with DWPEligibilityBehaviour with Delays {
+class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext)
+    extends BackendController(cc)
+    with Logging
+    with DWPEligibilityBehaviour
+    with Delays {
 
   val scheduler: Scheduler = actorSystem.scheduler
 
@@ -64,25 +66,27 @@ class DWPController @Inject() (actorSystem: ActorSystem,
     Status(result)
   }
 
-  def dwpClaimantCheck(nino: String, systemId: String, thresholdAmount: Double, transactionId: Option[UUID]): Action[AnyContent] = Action.async {
-    implicit request ⇒
-      withDelay(checkUCStatusDelayConfig) { () ⇒
-        logger.info(s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
+  def dwpClaimantCheck(
+    nino: String,
+    systemId: String,
+    thresholdAmount: Double,
+    transactionId: Option[UUID]): Action[AnyContent] = Action.async { implicit request ⇒
+    withDelay(checkUCStatusDelayConfig) { () ⇒
+      logger.info(
+        s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
           s"thresholdAmount: $thresholdAmount, transactionId: $transactionId")
 
-        if (nino.startsWith("WS")) {
-          getHttpStatus(nino)
-        } else if (nino.startsWith("WT")) {
-          Thread.sleep(43000) // scalastyle:ignore magic.number
-          Ok("Timeout")
-        } else {
-          getProfile(nino).
-            fold(Ok(Json.toJson(randomUCDetails()))) {
-              _.uCDetails.fold[Result](InternalServerError)(ucDetails ⇒
-                Ok(Json.toJson(ucDetails)))
-            }
+      if (nino.startsWith("WS")) {
+        getHttpStatus(nino)
+      } else if (nino.startsWith("WT")) {
+        Thread.sleep(43000) // scalastyle:ignore magic.number
+        Ok("Timeout")
+      } else {
+        getProfile(nino).fold(Ok(Json.toJson(randomUCDetails()))) {
+          _.uCDetails.fold[Result](InternalServerError)(ucDetails ⇒ Ok(Json.toJson(ucDetails)))
         }
       }
+    }
   }
 
   def dwpHealthCheck(): Action[AnyContent] = Action { implicit request ⇒

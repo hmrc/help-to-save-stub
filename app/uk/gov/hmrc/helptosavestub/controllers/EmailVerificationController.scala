@@ -23,33 +23,39 @@ import uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.EmailV
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.controller.BackendController
 
-class EmailVerificationController @Inject() (cc: ControllerComponents) extends BackendController(cc) with Logging {
+class EmailVerificationController @Inject()(cc: ControllerComponents) extends BackendController(cc) with Logging {
 
-  def verify: Action[AnyContent] = Action {
-    implicit request ⇒
-      request.body.asJson match {
-        case None ⇒
-          logger.warn("[EmailVerificationController] - no JSON in body")
-          BadRequest
+  def verify: Action[AnyContent] = Action { implicit request ⇒
+    request.body.asJson match {
+      case None ⇒
+        logger.warn("[EmailVerificationController] - no JSON in body")
+        BadRequest
 
-        case Some(json) ⇒
-          json.validate[EmailVerificationRequest].fold({ e ⇒
-            logger.warn(s"[EmailVerificationController] - could not parse JSON in body $e")
-            BadRequest
-          }, { emailVerificationRequest ⇒
-            logger.info(s"[EmailVerificationController] A request has been made: $emailVerificationRequest")
-            Ok
-          })
+      case Some(json) ⇒
+        json
+          .validate[EmailVerificationRequest]
+          .fold(
+            { e ⇒
+              logger.warn(s"[EmailVerificationController] - could not parse JSON in body $e")
+              BadRequest
+            }, { emailVerificationRequest ⇒
+              logger.info(s"[EmailVerificationController] A request has been made: $emailVerificationRequest")
+              Ok
+            }
+          )
 
-      }
+    }
   }
 
 }
 
 object EmailVerificationController {
-  case class EmailVerificationRequest(email: String, templateId: String,
-                                      linkExpiryDuration: String, continueUrl: String,
-                                      templateParameters: Map[String, String])
+  case class EmailVerificationRequest(
+    email: String,
+    templateId: String,
+    linkExpiryDuration: String,
+    continueUrl: String,
+    templateParameters: Map[String, String])
 
   object EmailVerificationRequest {
     implicit val format: Format[EmailVerificationRequest] = Json.format[EmailVerificationRequest]

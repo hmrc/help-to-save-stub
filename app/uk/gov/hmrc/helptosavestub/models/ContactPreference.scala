@@ -28,14 +28,14 @@ object ContactPreference {
   implicit val contactPreferenceFormat: Format[ContactPreference] = new Format[ContactPreference] {
     def writes(o: ContactPreference): JsValue = o match {
       case ContactPreference.Email ⇒ JsString("email")
-      case ContactPreference.SMS   ⇒ JsString("sms")
+      case ContactPreference.SMS ⇒ JsString("sms")
     }
     def reads(o: JsValue): JsResult[ContactPreference] = o match {
       case JsString(s) ⇒
         s.toLowerCase.trim match {
           case "email" ⇒ JsSuccess(ContactPreference.Email)
-          case "sms"   ⇒ JsSuccess(ContactPreference.SMS)
-          case other   ⇒ JsError(s"Could not read contact preference: $other")
+          case "sms" ⇒ JsSuccess(ContactPreference.SMS)
+          case other ⇒ JsError(s"Could not read contact preference: $other")
         }
 
       case other ⇒ JsError(s"Expected string but got $other")
