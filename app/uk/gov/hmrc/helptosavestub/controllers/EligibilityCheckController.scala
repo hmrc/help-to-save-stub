@@ -30,7 +30,7 @@ import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.DWPEligibilityBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
-import uk.gov.hmrc.helptosavestub.util.{Delays, ValidatedOrErrorStrings}
+import uk.gov.hmrc.helptosavestub.util.{Delays, ErrorJson, ValidatedOrErrorStrings}
 
 import scala.concurrent.ExecutionContext
 import scala.util.Try
@@ -65,7 +65,7 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
 
         val response = status match {
           case Some(s) ⇒
-            Status(s)(errorJson(s))
+            Status(s)(ErrorJson.errorJson(s))
 
           case None ⇒
             getResponse(nino, universalCreditClaimant, withinThreshold)
@@ -159,12 +159,6 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
 
   private val ninoStatusRegex = """ES(\d{3}).*""".r
 
-  private def errorJson(status: Int): JsValue = Json.parse(s"""
-       |{
-       |  "code":   "${StatusCode.int2StatusCode(status).reason()}",
-       |  "reason": "intentional error"
-       |}
-       """.stripMargin)
 }
 
 object EligibilityCheckController {

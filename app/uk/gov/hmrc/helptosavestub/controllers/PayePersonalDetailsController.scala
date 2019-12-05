@@ -29,7 +29,7 @@ import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
-import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
+import uk.gov.hmrc.helptosavestub.util.{Delays, ErrorJson, Logging}
 import uk.gov.hmrc.smartstub._
 
 import scala.concurrent.ExecutionContext
@@ -55,7 +55,7 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
 
       val response = status match {
         case Some(s) ⇒
-          Status(s)(errorJson(s))
+          Status(s)(ErrorJson.errorJson(s))
 
         case None ⇒
           payeDetails(nino)
@@ -72,13 +72,6 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
       withDesCorrelationID(response)
     }
   }
-
-  private def errorJson(status: Int): JsValue = Json.parse(s"""
-       |{
-       |  "code":   "${StatusCode.int2StatusCode(status).reason()}",
-       |  "reason": "intentional error"
-       |}
-       """.stripMargin)
 
   private val ninoStatusRegex = """PY(\d{3}).*""".r
 
