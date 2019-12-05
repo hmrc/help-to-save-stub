@@ -14,23 +14,23 @@ lazy val playSettings: Seq[Setting[_]]  = Seq.empty
 
 val dependencies = Seq(
   ws,
-  "uk.gov.hmrc"       %% "bootstrap-play-26"    % "1.1.0",
+  "uk.gov.hmrc"       %% "bootstrap-play-26"    % "1.3.0",
   "uk.gov.hmrc"       %% "play-config"          % "7.5.0",
   "uk.gov.hmrc"       %% "domain"               % "5.6.0-play-26",
-  "org.scalacheck"    %% "scalacheck"           % "1.14.0",
+  "org.scalacheck"    %% "scalacheck"           % "1.14.2",
   "org.typelevel"     %% "cats-core"            % "2.0.0",
   "uk.gov.hmrc"       %% "stub-data-generator"  % "0.5.3",
   "ai.x"              %% "play-json-extensions" % "0.10.0",
   "com.github.kxbmap" %% "configs"              % "0.4.4",
-  "com.google.inject" % "guice"                 % "4.2.0"
+  "com.google.inject" % "guice"                 % "4.2.2"
 )
 
-def testDependencies(scope: String = "test,it") = Seq(
-  "uk.gov.hmrc"       %% "bootstrap-play-26"   % "1.1.0"             % scope,
+def testDependencies(scope: String = "test") = Seq(
+  "uk.gov.hmrc"       %% "bootstrap-play-26"   % "1.3.0"             % scope,
   "uk.gov.hmrc"       %% "hmrctest"            % "3.9.0-play-26"     % scope,
   "org.scalatest"     %% "scalatest"           % "3.0.8"             % scope,
   "com.typesafe.play" %% "play-test"           % PlayVersion.current % scope,
-  "com.miguno.akka"   %% "akka-mock-scheduler" % "0.5.1"             % scope
+  "com.miguno.akka"   %% "akka-mock-scheduler" % "0.5.5"             % scope
 )
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
