@@ -49,9 +49,6 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       w ← if (c === "Y") { booleanGen.map(Some(_)) } else { Gen.const(None) }
     } yield UCDetails(c, w)
   }
-
-  def randomUCDetails(): UCDetails = ucGen.sample.getOrElse(sys.error(""))
-
   val healthCheckResponse: JsValue =
     Json.parse("""
                  |{
@@ -60,11 +57,6 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
                  |  }
                  |}
                """.stripMargin)
-
-  private def getHttpStatus(nino: String): Result = {
-    val result = nino.substring(2, 5).toInt // scalastyle:ignore magic.number
-    Status(result)
-  }
 
   def dwpClaimantCheck(
     nino: String,
@@ -87,6 +79,13 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
         }
       }
     }
+  }
+
+  def randomUCDetails(): UCDetails = ucGen.sample.getOrElse(sys.error(""))
+
+  private def getHttpStatus(nino: String): Result = {
+    val result = nino.substring(2, 5).toInt // scalastyle:ignore magic.number
+    Status(result)
   }
 
   def dwpHealthCheck(): Action[AnyContent] = Action { implicit request ⇒

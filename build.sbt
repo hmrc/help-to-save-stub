@@ -6,44 +6,20 @@ import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
 
-val appName = "help-to-save-stub"
-
 lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
 lazy val plugins: Seq[Plugins]          = Seq.empty
 lazy val playSettings: Seq[Setting[_]]  = Seq.empty
-
-val dependencies = Seq(
-  ws,
-  "uk.gov.hmrc"       %% "bootstrap-play-26"    % "1.3.0",
-  "uk.gov.hmrc"       %% "play-config"          % "7.5.0",
-  "uk.gov.hmrc"       %% "domain"               % "5.6.0-play-26",
-  "org.scalacheck"    %% "scalacheck"           % "1.14.2",
-  "org.typelevel"     %% "cats-core"            % "2.0.0",
-  "uk.gov.hmrc"       %% "stub-data-generator"  % "0.5.3",
-  "ai.x"              %% "play-json-extensions" % "0.10.0",
-  "com.github.kxbmap" %% "configs"              % "0.4.4",
-  "com.google.inject" % "guice"                 % "4.2.2"
-)
-
-def testDependencies(scope: String = "test") = Seq(
-  "uk.gov.hmrc"       %% "bootstrap-play-26"   % "1.3.0"             % scope,
-  "uk.gov.hmrc"       %% "hmrctest"            % "3.9.0-play-26"     % scope,
-  "org.scalatest"     %% "scalatest"           % "3.0.8"             % scope,
-  "com.typesafe.play" %% "play-test"           % PlayVersion.current % scope,
-  "com.miguno.akka"   %% "akka-mock-scheduler" % "0.5.5"             % scope
-)
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := "<empty>;.*config.*;.*(AuthService|BuildInfo|Routes).*",
+    ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes).*",
     //ScoverageKeys.coverageMinimum := 70,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
   )
 }
-
 lazy val wartRemoverSettings = {
   // list of warts here: http://www.wartremover.org/doc/warts.html
   val excludedWarts = Seq(
@@ -61,7 +37,6 @@ lazy val wartRemoverSettings = {
 
   wartremoverErrors in (Compile, compile) ++= Warts.allBut(excludedWarts: _*)
 }
-
 lazy val microservice =
   Project(appName, file("."))
     .enablePlugins(Seq(
@@ -97,7 +72,7 @@ lazy val microservice =
       retrieveManaged := true,
       evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
     )
-    .settings(scalacOptions += "-Xcheckinit")
+    .settings(scalacOptions ++= Seq("-Xcheckinit", "-feature"))
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(
@@ -111,3 +86,26 @@ lazy val microservice =
       Resolver.bintrayRepo("hmrc", "releases"),
       Resolver.jcenterRepo
     ))
+val appName = "help-to-save-stub"
+val hmrc    = "uk.gov.hmrc"
+val dependencies = Seq(
+  ws,
+  hmrc                %% "bootstrap-play-26"    % "1.3.0",
+  hmrc                %% "play-config"          % "7.5.0",
+  hmrc                %% "domain"               % "5.6.0-play-26",
+  hmrc                %% "stub-data-generator"  % "0.5.3",
+  "org.scalacheck"    %% "scalacheck"           % "1.14.2",
+  "org.typelevel"     %% "cats-core"            % "2.0.0",
+  "ai.x"              %% "play-json-extensions" % "0.40.2",
+  "com.github.kxbmap" %% "configs"              % "0.4.4",
+  "com.google.inject" % "guice"                 % "4.2.2"
+)
+
+def testDependencies(scope: String = "test") = Seq(
+  hmrc                     %% "service-integration-test" % "0.9.0-play-26"     % scope,
+  "org.scalatest"          %% "scalatest"                % "3.0.8"             % scope,
+  "org.scalatestplus.play" %% "scalatestplus-play"       % "3.0.0"             % scope,
+  "com.typesafe.play"      %% "play-test"                % PlayVersion.current % scope,
+  "com.miguno.akka"        %% "akka-mock-scheduler"      % "0.5.5"             % scope,
+  "org.pegdown"            % "pegdown"                   % "1.6.0"             % scope
+)

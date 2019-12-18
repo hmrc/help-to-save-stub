@@ -134,9 +134,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    def bethResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", bethTransaction)
-
     val peteTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -195,9 +192,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    def peteResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "190.12", "0.00", peteTransaction)
-
     val lauraTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -280,9 +274,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 2, 17),
         LocalDate.of(2018, 2, 17))
     )
-    def lauraResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "135.00", "0.00", lauraTransaction)
-
     val tonyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -333,13 +324,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 3),
         LocalDate.of(2018, 3, 3))
     )
-    def tonyResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "75.00", "0.00", tonyTransaction)
-
     val monikaTransaction: List[Transaction] = List.empty
-    def monikaResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "0.00", "0.00", monikaTransaction)
-
     val happyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -726,9 +711,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 2, 1),
         LocalDate.of(2018, 2, 1))
     )
-    def happyResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "2400.00", "0.00", happyTransaction)
-
     val takenTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -931,9 +913,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2016, 3, 2),
         LocalDate.of(2016, 3, 2))
     )
-    def takenResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "0.00", "0.00", takenTransaction)
-
     val spencerTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1128,9 +1107,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    def spencerResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "832.00", "0.00", spencerTransaction)
-
     val alexTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1437,9 +1413,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    def alexResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "1270.00", "0.00", alexTransaction)
-
     val closedAccountTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1482,9 +1455,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    def closedAccountResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", closedAccountTransaction)
-
     val accountBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1527,9 +1497,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    def accountBlockedResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", accountBlockedTransaction)
-
     val clientBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1572,9 +1539,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    def clientBlockedResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", clientBlockedTransaction)
-
     val annaTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1745,14 +1709,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    def annaResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "75.00", "0.00", annaTransaction)
-
     val closedAccount2Transaction: List[Transaction] = List.empty
-
-    def closedAccount2Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "0.00", "0.00", closedAccount2Transaction)
-
     val closedAccount3Transaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1771,10 +1728,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 1, 1),
         LocalDate.of(2018, 1, 1))
     )
-
-    def closedAccount3Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "100.00", "0.00", closedAccount3Transaction)
-
     val closedAccount4Transaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1809,10 +1762,6 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 1, 1),
         LocalDate.of(2018, 1, 1))
     )
-
-    def closedAccount4Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
-      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "200.00", "0.00", closedAccount4Transaction)
-
     val accountUnspecifiedBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1855,6 +1804,54 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
+
+    def bethResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", bethTransaction)
+
+    def peteResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "190.12", "0.00", peteTransaction)
+
+    def lauraResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "135.00", "0.00", lauraTransaction)
+
+    def tonyResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "75.00", "0.00", tonyTransaction)
+
+    def monikaResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "0.00", "0.00", monikaTransaction)
+
+    def happyResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "2400.00", "0.00", happyTransaction)
+
+    def takenResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "0.00", "0.00", takenTransaction)
+
+    def spencerResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "832.00", "0.00", spencerTransaction)
+
+    def alexResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "1270.00", "0.00", alexTransaction)
+
+    def closedAccountResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", closedAccountTransaction)
+
+    def accountBlockedResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", accountBlockedTransaction)
+
+    def clientBlockedResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", clientBlockedTransaction)
+
+    def annaResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "75.00", "0.00", annaTransaction)
+
+    def closedAccount2Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "0.00", "0.00", closedAccount2Transaction)
+
+    def closedAccount3Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "100.00", "0.00", closedAccount3Transaction)
+
+    def closedAccount4Response(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
+      NSIGetTransactionsByNinoResponse("V1.0", correlationId, "200.00", "0.00", closedAccount4Transaction)
 
     def accountUnspecifiedBlockedResponse(correlationId: Option[String]): NSIGetTransactionsByNinoResponse =
       NSIGetTransactionsByNinoResponse("V1.0", correlationId, "250.00", "0.00", accountUnspecifiedBlockedTransaction)

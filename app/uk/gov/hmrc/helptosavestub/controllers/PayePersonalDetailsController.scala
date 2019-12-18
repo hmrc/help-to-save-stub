@@ -20,11 +20,10 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
 import akka.actor.{ActorSystem, Scheduler}
-import akka.http.scaladsl.model.StatusCode
 import com.google.inject.{Inject, Singleton}
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
-import play.api.libs.json.{JsValue, Json, Writes}
+import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
@@ -45,6 +44,14 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
   val scheduler: Scheduler = actorSystem.scheduler
 
   val getPayeDetailsDelayConfig: DelayConfig = Delays.config("get-paye-personal-details", actorSystem.settings.config)
+  private val ninoStatusRegex                = """PY(\d{3}).*""".r
+  private val telephoneNumberGen: Gen[TelephoneNumber] = for {
+    callingCode ← Gen.choose(1, 250)
+    telephoneType ← Gen.oneOf(1, 2, 7)
+    dialingCode ← listOfN(5, numChar).map(_.mkString)
+    convertedAreaDiallingCode ← listOfN(3, numChar).map(_.mkString)
+    phoneNumber ← listOfN(6, numChar).map(_.mkString)
+  } yield TelephoneNumber(callingCode, telephoneType, dialingCode, convertedAreaDiallingCode, phoneNumber)
 
   def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
     withDelay(getPayeDetailsDelayConfig) { () ⇒
@@ -72,16 +79,6 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
       withDesCorrelationID(response)
     }
   }
-
-  private val ninoStatusRegex = """PY(\d{3}).*""".r
-
-  private val telephoneNumberGen: Gen[TelephoneNumber] = for {
-    callingCode ← Gen.choose(1, 250)
-    telephoneType ← Gen.oneOf(1, 2, 7)
-    dialingCode ← listOfN(5, numChar).map(_.mkString)
-    convertedAreaDiallingCode ← listOfN(3, numChar).map(_.mkString)
-    phoneNumber ← listOfN(6, numChar).map(_.mkString)
-  } yield TelephoneNumber(callingCode, telephoneType, dialingCode, convertedAreaDiallingCode, phoneNumber)
 
   private[controllers] def payeDetails(nino: String) =
     for { // scalastyle:ignore

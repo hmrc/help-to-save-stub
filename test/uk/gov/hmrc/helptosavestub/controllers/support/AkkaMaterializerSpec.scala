@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestub.controllers.support
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
 import org.scalatest.{BeforeAndAfterAll, Suite}
-import uk.gov.hmrc.play.test.UnitSpec
+import uk.gov.hmrc.helptosavestub.util.UnitSpec
 
 /**
   * Provides an implicit Materializer for use in tests. Note that if your test

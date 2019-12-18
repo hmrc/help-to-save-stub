@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import akka.actor.{ActorSystem, Scheduler}
-import akka.http.scaladsl.model.StatusCode
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNel
 import cats.instances.option._
@@ -44,6 +43,7 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
 
   val scheduler: Scheduler                     = actorSystem.scheduler
   val checkEligibilityDelayConfig: DelayConfig = Delays.config("check-eligibility", actorSystem.settings.config)
+  private val ninoStatusRegex                  = """ES(\d{3}).*""".r
 
   def eligibilityCheck(
     nino: String,
@@ -156,8 +156,6 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
     }
 
   }
-
-  private val ninoStatusRegex = """ES(\d{3}).*""".r
 
 }
 

@@ -17,8 +17,7 @@
 package uk.gov.hmrc.helptosavestub.config
 
 import com.google.inject.{Inject, Singleton}
-import play.api.Mode.Mode
-import play.api.{Configuration, Environment}
+import play.api.{Configuration, Environment, Mode}
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 @Singleton
