@@ -62,13 +62,12 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
       "aUtHoRiZaTiOn-test" → headerValue
     )
   }
+  val nsiController = new NSIController(actorSystem, testCC)
 
   def errorMessageIds(result: Result): List[String] =
     (jsonBodyOf(result) \ "errors").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])).toList
 
   def correlationIds(result: Result): String = (jsonBodyOf(result) \ "correlationId").as[String]
-
-  val nsiController = new NSIController(actorSystem, testCC)
 
   "Post /nsi-services/account  " should {
     "return a successful Create Account" in {

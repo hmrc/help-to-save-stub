@@ -50,63 +50,16 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     with BankDetailsBehaviour
     with Delays {
 
-  val scheduler: Scheduler = actorSystem.scheduler
-
-  val authorizationHeaderKeys: List[String] = List("Authorization-test", "Authorization")
-  val authorizationValuePrefix: String      = "Basic "
-  val testAuthHeader: String                = "username:password"
-
+  type ValidatedOrErrorDetails[A] = ValidatedNel[ErrorDetails, A]
+  val scheduler: Scheduler                    = actorSystem.scheduler
+  val authorizationHeaderKeys: List[String]   = List("Authorization-test", "Authorization")
+  val authorizationValuePrefix: String        = "Basic "
+  val testAuthHeader: String                  = "username:password"
   val createAccountDelayConfig: DelayConfig   = Delays.config("create-account", actorSystem.settings.config)
   val getAccountDelayConfig: DelayConfig      = Delays.config("get-account", actorSystem.settings.config)
   val updateAccountDelayConfig: DelayConfig   = Delays.config("update-account", actorSystem.settings.config)
   val getTransactionsDelayConfig: DelayConfig = Delays.config("get-transactions", actorSystem.settings.config)
-
-  def isAuthorised(headers: Headers): Either[String, Unit] = {
-    val decoded: Either[String, String] =
-      headers.headers
-        .find(entry ⇒
-          authorizationHeaderKeys.exists(
-            entry._1.toLowerCase === _.toLowerCase && entry._2.startsWith(authorizationValuePrefix)))
-        .fold[Either[String, String]](
-          Left("Could not find authorization header")
-        ) {
-          case (_, h) ⇒
-            val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
-            decoded match {
-              case Success(bytes) ⇒
-                Right(new String(bytes, StandardCharsets.UTF_8))
-
-              case Failure(error) ⇒
-                Left(s"Could not decode authorization details: header value was $h. ${error.getMessage}")
-
-            }
-        }
-
-    decoded.flatMap { s ⇒
-      if (s === testAuthHeader) {
-        Right(())
-      } else {
-        Left(s"Authorisation value '$s' was not equal to expected value")
-      }
-    }
-  }
-
-  def withNSIPayload(description: String)(body: NSIPayload ⇒ Result)(implicit request: Request[AnyContent]): Result = {
-    lazy val requestBodyText = request.body.asText.getOrElse("")
-
-    request.body.asJson.map(_.validate[NSIPayload]) match {
-      case None ⇒
-        logger.error(s"No JSON found for $description request: $requestBodyText")
-        BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "No JSON found", ""))))
-
-      case Some(er: JsError) ⇒
-        logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
-        BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "Invalid Json", er.toString))))
-
-      case Some(JsSuccess(info, _)) ⇒
-        body(info)
-    }
-  }
+  private val ninoStatusRegex                 = """AS(\d{3}).*""".r
 
   def updateEmailOrHealthCheck(): Action[AnyContent] = Action.async { implicit request ⇒
     withDelay(updateAccountDelayConfig) { () ⇒
@@ -145,6 +98,23 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     }
   }
 
+  def withNSIPayload(description: String)(body: NSIPayload ⇒ Result)(implicit request: Request[AnyContent]): Result = {
+    lazy val requestBodyText = request.body.asText.getOrElse("")
+
+    request.body.asJson.map(_.validate[NSIPayload]) match {
+      case None ⇒
+        logger.error(s"No JSON found for $description request: $requestBodyText")
+        BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "No JSON found", ""))))
+
+      case Some(er: JsError) ⇒
+        logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
+        BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "Invalid Json", er.toString))))
+
+      case Some(JsSuccess(info, _)) ⇒
+        body(info)
+    }
+  }
+
   def handleRequest(nsiPayload: NSIPayload, successResult: Result, description: String)(
     implicit request: Request[AnyContent]): Result =
     isAuthorised(request.headers).fold(
@@ -168,6 +138,36 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       }
     )
 
+  def isAuthorised(headers: Headers): Either[String, Unit] = {
+    val decoded: Either[String, String] =
+      headers.headers
+        .find(entry ⇒
+          authorizationHeaderKeys.exists(
+            entry._1.toLowerCase === _.toLowerCase && entry._2.startsWith(authorizationValuePrefix)))
+        .fold[Either[String, String]](
+          Left("Could not find authorization header")
+        ) {
+          case (_, h) ⇒
+            val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
+            decoded match {
+              case Success(bytes) ⇒
+                Right(new String(bytes, StandardCharsets.UTF_8))
+
+              case Failure(error) ⇒
+                Left(s"Could not decode authorization details: header value was $h. ${error.getMessage}")
+
+            }
+        }
+
+    decoded.flatMap { s ⇒
+      if (s === testAuthHeader) {
+        Right(())
+      } else {
+        Left(s"Authorisation value '$s' was not equal to expected value")
+      }
+    }
+  }
+
   private def generateAccountNumberJson: JsValue =
     Json.parse(s"""{
       |"accountNumber": "${Gen
@@ -177,8 +177,6 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
                     .getOrElse(sys.error("Could not generate account number"))}"
       |}
     """.stripMargin)
-
-  private val ninoStatusRegex = """AS(\d{3}).*""".r
 
   def getAccount(
     correlationId: Option[String],
@@ -206,35 +204,6 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       )
     }
   }
-
-  def getTransactions(
-    correlationId: Option[String],
-    nino: Option[String],
-    version: Option[String],
-    systemId: Option[String]): Action[AnyContent] = Action.async { implicit request ⇒
-    withDelay(getTransactionsDelayConfig) { () ⇒
-      validateParams(nino, version, systemId).fold(
-        errors ⇒ {
-          logger.warn("[Handle Transactions Query] invalid params")
-          BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
-        }, { validatedNino ⇒
-          if (validatedNino.contains("401")) {
-            Unauthorized
-          } else if (validatedNino.contains("500")) {
-            InternalServerError
-          } else {
-            val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
-            maybeAccount match {
-              case Right(a) ⇒ Ok(Json.toJson(a))
-              case Left(e) ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
-            }
-          }
-        }
-      )
-    }
-  }
-
-  type ValidatedOrErrorDetails[A] = ValidatedNel[ErrorDetails, A]
 
   private def validateParams(
     nino: Option[String],
@@ -273,6 +242,33 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
         case (_, validatedNino, _) ⇒ validatedNino
       }
 
+  }
+
+  def getTransactions(
+    correlationId: Option[String],
+    nino: Option[String],
+    version: Option[String],
+    systemId: Option[String]): Action[AnyContent] = Action.async { implicit request ⇒
+    withDelay(getTransactionsDelayConfig) { () ⇒
+      validateParams(nino, version, systemId).fold(
+        errors ⇒ {
+          logger.warn("[Handle Transactions Query] invalid params")
+          BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
+        }, { validatedNino ⇒
+          if (validatedNino.contains("401")) {
+            Unauthorized
+          } else if (validatedNino.contains("500")) {
+            InternalServerError
+          } else {
+            val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
+            maybeAccount match {
+              case Right(a) ⇒ Ok(Json.toJson(a))
+              case Left(e) ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+            }
+          }
+        }
+      )
+    }
   }
 
 }

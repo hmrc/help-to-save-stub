@@ -24,8 +24,8 @@ import play.api.test.FakeRequest
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
-import scala.concurrent.ExecutionContext.Implicits.global
 
+import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.Future
 
 class DWPControllerSpec extends TestSupport with AkkaMaterializerSpec {

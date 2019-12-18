@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import cats.implicits._
-import play.api.libs.json.{JsValue, Json}
 import uk.gov.hmrc.helptosavestub.controllers.BARSController.{BARSResponse, BankDetails}
 import uk.gov.hmrc.helptosavestub.controllers.BankDetailsBehaviour.{CreateAccountResponse, Profile}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
@@ -65,8 +64,9 @@ trait BankDetailsBehaviour {
 
   // same validation as bank-account-reputation
   private def validateSortCode(sc: String): Boolean =
-    if (sc.length =!= 6) false
-    else {
+    if (sc.length =!= 6) {
+      false
+    } else {
       Try(sc.toInt) match {
         case Success(_) ⇒ true
         case _ ⇒ false
@@ -75,8 +75,9 @@ trait BankDetailsBehaviour {
 
   // same validation as bank-account-reputation
   private def validateAccountNumber(ac: String): Boolean =
-    if (ac.length =!= 8) false
-    else {
+    if (ac.length =!= 8) {
+      false
+    } else {
       Try(ac.toInt) match {
         case Success(_) ⇒ true
         case _ ⇒ false
