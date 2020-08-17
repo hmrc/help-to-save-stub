@@ -90,15 +90,15 @@ val appName = "help-to-save-stub"
 val hmrc    = "uk.gov.hmrc"
 val dependencies = Seq(
   ws,
-  hmrc                %% "bootstrap-play-26"    % "1.3.0",
-  hmrc                %% "play-config"          % "7.5.0",
-  hmrc                %% "domain"               % "5.6.0-play-26",
-  hmrc                %% "stub-data-generator"  % "0.5.3",
-  "org.scalacheck"    %% "scalacheck"           % "1.14.3",
-  "org.typelevel"     %% "cats-core"            % "2.0.0",
-  "ai.x"              %% "play-json-extensions" % "0.40.2",
-  "com.github.kxbmap" %% "configs"              % "0.4.4",
-  "com.google.inject" % "guice"                 % "4.2.2"
+  hmrc                %% "bootstrap-backend-play-26" % "2.24.0",
+  hmrc                %% "play-config"               % "7.5.0",
+  hmrc                %% "domain"                    % "5.9.0-play-26",
+  hmrc                %% "stub-data-generator"       % "0.5.3",
+  "org.scalacheck"    %% "scalacheck"                % "1.14.3",
+  "org.typelevel"     %% "cats-core"                 % "2.0.0",
+  "ai.x"              %% "play-json-extensions"      % "0.40.2",
+  "com.github.kxbmap" %% "configs"                   % "0.4.4",
+  "com.google.inject" % "guice"                      % "4.2.2"
 )
 
 def testDependencies(scope: String = "test") = Seq(
