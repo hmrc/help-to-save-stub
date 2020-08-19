@@ -51,6 +51,7 @@ lazy val microservice =
     .settings(majorVersion := 2)
     .settings(publishingSettings: _*)
     .settings(defaultSettings(): _*)
+    .settings(scalaVersion := "2.12.11")
     .settings(PlayKeys.playDefaultPort := 7002)
     .settings(scalafmtOnCompile := true)
     .settings(wartRemoverSettings)
@@ -91,7 +92,6 @@ val hmrc    = "uk.gov.hmrc"
 val dependencies = Seq(
   ws,
   hmrc                %% "bootstrap-backend-play-26" % "2.24.0",
-  hmrc                %% "play-config"               % "7.5.0",
   hmrc                %% "domain"                    % "5.9.0-play-26",
   hmrc                %% "stub-data-generator"       % "0.5.3",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
