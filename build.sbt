@@ -1,12 +1,13 @@
 import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 import play.core.PlayVersion
 import sbt.Keys.compile
+import sbt.Keys.dependencyOverrides
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
 import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
 
-lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
+lazy val appDependencies: Seq[ModuleID] = dependencies ++ overrides ++ testDependencies()
 lazy val plugins: Seq[Plugins]          = Seq.empty
 lazy val playSettings: Seq[Setting[_]]  = Seq.empty
 lazy val scoverageSettings = {
@@ -99,6 +100,16 @@ val dependencies = Seq(
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
   "com.github.kxbmap" %% "configs"                   % "0.4.4",
   "com.google.inject" % "guice"                      % "4.2.2"
+)
+
+val akkaVersion     = "2.5.23"
+val akkaHttpVersion = "10.0.15"
+val overrides = Seq(
+  "com.typesafe.akka" %% "akka-stream"    % akkaVersion,
+  "com.typesafe.akka" %% "akka-protobuf"  % akkaVersion,
+  "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion,
+  "com.typesafe.akka" %% "akka-actor"     % akkaVersion,
+  "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
 )
 
 def testDependencies(scope: String = "test") = Seq(
