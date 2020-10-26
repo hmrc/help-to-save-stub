@@ -19,14 +19,16 @@ package uk.gov.hmrc.helptosavestub.util
 import akka.actor.Scheduler
 import com.miguno.akka.testing.VirtualTime
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.matchers.should.Matchers
+
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 
 import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
-class DelaysSpec extends WordSpec with Matchers {
+class DelaysSpec extends AnyWordSpec with Matchers {
 
   def config(
     name: String,
