@@ -21,7 +21,7 @@ import play.api.libs.json.{Format, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.EmailVerificationRequest
 import uk.gov.hmrc.helptosavestub.util.Logging
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 class EmailVerificationController @Inject()(cc: ControllerComponents) extends BackendController(cc) with Logging {
 

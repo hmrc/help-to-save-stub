@@ -20,7 +20,7 @@ import com.google.inject.Inject
 import play.api.libs.json.{Json, Reads, Writes}
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.helptosavestub.controllers.BARSController.BankDetails
-import uk.gov.hmrc.play.bootstrap.controller.BackendController
+import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 class BARSController @Inject()(cc: ControllerComponents) extends BackendController(cc) with BankDetailsBehaviour {
 

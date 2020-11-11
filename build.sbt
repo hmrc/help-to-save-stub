@@ -92,7 +92,7 @@ val appName = "help-to-save-stub"
 val hmrc    = "uk.gov.hmrc"
 val dependencies = Seq(
   ws,
-  hmrc                %% "bootstrap-backend-play-26" % "2.25.0",
+  hmrc                %% "bootstrap-backend-play-26" % "3.0.0",
   hmrc                %% "domain"                    % "5.10.0-play-26",
   hmrc                %% "stub-data-generator"       % "0.5.3",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
