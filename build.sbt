@@ -92,11 +92,11 @@ val appName = "help-to-save-stub"
 val hmrc    = "uk.gov.hmrc"
 val dependencies = Seq(
   ws,
-  hmrc                %% "bootstrap-backend-play-26" % "2.24.0",
-  hmrc                %% "domain"                    % "5.9.0-play-26",
+  hmrc                %% "bootstrap-backend-play-26" % "3.0.0",
+  hmrc                %% "domain"                    % "5.10.0-play-26",
   hmrc                %% "stub-data-generator"       % "0.5.3",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
-  "org.typelevel"     %% "cats-core"                 % "2.0.0",
+  "org.typelevel"     %% "cats-core"                 % "2.2.0",
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
   "com.github.kxbmap" %% "configs"                   % "0.4.4",
   "com.google.inject" % "guice"                      % "4.2.2"
@@ -113,9 +113,11 @@ val overrides = Seq(
 )
 
 def testDependencies(scope: String = "test") = Seq(
-  hmrc                     %% "service-integration-test" % "0.9.0-play-26"     % scope,
-  "org.scalatest"          %% "scalatest"                % "3.0.8"             % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play"       % "3.1.2"             % scope,
+  hmrc                     %% "service-integration-test" % "0.12.0-play-26"    % scope,
+  "org.scalatest"          %% "scalatest"                % "3.2.0"             % scope,
+  "com.vladsch.flexmark"   % "flexmark-all"              % "0.35.10"           % scope,
+  "org.scalatestplus"      %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"       % scope,
+  "org.scalatestplus.play" %% "scalatestplus-play"       % "3.1.3"             % scope,
   "com.typesafe.play"      %% "play-test"                % PlayVersion.current % scope,
   "com.miguno.akka"        %% "akka-mock-scheduler"      % "0.5.5"             % scope,
   "org.pegdown"            % "pegdown"                   % "1.6.0"             % scope
