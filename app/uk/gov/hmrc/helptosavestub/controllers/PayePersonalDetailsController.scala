@@ -91,8 +91,47 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
       countryCode ← Gen.choose(1, 250)
       telephone1 ← telephoneNumberGen
       telephone2 ← Gen.option(telephoneNumberGen)
-    } yield
-      s"""{
+    } yield {
+      nino match {
+
+        case "EL164604D" =>
+          s"""{
+           |  "nino": "${nino.dropRight(1)}",
+           |  "ninoSuffix": "${nino.takeRight(1)}",
+           |  "names": {
+           |    "1": {
+           |      "sequenceNumber": 12345,
+           |      "firstForenameOrInitial": "$name",
+           |      "surname": "$surname",
+           |      "startDate": "2000-01-01"
+           |    }
+           |  },
+           |  "sex": "${sex.fold("F", "M")}",
+           |  "dateOfBirth": "${date.format(DateTimeFormatter.ISO_LOCAL_DATE)}",
+           |  "deceased": false,
+           |  "addresses": {
+           |    "1": {
+           |      "line1": "${address.headOption.getOrElse("1 the road")}",
+           |      "line2": "${address.drop(1).headOption.getOrElse("The Place")}",
+           |      "line3": "Sometown",
+           |      "line4": "Anyshire",
+           |      "line5": "Line 5",
+           |      "countryCode": $countryCode,
+           |      "sequenceNumber": 1,
+           |      "startDate": "2000-01-01"
+           |    }
+           |  },
+           |  "phoneNumbers": {
+           |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${telephone2
+               .map { t ⇒
+                 s""",
+               |    "${t.telephoneType}": ${Json.toJson(t)}""".stripMargin
+               }
+               .getOrElse("")}
+           |  }
+           |}""".stripMargin
+        case _ =>
+          s"""{
        |  "nino": "${nino.dropRight(1)}",
        |  "ninoSuffix": "${nino.takeRight(1)}",
        |  "names": {
@@ -121,13 +160,15 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
        |  },
        |  "phoneNumbers": {
        |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${telephone2
-           .map { t ⇒
-             s""",
+               .map { t ⇒
+                 s""",
            |    "${t.telephoneType}": ${Json.toJson(t)}""".stripMargin
-           }
-           .getOrElse("")}
+               }
+               .getOrElse("")}
        |  }
        |}""".stripMargin
+      }
+    }
 
 }
 
