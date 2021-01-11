@@ -24,7 +24,6 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
 import cats.syntax.apply._
-import cats.syntax.either._
 import cats.syntax.eq._
 import com.google.inject.{Inject, Singleton}
 import org.scalacheck.Gen

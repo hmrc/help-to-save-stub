@@ -24,7 +24,7 @@ import org.scalatest.matchers.should.Matchers
 
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 
-import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
+import scala.concurrent.{Await, Future, TimeoutException}
 import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration._
 
