@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -24,7 +24,6 @@ import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._
 import cats.syntax.apply._
-import cats.syntax.either._
 import cats.syntax.eq._
 import com.google.inject.{Inject, Singleton}
 import org.scalacheck.Gen

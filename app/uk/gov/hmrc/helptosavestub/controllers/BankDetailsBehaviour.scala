@@ -1,5 +1,5 @@
 /*
- * Copyright 2020 HM Revenue & Customs
+ * Copyright 2021 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -28,37 +28,31 @@ trait BankDetailsBehaviour {
   val allowedSeparators: Set[Char] = Set(' ', '-', '–', '−', '—')
 
   def getBankProfile(bankDetails: BankDetails): Profile = {
-    val accountNumberWithSortCodeIsValid =
-      if (bankDetails.accountNumber.startsWith("9")) {
-        Some(false)
-      } else if (bankDetails.accountNumber.startsWith("5")) {
-        None
-      } else if (!validateSortCode(bankDetails.sortCode)) {
-        Some(false)
-      } else if (!validateAccountNumber(bankDetails.accountNumber)) {
-        Some(false)
-      } else {
-        Some(true)
-      }
+    val accountNumberWithSortCodeIsValid = bankDetails match {
+      case BankDetails(_, accountNumber) if accountNumber.startsWith("9")         => Some(false)
+      case BankDetails(_, accountNumber) if accountNumber.startsWith("5")         => None
+      case BankDetails(sortCode, _) if !validateSortCode(sortCode)                => Some(false)
+      case BankDetails(_, accountNumber) if !validateAccountNumber(accountNumber) => Some(false)
+      case _                                                                      => Some(true)
+    }
 
     val sortCodeIsPresentOnEISCD =
-      if (bankDetails.sortCode.startsWith("9")) {
-        "no"
-      } else if (bankDetails.sortCode.startsWith("5")) {
-        "whoopsie"
-      } else {
-        "yes"
+      bankDetails match {
+        case BankDetails(_, accountNumber) if accountNumber.startsWith("9") => "no"
+        case BankDetails(_, accountNumber) if accountNumber.startsWith("5") => "whoopsie"
+        case _                                                              => "yes"
       }
 
     val barsResponse =
       accountNumberWithSortCodeIsValid.map(a ⇒ BARSResponse(a, sortCodeIsPresentOnEISCD))
 
-    if (bankDetails.accountNumber.startsWith("707")) {
-      Profile(barsResponse, CreateAccountResponse(Left(NSIErrorResponse.incorrectAccountNumber)))
-    } else if (bankDetails.sortCode.startsWith("70-3")) {
-      Profile(barsResponse, CreateAccountResponse(Left(NSIErrorResponse.incorrectSortCode)))
-    } else {
-      Profile(barsResponse, CreateAccountResponse(Right(())))
+    bankDetails match {
+      case BankDetails(_, accountNumber) if accountNumber.startsWith("707") =>
+        Profile(barsResponse, CreateAccountResponse(Left(NSIErrorResponse.incorrectAccountNumber)))
+      case BankDetails(sortCode, _) if sortCode.startsWith("70-3") =>
+        Profile(barsResponse, CreateAccountResponse(Left(NSIErrorResponse.incorrectSortCode)))
+      case _ =>
+        Profile(barsResponse, CreateAccountResponse(Right(())))
     }
   }
 
