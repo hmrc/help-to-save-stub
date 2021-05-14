@@ -24,6 +24,8 @@ import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.UnitSpec
 
+import scala.concurrent.ExecutionContext
+
 trait TestSupport extends UnitSpec with BeforeAndAfterAll {
 
   lazy val additionalConfig             = Configuration()
@@ -31,6 +33,7 @@ trait TestSupport extends UnitSpec with BeforeAndAfterAll {
   val testCC                            = play.api.test.Helpers.stubControllerComponents()
   val testAppConfig                     = fakeApplication.injector.instanceOf[AppConfig]
   private val generator                 = new Generator(1)
+  implicit lazy val ec                  = fakeApplication.injector.instanceOf[ExecutionContext]
 
   implicit lazy val configuration: Configuration = fakeApplication.injector.instanceOf[Configuration]
 

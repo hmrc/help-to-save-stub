@@ -62,7 +62,7 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     nino: String,
     systemId: String,
     thresholdAmount: Double,
-    transactionId: Option[UUID]): Action[AnyContent] = Action.async { implicit request ⇒
+    transactionId: Option[UUID]): Action[AnyContent] = Action.async { _ ⇒
     withDelay(checkUCStatusDelayConfig) { () ⇒
       logger.info(
         s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
@@ -88,7 +88,7 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     Status(result)
   }
 
-  def dwpHealthCheck(): Action[AnyContent] = Action { implicit request ⇒
+  def dwpHealthCheck(): Action[AnyContent] = Action { _ ⇒
     logger.info("Responding to DWP health check with status 200")
     Ok(healthCheckResponse)
   }

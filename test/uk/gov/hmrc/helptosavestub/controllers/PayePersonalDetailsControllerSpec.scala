@@ -24,8 +24,6 @@ import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.smartstub._
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val payeDetailsController = new PayePersonalDetailsController(actorSystem, testAppConfig, testCC)

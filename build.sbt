@@ -1,11 +1,10 @@
 import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 import play.core.PlayVersion
 import sbt.Keys.compile
-import sbt.Keys.dependencyOverrides
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
-import uk.gov.hmrc.SbtArtifactory
 import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
-import wartremover.{Wart, Warts, wartremoverErrors, wartremoverExcluded}
+import wartremover.{Wart, Warts}
+import wartremover.WartRemover.autoImport.{wartremoverErrors, wartremoverExcluded}
 
 lazy val appDependencies: Seq[ModuleID] = dependencies ++ overrides ++ testDependencies()
 lazy val plugins: Seq[Plugins]          = Seq.empty
@@ -15,7 +14,6 @@ lazy val scoverageSettings = {
   Seq(
     // Semicolon-separated list of regexs matching classes to exclude
     ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes).*",
-    //ScoverageKeys.coverageMinimum := 70,
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
     parallelExecution in Test := false
@@ -40,12 +38,7 @@ lazy val wartRemoverSettings = {
 }
 lazy val microservice =
   Project(appName, file("."))
-    .enablePlugins(Seq(
-      play.sbt.PlayScala,
-      SbtAutoBuildPlugin,
-      SbtGitVersioning,
-      SbtDistributablesPlugin,
-      SbtArtifactory) ++ plugins: _*)
+    .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
     .settings(addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"))
     .settings(playSettings ++ scoverageSettings: _*)
     .settings(scalaSettings: _*)
@@ -81,25 +74,25 @@ lazy val microservice =
       Keys.fork in IntegrationTest := false,
       unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "it"),
       addTestReportOption(IntegrationTest, "int-test-reports"),
-      //testGrouping in IntegrationTest := oneForkedJvmPerTest((definedTests in IntegrationTest).value),
       parallelExecution in IntegrationTest := false
     )
-    .settings(resolvers ++= Seq(
-      Resolver.bintrayRepo("hmrc", "releases"),
-      Resolver.jcenterRepo
-    ))
+    .settings(scalacOptions += "-P:silencer:pathFilters=routes")
+    .settings(Global / lintUnusedKeysOnLoad := false)
+
 val appName = "help-to-save-stub"
 val hmrc    = "uk.gov.hmrc"
 val dependencies = Seq(
   ws,
-  hmrc                %% "bootstrap-backend-play-26" % "3.0.0",
-  hmrc                %% "domain"                    % "5.10.0-play-26",
+  hmrc                %% "bootstrap-backend-play-26" % "5.2.0",
+  hmrc                %% "domain"                    % "5.11.0-play-26",
   hmrc                %% "stub-data-generator"       % "0.5.3",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
   "org.typelevel"     %% "cats-core"                 % "2.2.0",
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
   "com.github.kxbmap" %% "configs"                   % "0.4.4",
-  "com.google.inject" % "guice"                      % "4.2.2"
+  "com.google.inject" % "guice"                      % "4.2.2",
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
 )
 
 val akkaVersion     = "2.5.23"
@@ -113,8 +106,8 @@ val overrides = Seq(
 )
 
 def testDependencies(scope: String = "test") = Seq(
-  hmrc                     %% "service-integration-test" % "0.12.0-play-26"    % scope,
-  "org.scalatest"          %% "scalatest"                % "3.2.0"             % scope,
+  hmrc                     %% "service-integration-test" % "1.1.0-play-26"     % scope,
+  "org.scalatest"          %% "scalatest"                % "3.2.8"             % scope,
   "com.vladsch.flexmark"   % "flexmark-all"              % "0.35.10"           % scope,
   "org.scalatestplus"      %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"       % scope,
   "org.scalatestplus.play" %% "scalatestplus-play"       % "3.1.3"             % scope,

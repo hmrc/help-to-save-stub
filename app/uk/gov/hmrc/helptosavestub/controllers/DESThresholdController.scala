@@ -35,7 +35,7 @@ class DESThresholdController @Inject()(appConfig: AppConfig, cc: ControllerCompo
                    |}
                  """.stripMargin)
 
-  def getThresholdAmount(): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
+  def getThresholdAmount(): Action[AnyContent] = desAuthorisedAction { _ ⇒
     Future.successful(Ok(thresholdAmountJson))
   }
 

@@ -181,7 +181,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     correlationId: Option[String],
     nino: Option[String],
     version: Option[String],
-    systemId: Option[String]): Action[AnyContent] = Action.async { implicit request ⇒
+    systemId: Option[String]): Action[AnyContent] = Action.async { _ ⇒
     withDelay[Result](getAccountDelayConfig) { () ⇒
       validateParams(nino, version, systemId).fold(
         errors ⇒ {
@@ -247,7 +247,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     correlationId: Option[String],
     nino: Option[String],
     version: Option[String],
-    systemId: Option[String]): Action[AnyContent] = Action.async { implicit request ⇒
+    systemId: Option[String]): Action[AnyContent] = Action.async { _ ⇒
     withDelay(getTransactionsDelayConfig) { () ⇒
       validateParams(nino, version, systemId).fold(
         errors ⇒ {

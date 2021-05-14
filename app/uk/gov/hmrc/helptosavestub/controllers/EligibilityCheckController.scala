@@ -49,7 +49,7 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
     nino: String,
     universalCreditClaimant: Option[String],
     withinThreshold: Option[String]): Action[AnyContent] =
-    desAuthorisedAction { implicit request ⇒
+    desAuthorisedAction { _ ⇒
       withDelay(checkEligibilityDelayConfig) { () ⇒
         logger.info(
           s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +

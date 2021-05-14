@@ -24,8 +24,6 @@ import uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.Eligibi
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class EligibilityCheckControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" → "Bearer test")
