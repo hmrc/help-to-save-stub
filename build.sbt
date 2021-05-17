@@ -16,7 +16,7 @@ lazy val scoverageSettings = {
     ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes).*",
     ScoverageKeys.coverageFailOnMinimum := true,
     ScoverageKeys.coverageHighlighting := true,
-    parallelExecution in Test := false
+    Test / parallelExecution := false
   )
 }
 lazy val wartRemoverSettings = {
@@ -34,7 +34,7 @@ lazy val wartRemoverSettings = {
     Wart.Var
   )
 
-  wartremoverErrors in (Compile, compile) ++= Warts.allBut(excludedWarts: _*)
+  Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*)
 }
 lazy val microservice =
   Project(appName, file("."))
@@ -52,29 +52,29 @@ lazy val microservice =
     // disable some wart remover checks in tests - (Any, Null, PublicInference) seems to struggle with
     // scalamock, (Equals) seems to struggle with stub generator AutoGen and (NonUnitStatements) is
     // imcompatible with a lot of WordSpec
-    .settings(wartremoverErrors in (Test, compile) --= Seq(
+    .settings(Test / compile / wartremoverErrors --= Seq(
       Wart.Any,
       Wart.Equals,
       Wart.Null,
       Wart.NonUnitStatements,
       Wart.PublicInference))
     .settings(wartremoverExcluded ++=
-      routes.in(Compile).value ++
+      (Compile / routes).value ++
         (baseDirectory.value ** "*.sc").get ++
         Seq(sourceManaged.value / "main" / "sbt-buildinfo" / "BuildInfo.scala"))
     .settings(
       libraryDependencies ++= appDependencies,
       retrieveManaged := true,
-      evictionWarningOptions in update := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
+      update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
     )
     .settings(scalacOptions ++= Seq("-Xcheckinit", "-feature"))
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(
-      Keys.fork in IntegrationTest := false,
-      unmanagedSourceDirectories in IntegrationTest := Seq((baseDirectory in IntegrationTest).value / "it"),
+      IntegrationTest / Keys.fork := false,
+      IntegrationTest / unmanagedSourceDirectories := Seq((IntegrationTest / baseDirectory).value / "it"),
       addTestReportOption(IntegrationTest, "int-test-reports"),
-      parallelExecution in IntegrationTest := false
+      IntegrationTest / parallelExecution := false
     )
     .settings(scalacOptions += "-P:silencer:pathFilters=routes")
     .settings(Global / lintUnusedKeysOnLoad := false)
