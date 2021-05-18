@@ -17,17 +17,14 @@
 package uk.gov.hmrc.helptosavestub.util
 
 import java.nio.charset.Charset
-
 import akka.stream.Materializer
 import akka.util.ByteString
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.guice.GuiceableModule
 import play.api.libs.json.{JsValue, Json}
-
-import scala.concurrent.ExecutionContext.Implicits.global
 import scala.concurrent.duration.{Duration, FiniteDuration, _}
-import scala.concurrent.{Await, Future}
+import scala.concurrent.{Await, ExecutionContext, Future}
 import scala.language.postfixOps
 
 trait UnitSpec extends AnyWordSpec with Matchers {
@@ -40,7 +37,8 @@ trait UnitSpec extends AnyWordSpec with Matchers {
 
   def status(of: play.api.mvc.Result): Int = of.header.status
 
-  def jsonBodyOf(resultF: Future[play.api.mvc.Result])(implicit mat: Materializer): Future[JsValue] =
+  def jsonBodyOf(
+    resultF: Future[play.api.mvc.Result])(implicit mat: Materializer, ec: ExecutionContext): Future[JsValue] =
     resultF.map(jsonBodyOf)
 
   def jsonBodyOf(result: play.api.mvc.Result)(implicit mat: Materializer): JsValue = Json.parse(bodyOf(result))
@@ -53,7 +51,8 @@ trait UnitSpec extends AnyWordSpec with Matchers {
   def await[A](future: Future[A])(implicit timeout: Duration): A =
     Await.result(future, timeout)
 
-  def bodyOf(resultF: Future[play.api.mvc.Result])(implicit mat: Materializer): Future[String] = resultF.map(bodyOf)
+  def bodyOf(resultF: Future[play.api.mvc.Result])(implicit mat: Materializer, ec: ExecutionContext): Future[String] =
+    resultF.map(bodyOf)
 
   case class ExternalService(
     serviceName: String,

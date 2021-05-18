@@ -31,8 +31,6 @@ import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.helptosavestub.models.NSIPayload
 
-import scala.concurrent.ExecutionContext.Implicits.global
-
 class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val generator                 = new Generator(1)

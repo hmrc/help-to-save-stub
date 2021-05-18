@@ -21,15 +21,15 @@ import com.miguno.akka.testing.VirtualTime
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
-
+import org.scalatestplus.play.guice.GuiceOneAppPerSuite
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 
-import scala.concurrent.{Await, Future, TimeoutException}
-import scala.concurrent.ExecutionContext.Implicits.global
+import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
 import scala.concurrent.duration._
 
-class DelaysSpec extends AnyWordSpec with Matchers {
+class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
+  implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
   def config(
     name: String,
     delayEnabled: String,

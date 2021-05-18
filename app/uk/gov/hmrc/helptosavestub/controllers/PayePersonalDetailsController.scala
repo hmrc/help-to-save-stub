@@ -53,7 +53,7 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
     phoneNumber ← listOfN(6, numChar).map(_.mkString)
   } yield TelephoneNumber(callingCode, telephoneType, dialingCode, convertedAreaDiallingCode, phoneNumber)
 
-  def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { implicit request ⇒
+  def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { _ ⇒
     withDelay(getPayeDetailsDelayConfig) { () ⇒
       val status: Option[Int] = nino match {
         case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
