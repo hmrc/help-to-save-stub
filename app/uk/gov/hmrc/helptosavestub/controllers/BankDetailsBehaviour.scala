@@ -29,11 +29,11 @@ trait BankDetailsBehaviour {
 
   def getBankProfile(bankDetails: BankDetails): Profile = {
     val accountNumberWithSortCodeIsValid = bankDetails match {
-      case BankDetails(_, accountNumber) if accountNumber.startsWith("9")         => Some(false)
+      case BankDetails(_, accountNumber) if accountNumber.startsWith("9")         => Some("no")
       case BankDetails(_, accountNumber) if accountNumber.startsWith("5")         => None
-      case BankDetails(sortCode, _) if !validateSortCode(sortCode)                => Some(false)
-      case BankDetails(_, accountNumber) if !validateAccountNumber(accountNumber) => Some(false)
-      case _                                                                      => Some(true)
+      case BankDetails(sortCode, _) if !validateSortCode(sortCode)                => Some("no")
+      case BankDetails(_, accountNumber) if !validateAccountNumber(accountNumber) => Some("no")
+      case _                                                                      => Some("yes")
     }
 
     val sortCodeIsPresentOnEISCD =
