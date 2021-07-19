@@ -37,7 +37,7 @@ class BARSControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
       status(result) shouldBe 200
       jsonBodyOf(result).toString shouldBe
-        """{"accountNumberWithSortCodeIsValid":true,"sortCodeIsPresentOnEISCD":"yes"}""".stripMargin
+        """{"accountNumberWithSortCodeIsValid":"yes","sortCodeIsPresentOnEISCD":"yes"}""".stripMargin
     }
 
     "return accountNumberWithSortCodeIsValid as false when the given sort code is in the incorrect format" in {
@@ -52,7 +52,7 @@ class BARSControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
       status(result) shouldBe 200
       jsonBodyOf(result).toString shouldBe
-        """{"accountNumberWithSortCodeIsValid":false,"sortCodeIsPresentOnEISCD":"yes"}""".stripMargin
+        """{"accountNumberWithSortCodeIsValid":"no","sortCodeIsPresentOnEISCD":"yes"}""".stripMargin
     }
 
     "return accountNumberWithSortCodeIsValid as false when the given account number is in the incorrect format" in {
@@ -67,7 +67,7 @@ class BARSControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
       status(result) shouldBe 200
       jsonBodyOf(result).toString shouldBe
-        """{"accountNumberWithSortCodeIsValid":false,"sortCodeIsPresentOnEISCD":"yes"}""".stripMargin
+        """{"accountNumberWithSortCodeIsValid":"no","sortCodeIsPresentOnEISCD":"yes"}""".stripMargin
     }
   }
 
