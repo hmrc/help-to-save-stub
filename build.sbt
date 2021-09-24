@@ -83,8 +83,8 @@ val appName = "help-to-save-stub"
 val hmrc    = "uk.gov.hmrc"
 val dependencies = Seq(
   ws,
-  hmrc                %% "bootstrap-backend-play-26" % "5.2.0",
-  hmrc                %% "domain"                    % "5.11.0-play-26",
+  hmrc                %% "bootstrap-backend-play-28" % "5.14.0",
+  hmrc                %% "domain"                    % "6.2.0-play-28",
   hmrc                %% "stub-data-generator"       % "0.5.3",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
   "org.typelevel"     %% "cats-core"                 % "2.2.0",
@@ -106,11 +106,11 @@ val overrides = Seq(
 )
 
 def testDependencies(scope: String = "test") = Seq(
-  hmrc                     %% "service-integration-test" % "1.1.0-play-26"     % scope,
+  hmrc                     %% "service-integration-test" % "1.1.0-play-28"     % scope,
   "org.scalatest"          %% "scalatest"                % "3.2.8"             % scope,
   "com.vladsch.flexmark"   % "flexmark-all"              % "0.35.10"           % scope,
   "org.scalatestplus"      %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"       % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play"       % "3.1.3"             % scope,
+  "org.scalatestplus.play" %% "scalatestplus-play"       % "5.1.0"             % scope,
   "com.typesafe.play"      %% "play-test"                % PlayVersion.current % scope,
   "com.miguno.akka"        %% "akka-mock-scheduler"      % "0.5.5"             % scope,
   "org.pegdown"            % "pegdown"                   % "1.6.0"             % scope
