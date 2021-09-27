@@ -16,16 +16,20 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.util.UUID
+import com.google.inject.Inject
 
+import java.util.UUID
 import play.api.http.Status
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
+
+import javax.inject.Singleton
 import scala.concurrent.Future
 
+@Singleton
 class DWPControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val fakeRequest = FakeRequest().withHeaders("Authorization" → "Bearer test")

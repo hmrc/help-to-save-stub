@@ -6,7 +6,7 @@ import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import wartremover.{Wart, Warts}
 import wartremover.WartRemover.autoImport.{wartremoverErrors, wartremoverExcluded}
 
-lazy val appDependencies: Seq[ModuleID] = dependencies ++ overrides ++ testDependencies()
+lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
 lazy val plugins: Seq[Plugins]          = Seq.empty
 lazy val playSettings: Seq[Setting[_]]  = Seq.empty
 lazy val scoverageSettings = {
@@ -87,31 +87,22 @@ val dependencies = Seq(
   hmrc                %% "domain"                    % "6.2.0-play-28",
   hmrc                %% "stub-data-generator"       % "0.5.3",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
-  "org.typelevel"     %% "cats-core"                 % "2.2.0",
+  "org.typelevel"     %% "cats-core"                 % "2.3.1",
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
   "com.github.kxbmap" %% "configs"                   % "0.4.4",
-  "com.google.inject" % "guice"                      % "4.2.2",
+  "com.google.inject" % "guice"                      % "5.0.1",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
   "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
 )
 
-val akkaVersion     = "2.5.23"
-val akkaHttpVersion = "10.0.15"
-val overrides = Seq(
-  "com.typesafe.akka" %% "akka-stream"    % akkaVersion,
-  "com.typesafe.akka" %% "akka-protobuf"  % akkaVersion,
-  "com.typesafe.akka" %% "akka-slf4j"     % akkaVersion,
-  "com.typesafe.akka" %% "akka-actor"     % akkaVersion,
-  "com.typesafe.akka" %% "akka-http-core" % akkaHttpVersion
-)
-
 def testDependencies(scope: String = "test") = Seq(
-  hmrc                     %% "service-integration-test" % "1.1.0-play-28"     % scope,
-  "org.scalatest"          %% "scalatest"                % "3.2.8"             % scope,
-  "com.vladsch.flexmark"   % "flexmark-all"              % "0.35.10"           % scope,
-  "org.scalatestplus"      %% "scalatestplus-scalacheck" % "3.1.0.0-RC2"       % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play"       % "5.1.0"             % scope,
-  "com.typesafe.play"      %% "play-test"                % PlayVersion.current % scope,
-  "com.miguno.akka"        %% "akka-mock-scheduler"      % "0.5.5"             % scope,
-  "org.pegdown"            % "pegdown"                   % "1.6.0"             % scope
+  hmrc                     %% "bootstrap-backend-play-28" % "5.14.0"            % scope,
+  hmrc                     %% "service-integration-test"  % "1.1.0-play-28"     % scope,
+  "org.scalatest"          %% "scalatest"                 % "3.2.9"             % scope,
+  "com.vladsch.flexmark"   % "flexmark-all"               % "0.35.10"           % scope,
+  "org.scalatestplus"      %% "scalatestplus-scalacheck"  % "3.1.0.0-RC2"       % scope,
+  "org.scalatestplus.play" %% "scalatestplus-play"        % "5.1.0"             % scope,
+  "com.typesafe.play"      %% "play-test"                 % PlayVersion.current % scope,
+  "com.miguno.akka"        %% "akka-mock-scheduler"       % "0.5.5"             % scope,
+  "org.pegdown"            % "pegdown"                    % "1.6.0"             % scope
 )
