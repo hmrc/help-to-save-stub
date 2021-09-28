@@ -17,7 +17,6 @@
 package uk.gov.hmrc.helptosavestub.controllers.support
 
 import akka.actor.ActorSystem
-import akka.stream.ActorMaterializer
 import org.scalatest.{BeforeAndAfterAll, Suite}
 import uk.gov.hmrc.helptosavestub.util.UnitSpec
 
@@ -28,8 +27,7 @@ import uk.gov.hmrc.helptosavestub.util.UnitSpec
   */
 trait AkkaMaterializerSpec extends UnitSpec with BeforeAndAfterAll { this: Suite ⇒
 
-  implicit lazy val actorSystem: ActorSystem        = ActorSystem()
-  implicit lazy val materializer: ActorMaterializer = ActorMaterializer()
+  implicit lazy val actorSystem: ActorSystem = ActorSystem()
 
   override def afterAll(): Unit = {
     super.afterAll()

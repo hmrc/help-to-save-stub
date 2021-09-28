@@ -46,7 +46,7 @@ trait TestSupport extends UnitSpec with BeforeAndAfterAll {
           ConfigFactory.parseString("""
             | metrics.enabled       = false
           """.stripMargin)
-        ) ++ additionalConfig)
+        ).withFallback(additionalConfig))
       .build()
 
   override def beforeAll(): Unit = {

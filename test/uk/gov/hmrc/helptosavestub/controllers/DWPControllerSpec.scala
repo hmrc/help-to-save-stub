@@ -16,8 +16,6 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import com.google.inject.Inject
-
 import java.util.UUID
 import play.api.http.Status
 import play.api.mvc.Result
