@@ -24,7 +24,7 @@ import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
 
 object NSIGetAccountBehaviour {
-
+  // linter:ignore // ignores all warnings
   def getAccountByNino(nino: String, correlationId: Option[String]): Either[ErrorDetails, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
     nino match {
       case n if (n.startsWith("EM200") || n.startsWith("EL07")) || n.startsWith("AC") || n.startsWith("AS409") ⇒
@@ -136,7 +136,7 @@ object NSIGetAccountBehaviour {
     bonusPaid: String)
 
   object CurrentInvestmentMonth {
-
+    //noinspection ScalaStyle
     implicit val format: Format[CurrentInvestmentMonth] = Json.format[CurrentInvestmentMonth]
   }
 
@@ -184,6 +184,7 @@ object NSIGetAccountBehaviour {
 
     @SuppressWarnings(
       Array("org.wartremover.warts.Any", "org.wartremover.warts.Equals", "org.wartremover.warts.IsInstanceOf"))
+    // linter:ignore // ignores all warnings
     implicit val format: Format[NSIGetAccountByNinoResponse] = Jsonx.formatCaseClass[NSIGetAccountByNinoResponse]
 
     val bethCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))

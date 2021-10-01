@@ -117,6 +117,7 @@ object NSIGetTransactionsBehaviour {
 
     @SuppressWarnings(
       Array("org.wartremover.warts.Any", "org.wartremover.warts.Equals", "org.wartremover.warts.IsInstanceOf"))
+    // linter:ignore // ignores all warnings
     implicit val format: Format[NSIGetTransactionsByNinoResponse] =
       Jsonx.formatCaseClass[NSIGetTransactionsByNinoResponse]
 
