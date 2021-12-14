@@ -89,8 +89,8 @@ val dependencies = Seq(
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
   "org.typelevel"     %% "cats-core"                 % "2.3.1",
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
-  "com.github.kxbmap" %% "configs"                    % "0.4.4",
-  "com.google.inject" %  "guice"                     % "5.0.1",
+  "com.github.kxbmap" %% "configs"                   % "0.4.4",
+  "com.google.inject" % "guice"                      % "5.0.1",
   compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
   "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
 )
@@ -99,10 +99,10 @@ def testDependencies(scope: String = "test") = Seq(
   hmrc                     %% "bootstrap-backend-play-28" % "5.14.0"            % scope,
   hmrc                     %% "service-integration-test"  % "1.1.0-play-28"     % scope,
   "org.scalatest"          %% "scalatest"                 % "3.2.9"             % scope,
-  "com.vladsch.flexmark"    %  "flexmark-all"               % "0.35.10"           % scope,
+  "com.vladsch.flexmark"   % "flexmark-all"               % "0.35.10"           % scope,
   "org.scalatestplus"      %% "scalatestplus-scalacheck"  % "3.1.0.0-RC2"       % scope,
   "org.scalatestplus.play" %% "scalatestplus-play"        % "5.1.0"             % scope,
   "com.typesafe.play"      %% "play-test"                 % PlayVersion.current % scope,
   "com.miguno.akka"        %% "akka-mock-scheduler"       % "0.5.5"             % scope,
-  "org.pegdown"            %  "pegdown"                   % "1.6.0"             % scope
+  "org.pegdown"            % "pegdown"                    % "1.6.0"             % scope
 )
