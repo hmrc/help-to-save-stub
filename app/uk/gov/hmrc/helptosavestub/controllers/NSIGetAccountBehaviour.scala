@@ -89,6 +89,8 @@ object NSIGetAccountBehaviour {
         Right(NSIGetAccountByNinoResponse.marshalNSIResponse(correlationId))
       case n if n.startsWith("EM0") && n.endsWith("024A") ⇒
         Right(NSIGetAccountByNinoResponse.dennisNSIResponse(correlationId))
+      case n if n.startsWith("EM0") && n.endsWith("025A") ⇒
+        Right(NSIGetAccountByNinoResponse.dennisNSIResponse(correlationId, "C"))
       case _ ⇒ Left(NSIErrorResponse.unknownNinoError)
     }
 
@@ -1240,14 +1242,14 @@ object NSIGetAccountBehaviour {
         marshalTerms
       )
 
-    def dennisNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+    def dennisNSIResponse(correlationId: Option[String], closedFlag: String = " "): NSIGetAccountByNinoResponse =
       NSIGetAccountByNinoResponse(
         "V1.0",
         correlationId,
         "1100000112083",
         "0.00",
         "1270.00",
-        " ",
+        closedFlag,
         None,
         None,
         "00",
