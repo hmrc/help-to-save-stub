@@ -47,7 +47,7 @@ object BARSController {
 
   case class BankDetails(sortCode: String, accountNumber: String)
 
-  case class BARSResponse(accountNumberWithSortCodeIsValid: String, sortCodeIsPresentOnEISCD: String)
+  case class BARSResponse(accountNumberIsWellFormatted: String, sortCodeIsPresentOnEISCD: String)
 
   implicit val reads: Reads[BankDetails] = Json.reads[BankDetails]
 
