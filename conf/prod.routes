@@ -21,7 +21,7 @@ GET        /hmrc-healthcheck                          uk.gov.hmrc.helptosavestub
 GET        /pay-as-you-earn/02.00.00/individuals/:nino       uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController.getPayeDetails(nino)
 
 # Bank Account Reputation Service (BARS)
-POST        /v2/validateBankDetails                      uk.gov.hmrc.helptosavestub.controllers.BARSController.validateBankDetails
+POST        /validate/bank-details                    uk.gov.hmrc.helptosavestub.controllers.BARSController.validateBankDetails
 
 GET        /admin/metrics                             com.kenshoo.play.metrics.MetricsController.metrics
 ->         /help-to-save-stub                         app.Routes

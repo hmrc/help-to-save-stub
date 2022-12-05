@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 HM Revenue & Customs
+ * Copyright 2022 HM Revenue & Customs
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -47,7 +47,7 @@ object BARSController {
 
   case class BankDetails(sortCode: String, accountNumber: String)
 
-  case class BARSResponse(accountNumberWithSortCodeIsValid: String, sortCodeIsPresentOnEISCD: String)
+  case class BARSResponse(accountNumberIsWellFormatted: String, sortCodeIsPresentOnEISCD: String)
 
   implicit val reads: Reads[BankDetails] = Json.reads[BankDetails]
 
