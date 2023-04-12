@@ -74,6 +74,8 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       val description = "create account"
       withNSIPayload(description) { nsiPayload ⇒
         nsiPayload.nbaDetails match {
+          case Some(bankDetails) if bankDetails.sortCode == "12-345" =>
+            Conflict
           case Some(bankDetails) ⇒
             getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
               case Profile(_, createAccountResponse) ⇒
