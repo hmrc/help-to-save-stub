@@ -44,7 +44,7 @@ trait BankDetailsBehaviour {
       }
 
     val barsResponse =
-      accountNumberWithSortCodeIsValid.map(a ⇒ BARSResponse(a, sortCodeIsPresentOnEISCD))
+      accountNumberWithSortCodeIsValid.map(a => BARSResponse(a, sortCodeIsPresentOnEISCD))
 
     bankDetails match {
       case BankDetails(_, accountNumber) if accountNumber.startsWith("707") =>
@@ -62,8 +62,8 @@ trait BankDetailsBehaviour {
       false
     } else {
       Try(sc.toInt) match {
-        case Success(_) ⇒ true
-        case _ ⇒ false
+        case Success(_) => true
+        case _ => false
       }
     }
 
@@ -73,8 +73,8 @@ trait BankDetailsBehaviour {
       false
     } else {
       Try(ac.toInt) match {
-        case Success(_) ⇒ true
-        case _ ⇒ false
+        case Success(_) => true
+        case _ => false
       }
     }
 

@@ -24,16 +24,16 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 class BARSController @Inject()(cc: ControllerComponents) extends BackendController(cc) with BankDetailsBehaviour {
 
-  def validateBankDetails: Action[AnyContent] = Action { implicit request ⇒
-    request.body.asJson.fold(BadRequest("No JSON in body")) { json ⇒
+  def validateBankDetails: Action[AnyContent] = Action { implicit request =>
+    request.body.asJson.fold(BadRequest("No JSON in body")) { json =>
       (json \ "account").validate[BankDetails] match {
-        case play.api.libs.json.JsError(errors) ⇒
+        case play.api.libs.json.JsError(errors) =>
           BadRequest(s"Could not parse JSON: ${errors.mkString(";")}")
 
-        case play.api.libs.json.JsSuccess(bankDetails, _) ⇒
+        case play.api.libs.json.JsSuccess(bankDetails, _) =>
           getBankProfile(bankDetails).barsResponse.fold[Result](
             InternalServerError
-          ) { bars ⇒
+          ) { bars =>
             Ok(Json.toJson(bars))
           }
       }

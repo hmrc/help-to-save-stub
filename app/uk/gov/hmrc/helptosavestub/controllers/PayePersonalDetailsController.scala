@@ -46,31 +46,31 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
   val getPayeDetailsDelayConfig: DelayConfig = Delays.config("get-paye-personal-details", actorSystem.settings.config)
   private val ninoStatusRegex                = """PY(\d{3}).*""".r
   private val telephoneNumberGen: Gen[TelephoneNumber] = for {
-    callingCode ← Gen.choose(1, 250)
-    telephoneType ← Gen.oneOf(1, 2, 7)
-    dialingCode ← listOfN(5, numChar).map(_.mkString)
-    convertedAreaDiallingCode ← listOfN(3, numChar).map(_.mkString)
-    phoneNumber ← listOfN(6, numChar).map(_.mkString)
+    callingCode <- Gen.choose(1, 250)
+    telephoneType <- Gen.oneOf(1, 2, 7)
+    dialingCode <- listOfN(5, numChar).map(_.mkString)
+    convertedAreaDiallingCode <- listOfN(3, numChar).map(_.mkString)
+    phoneNumber <- listOfN(6, numChar).map(_.mkString)
   } yield TelephoneNumber(callingCode, telephoneType, dialingCode, convertedAreaDiallingCode, phoneNumber)
 
-  def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { _ ⇒
-    withDelay(getPayeDetailsDelayConfig) { () ⇒
+  def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { _ =>
+    withDelay(getPayeDetailsDelayConfig) { () =>
       val status: Option[Int] = nino match {
-        case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-        case _ ⇒ None
+        case ninoStatusRegex(s) => Try(s.toInt).toOption
+        case _ => None
       }
 
       val response = status match {
-        case Some(s) ⇒
+        case Some(s) =>
           Status(s)(ErrorJson.errorJson(s))
 
-        case None ⇒
+        case None =>
           payeDetails(nino)
             .seeded(nino)
             .fold[Result] {
               logger.warn(s"Could not generate PayeDetails for NINO $nino")
               InternalServerError
-            } { s ⇒
+            } { s =>
               logger.info(s"Returning PayePersonalDetails for NINO $nino:\n$s")
               Ok(Json.parse(s))
             }
@@ -82,15 +82,15 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
 
   private[controllers] def payeDetails(nino: String) =
     for { // scalastyle:ignore
-      sex ← Gen.gender
-      name ← Gen.forename(sex)
-      surname ← Gen.surname
-      date ← Gen.choose(100L, 1000L).map(LocalDate.ofEpochDay)
-      address ← Gen.ukAddress
-      postcode ← Gen.postcode
-      countryCode ← Gen.choose(1, 250)
-      telephone1 ← telephoneNumberGen
-      telephone2 ← Gen.option(telephoneNumberGen)
+      sex <- Gen.gender
+      name <- Gen.forename(sex)
+      surname <- Gen.surname
+      date <- Gen.choose(100L, 1000L).map(LocalDate.ofEpochDay)
+      address <- Gen.ukAddress
+      postcode <- Gen.postcode
+      countryCode <- Gen.choose(1, 250)
+      telephone1 <- telephoneNumberGen
+      telephone2 <- Gen.option(telephoneNumberGen)
     } yield
       s"""{
        |  "nino": "${nino.dropRight(1)}",
@@ -121,7 +121,7 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
        |  },
        |  "phoneNumbers": {
        |    "${telephone1.telephoneType}": ${Json.toJson(telephone1)}${telephone2
-           .map { t ⇒
+           .map { t =>
              s""",
            |    "${t.telephoneType}": ${Json.toJson(t)}""".stripMargin
            }
@@ -134,9 +134,9 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
 object PayePersonalDetailsController {
 
   implicit class GenderOps(val gender: Gender) extends AnyVal {
-    def fold[A](female: ⇒ A, male: ⇒ A): A = gender match {
-      case Female ⇒ female
-      case Male ⇒ male
+    def fold[A](female: => A, male: => A): A = gender match {
+      case Female => female
+      case Male => male
     }
   }
 

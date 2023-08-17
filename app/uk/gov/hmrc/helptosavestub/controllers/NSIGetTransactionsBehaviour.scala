@@ -40,57 +40,57 @@ object NSIGetTransactionsBehaviour {
     nino: String,
     correlationId: Option[String]): Either[ErrorDetails, NSIGetTransactionsByNinoResponse] =
     nino match {
-      case n if n.startsWith("EM0") && n.endsWith("001A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("001A") =>
         Right(NSIGetTransactionsByNinoResponse.bethResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("002A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("002A") =>
         Right(NSIGetTransactionsByNinoResponse.peteResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("003A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("003A") =>
         Right(NSIGetTransactionsByNinoResponse.lauraResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("004A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("004A") =>
         Right(NSIGetTransactionsByNinoResponse.tonyResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("005A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("005A") =>
         Right(NSIGetTransactionsByNinoResponse.monikaResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("006A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("006A") =>
         Right(NSIGetTransactionsByNinoResponse.happyResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("007A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("007A") =>
         Right(NSIGetTransactionsByNinoResponse.takenResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("008A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("008A") =>
         Right(NSIGetTransactionsByNinoResponse.spencerResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("009A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("009A") =>
         Right(NSIGetTransactionsByNinoResponse.alexResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("010A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("010A") =>
         Right(NSIGetTransactionsByNinoResponse.closedAccountResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("011A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("011A") =>
         Right(NSIGetTransactionsByNinoResponse.accountBlockedResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("012A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("012A") =>
         Right(NSIGetTransactionsByNinoResponse.clientBlockedResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("013A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("013A") =>
         Right(NSIGetTransactionsByNinoResponse.closedAccount2Response(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("014A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("014A") =>
         Right(NSIGetTransactionsByNinoResponse.closedAccount3Response(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("015A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("015A") =>
         Right(NSIGetTransactionsByNinoResponse.closedAccount4Response(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("016A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("016A") =>
         Right(NSIGetTransactionsByNinoResponse.accountUnspecifiedBlockedResponse(correlationId))
-      case n if n.startsWith("TM7") && n.endsWith("915A") ⇒
+      case n if n.startsWith("TM7") && n.endsWith("915A") =>
         Right(NSIGetTransactionsByNinoResponse.annaResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("017A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("017A") =>
         Right(NSIGetTransactionsByNinoResponse.tomResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("018A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("018A") =>
         Right(NSIGetTransactionsByNinoResponse.angelaResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("019A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("019A") =>
         Right(NSIGetTransactionsByNinoResponse.ivoResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("020A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("020A") =>
         Right(NSIGetTransactionsByNinoResponse.arsenyResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("021A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("021A") =>
         Right(NSIGetTransactionsByNinoResponse.sunanResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("022A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("022A") =>
         Right(NSIGetTransactionsByNinoResponse.ranaResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("023A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("023A") =>
         Right(NSIGetTransactionsByNinoResponse.marshalResponse(correlationId))
-      case n if n.startsWith("EM0") && n.endsWith("024A") ⇒
+      case n if n.startsWith("EM0") && n.endsWith("024A") =>
         Right(NSIGetTransactionsByNinoResponse.dennisResponse(correlationId))
-      case _ ⇒ Left(NSIErrorResponse.unknownNinoError)
+      case _ => Left(NSIErrorResponse.unknownNinoError)
     }
 
   case class NSIGetTransactionsByNinoResponse(

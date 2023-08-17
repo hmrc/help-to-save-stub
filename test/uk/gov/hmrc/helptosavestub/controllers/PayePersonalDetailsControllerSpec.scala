@@ -27,7 +27,7 @@ import uk.gov.hmrc.smartstub._
 class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val payeDetailsController = new PayePersonalDetailsController(actorSystem, testAppConfig, testCC)
-  private val fakeRequest   = FakeRequest().withHeaders("Authorization" → "Bearer test")
+  private val fakeRequest   = FakeRequest().withHeaders("Authorization" -> "Bearer test")
 
   "GET /pay-as-you-earn/02.00.00/individuals/{NINO}" should {
 

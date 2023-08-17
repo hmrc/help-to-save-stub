@@ -31,7 +31,7 @@ trait Delays {
 
   val scheduler: Scheduler
 
-  def withDelay[A](delayConfig: DelayConfig)(f: () ⇒ A)(implicit ec: ExecutionContext): Future[A] =
+  def withDelay[A](delayConfig: DelayConfig)(f: () => A)(implicit ec: ExecutionContext): Future[A] =
     if (delayConfig.enabled) {
       after(nextDelay(delayConfig), scheduler)(Future(f()))
     } else {

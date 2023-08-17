@@ -49,25 +49,25 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
     nino: String,
     universalCreditClaimant: Option[String],
     withinThreshold: Option[String]): Action[AnyContent] =
-    desAuthorisedAction { _ ⇒
-      withDelay(checkEligibilityDelayConfig) { () ⇒
+    desAuthorisedAction { _ =>
+      withDelay(checkEligibilityDelayConfig) { () =>
         logger.info(
           s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
             s"ucClaimant: ${universalCreditClaimant.getOrElse("-")}, " +
             s"withinThreshold: ${withinThreshold.getOrElse("-")}")
 
         val status: Option[Int] = nino match {
-          case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
+          case ninoStatusRegex(s) => Try(s.toInt).toOption
           // Scenario 2
-          case s if s.startsWith("WP1144") || s.startsWith("AA1231") ⇒ Some(404)
-          case _ ⇒ None
+          case s if s.startsWith("WP1144") || s.startsWith("AA1231") => Some(404)
+          case _ => None
         }
 
         val response = status match {
-          case Some(s) ⇒
+          case Some(s) =>
             Status(s)(ErrorJson.errorJson(s))
 
-          case None ⇒
+          case None =>
             getResponse(nino, universalCreditClaimant, withinThreshold)
         }
 
@@ -109,15 +109,15 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
     universalCreditClaimant: Option[String],
     withinThreshold: Option[String]): Result =
     ucParametersValidation(profile)(universalCreditClaimant, withinThreshold).fold(
-      { e ⇒
+      { e =>
         logger.warn(
           s"Invalid UC parameters passed into eligibility call for NINO $nino: " +
             s"[universalCreditClaimant: ${universalCreditClaimant.getOrElse("-")}, withinThreshold: ${withinThreshold
               .getOrElse("-")}]. Errors were: " +
             s"${e.toList.mkString("; ")}")
         BadRequest
-      }, { _ ⇒
-        profile.eligibiltyCheckResult.fold[Result](InternalServerError)(r ⇒ Ok(r.toJson()))
+      }, { _ =>
+        profile.eligibiltyCheckResult.fold[Result](InternalServerError)(r => Ok(r.toJson()))
       }
     )
 
@@ -127,14 +127,14 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
     def reasonCodeIs(code: Int): Boolean = profile.eligibiltyCheckResult.map(_.reasonCode).contains(code)
 
     profile.uCDetails match {
-      case None ⇒
+      case None =>
         if (universalCreditClaimant.isEmpty && withinThreshold.isEmpty) {
           Valid(())
         } else {
           Invalid("eligibility profile had no ucDetails but received parameters in request").toValidatedNel
         }
 
-      case Some(p) ⇒
+      case Some(p) =>
         val universalCreditClaimantCheck: ValidatedOrErrorStrings[Unit] =
           // don't worry about the inputs if the eligibility reason is not entirely to do with UC
           if (universalCreditClaimant.contains(p.ucClaimant) || reasonCodeIs(7) || reasonCodeIs(8)) {
@@ -152,7 +152,7 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: 
               .getOrElse("")}' but received value '${withinThreshold.getOrElse("")}'").toValidatedNel
           }
 
-        (universalCreditClaimantCheck, withinThresholdCheck).mapN { case _ ⇒ () }
+        (universalCreditClaimantCheck, withinThresholdCheck).mapN { case _ => () }
     }
 
   }

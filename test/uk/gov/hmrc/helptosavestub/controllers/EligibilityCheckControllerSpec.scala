@@ -26,7 +26,7 @@ import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 
 class EligibilityCheckControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
-  val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" → "Bearer test")
+  val fakeRequest = FakeRequest("GET", "/").withHeaders("Authorization" -> "Bearer test")
 
   val eligCheckController = new EligibilityCheckController(actorSystem, testAppConfig, testCC)
 
@@ -58,11 +58,11 @@ class EligibilityCheckControllerSpec extends TestSupport with AkkaMaterializerSp
       status(result) shouldBe Status.OK
       val json = contentAsString(result)
       val expected = resultCode match {
-        case 1 ⇒ "Eligible to HtS Account"
-        case 2 ⇒ "Ineligible to HtS Account"
-        case 3 ⇒ "HtS account already exists"
-        case 4 ⇒ "Unknown eligibility because call to DWP failed"
-        case _ ⇒ sys.error("Invalid result code")
+        case 1 => "Eligible to HtS Account"
+        case 2 => "Ineligible to HtS Account"
+        case 3 => "HtS account already exists"
+        case 4 => "Unknown eligibility because call to DWP failed"
+        case _ => sys.error("Invalid result code")
       }
 
       Json.fromJson[EligibilityCheckResult](Json.parse(json)).get.result shouldBe expected

@@ -28,22 +28,22 @@ trait DWPEligibilityBehaviour {
   val isUCClaimantAndNotEarningEnough: UCDetails = UCDetails("Y", Some("N"))
   val notUCClaimant: UCDetails                   = UCDetails("N", None)
   val reasonMappings: Map[Int, String] = Map(
-    1 → "HtS account was previously created",
-    2 → "Not entitled to WTC and UC not checked",
-    3 → "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC",
-    4 → "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient",
-    5 → "Ineligible to HtS Account: Not entitled to WTC and in receipt of UC but income is insufficient",
-    6 → "In receipt of UC and income sufficient",
-    7 → "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit",
-    8 → "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient",
-    9 → "Not entitled to WTC and not in receipt of UC"
+    1 -> "HtS account was previously created",
+    2 -> "Not entitled to WTC and UC not checked",
+    3 -> "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and not in receipt of UC",
+    4 -> "Entitled to WTC but not in receipt of positive WTC/CTC Tax Credit (nil TC) and in receipt of UC but income is insufficient",
+    5 -> "Ineligible to HtS Account: Not entitled to WTC and in receipt of UC but income is insufficient",
+    6 -> "In receipt of UC and income sufficient",
+    7 -> "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit",
+    8 -> "Entitled to WTC and in receipt of positive WTC/CTC Tax Credit and in receipt of UC and income sufficient",
+    9 -> "Not entitled to WTC and not in receipt of UC"
   )
   val resultMappings: Map[Int, String] = Map(
-    1 → "Eligible to HtS Account",
-    2 → "Ineligible to HtS Account",
-    3 → "HtS account already exists",
-    4 → "Unknown eligibility because call to DWP failed",
-    99 → "INVALID RESULT WHICH DES SHOULD NEVER SEND"
+    1 -> "Eligible to HtS Account",
+    2 -> "Ineligible to HtS Account",
+    3 -> "HtS account already exists",
+    4 -> "Unknown eligibility because call to DWP failed",
+    99 -> "INVALID RESULT WHICH DES SHOULD NEVER SEND"
   )
   val alreadyHasAccountResult: EligibilityCheckResult =
     EligibilityCheckResult("HtS account already exists", 3, "HtS account was previously created", 1)

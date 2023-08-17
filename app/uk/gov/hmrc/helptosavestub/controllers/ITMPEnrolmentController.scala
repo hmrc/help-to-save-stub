@@ -34,8 +34,8 @@ class ITMPEnrolmentController @Inject()(actorSystem: ActorSystem, appConfig: App
   val scheduler: Scheduler                = actorSystem.scheduler
   val setItmpFlagDelayConfig: DelayConfig = Delays.config("set-itmp-flag", actorSystem.settings.config)
 
-  def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { _ ⇒
-    withDelay(setItmpFlagDelayConfig) { () ⇒
+  def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { _ =>
+    withDelay(setItmpFlagDelayConfig) { () =>
       val response = if (nino.startsWith("HS403")) {
         logger.info("Received request to set ITMP flag: returning status 403 (FORBIDDEN)")
         Forbidden
