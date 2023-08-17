@@ -40,9 +40,9 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
          |delays {
          |  $name {
          |    enabled: $delayEnabled,
-         |    meanDelay: $meanDelay
-         |    standardDeviation = $standardDeviation
-         |    minimumDelay = $minimumDelay
+         |    mean-delay: $meanDelay
+         |    standard-deviation = $standardDeviation
+         |    minimum-delay = $minimumDelay
          |  }
          |}
       """.stripMargin)
