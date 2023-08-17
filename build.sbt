@@ -2,7 +2,6 @@ import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 import play.core.PlayVersion
 import sbt.Keys.compile
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
-import uk.gov.hmrc.sbtdistributables.SbtDistributablesPlugin.publishingSettings
 import wartremover.{Wart, Warts}
 import wartremover.WartRemover.autoImport.{wartremoverErrors, wartremoverExcluded}
 
@@ -31,7 +30,11 @@ lazy val wartRemoverSettings = {
     Wart.Nothing,
     Wart.Overloading,
     Wart.ToString,
-    Wart.Var
+    Wart.Var,
+    Wart.StringPlusAny,
+    Wart.ThreadSleep,
+    Wart.Any,
+    Wart.PlatformDefault,
   )
 
   Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*)
@@ -39,13 +42,11 @@ lazy val wartRemoverSettings = {
 lazy val microservice =
   Project(appName, file("."))
     .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
-    .settings(addCompilerPlugin("org.psywerx.hairyfotr" %% "linter" % "0.1.17"))
     .settings(playSettings ++ scoverageSettings: _*)
     .settings(scalaSettings: _*)
     .settings(majorVersion := 2)
-    .settings(publishingSettings: _*)
     .settings(defaultSettings(): _*)
-    .settings(scalaVersion := "2.12.11")
+    .settings(scalaVersion := "2.13.8")
     .settings(PlayKeys.playDefaultPort := 7002)
     .settings(scalafmtOnCompile := true)
     .settings(wartRemoverSettings)
@@ -85,20 +86,20 @@ val bootstrapBackendVersion = "5.25.0"
 val dependencies = Seq(
   ws,
   hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
-  hmrc                %% "domain"                    % "6.2.0-play-28",
-  hmrc                %% "stub-data-generator"       % "0.5.3",
+  hmrc                %% "domain"                    % "8.3.0-play-28",
+  hmrc                %% "stub-data-generator"       % "1.1.0",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
   "org.typelevel"     %% "cats-core"                 % "2.3.1",
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
-  "com.github.kxbmap" %% "configs"                   % "0.4.4",
+  "com.github.kxbmap" %% "configs"                   % "0.6.1",
   "com.google.inject" % "guice"                      % "5.0.1",
-  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.1" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.1" % Provided cross CrossVersion.full
+  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.12" cross CrossVersion.full),
+  "com.github.ghik" % "silencer-lib" % "1.7.12" % Provided cross CrossVersion.full
 )
 
 def testDependencies(scope: String = "test") = Seq(
   hmrc                     %% "bootstrap-backend-play-28" % bootstrapBackendVersion % scope,
-  hmrc                     %% "service-integration-test"  % "1.1.0-play-28"         % scope,
+  hmrc                     %% "service-integration-test"  % "1.3.0-play-28"         % scope,
   "org.scalatest"          %% "scalatest"                 % "3.2.9"                 % scope,
   "com.vladsch.flexmark"   % "flexmark-all"               % "0.35.10"               % scope,
   "org.scalatestplus"      %% "scalatestplus-scalacheck"  % "3.1.0.0-RC2"           % scope,
