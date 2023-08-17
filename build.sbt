@@ -1,4 +1,3 @@
-import com.lucidchart.sbt.scalafmt.ScalafmtCorePlugin.autoImport._
 import play.core.PlayVersion
 import sbt.Keys.compile
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
@@ -48,7 +47,6 @@ lazy val microservice =
     .settings(defaultSettings(): _*)
     .settings(scalaVersion := "2.13.8")
     .settings(PlayKeys.playDefaultPort := 7002)
-    .settings(scalafmtOnCompile := true)
     .settings(wartRemoverSettings)
     // disable some wart remover checks in tests - (Any, Null, PublicInference) seems to struggle with
     // scalamock, (Equals) seems to struggle with stub generator AutoGen and (NonUnitStatements) is
@@ -85,7 +83,7 @@ val hmrc                    = "uk.gov.hmrc"
 val bootstrapBackendVersion = "5.25.0"
 val dependencies = Seq(
   ws,
-  hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
+hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
   hmrc                %% "domain"                    % "8.3.0-play-28",
   hmrc                %% "stub-data-generator"       % "1.1.0",
   "org.scalacheck"    %% "scalacheck"                % "1.14.3",
