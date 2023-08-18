@@ -67,6 +67,7 @@ lazy val microservice =
       update / evictionWarningOptions := EvictionWarningOptions.default.withWarnScalaVersionEviction(false)
     )
     .settings(scalacOptions ++= Seq("-Xcheckinit", "-feature"))
+    .settings(Compile / scalacOptions -= "utf8")
     .configs(IntegrationTest)
     .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
     .settings(
