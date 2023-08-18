@@ -75,7 +75,7 @@ lazy val microservice =
       addTestReportOption(IntegrationTest, "int-test-reports"),
       IntegrationTest / parallelExecution := false
     )
-    .settings(scalacOptions += "-P:silencer:pathFilters=routes")
+    .settings(scalacOptions += "-Wconf:src=routes/.*:s")
     .settings(Global / lintUnusedKeysOnLoad := false)
 
 val appName                 = "help-to-save-stub"
@@ -90,8 +90,6 @@ hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
   "com.github.kxbmap" %% "configs"                   % "0.6.1",
   "com.google.inject" % "guice"                      % "5.0.1",
-  compilerPlugin("com.github.ghik" % "silencer-plugin" % "1.7.12" cross CrossVersion.full),
-  "com.github.ghik" % "silencer-lib" % "1.7.12" % Provided cross CrossVersion.full
 )
 
 def testDependencies(scope: String = "test") = Seq(
