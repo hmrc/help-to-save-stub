@@ -45,8 +45,8 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
   val ucGen: Gen[UCDetails] = {
     val booleanGen = Gen.oneOf("Y", "N")
     for {
-      c ← booleanGen
-      w ← if (c === "Y") { booleanGen.map(Some(_)) } else { Gen.const(None) }
+      c <- booleanGen
+      w <- if (c === "Y") { booleanGen.map(Some(_)) } else { Gen.const(None) }
     } yield UCDetails(c, w)
   }
   val healthCheckResponse: JsValue =
@@ -62,8 +62,8 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     nino: String,
     systemId: String,
     thresholdAmount: Double,
-    transactionId: Option[UUID]): Action[AnyContent] = Action.async { _ ⇒
-    withDelay(checkUCStatusDelayConfig) { () ⇒
+    transactionId: Option[UUID]): Action[AnyContent] = Action.async { _ =>
+    withDelay(checkUCStatusDelayConfig) { () =>
       logger.info(
         s"The following details were passed into dwpClaimantCheck: nino: $nino, systemId: $systemId, " +
           s"thresholdAmount: $thresholdAmount, transactionId: $transactionId")
@@ -75,7 +75,7 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
         Ok("Timeout")
       } else {
         getProfile(nino).fold(Ok(Json.toJson(randomUCDetails()))) {
-          _.uCDetails.fold[Result](InternalServerError)(ucDetails ⇒ Ok(Json.toJson(ucDetails)))
+          _.uCDetails.fold[Result](InternalServerError)(ucDetails => Ok(Json.toJson(ucDetails)))
         }
       }
     }
@@ -88,7 +88,7 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     Status(result)
   }
 
-  def dwpHealthCheck(): Action[AnyContent] = Action { _ ⇒
+  def dwpHealthCheck(): Action[AnyContent] = Action { _ =>
     logger.info("Responding to DWP health check with status 200")
     Ok(healthCheckResponse)
   }

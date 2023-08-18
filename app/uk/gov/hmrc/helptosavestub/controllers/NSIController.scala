@@ -60,28 +60,28 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
   val getTransactionsDelayConfig: DelayConfig = Delays.config("get-transactions", actorSystem.settings.config)
   private val ninoStatusRegex                 = """AS(\d{3}).*""".r
 
-  def updateEmailOrHealthCheck(): Action[AnyContent] = Action.async { implicit request ⇒
-    withDelay(updateAccountDelayConfig) { () ⇒
-      withNSIPayload("update email or health check") { nsiUserInfo ⇒
+  def updateEmailOrHealthCheck(): Action[AnyContent] = Action.async { implicit request =>
+    withDelay(updateAccountDelayConfig) { () =>
+      withNSIPayload("update email or health check") { nsiUserInfo =>
         val description = if (nsiUserInfo.nino === "XX999999X") "NS&I health check" else "update email"
         handleRequest(nsiUserInfo, Ok, description)
       }
     }
   }
 
-  def createAccount(): Action[AnyContent] = Action.async { implicit request ⇒
-    withDelay(createAccountDelayConfig) { () ⇒
+  def createAccount(): Action[AnyContent] = Action.async { implicit request =>
+    withDelay(createAccountDelayConfig) { () =>
       val description = "create account"
-      withNSIPayload(description) { nsiPayload ⇒
+      withNSIPayload(description) { nsiPayload =>
         nsiPayload.nbaDetails match {
-          case Some(bankDetails) ⇒
+          case Some(bankDetails) =>
             getBankProfile(BankDetails(bankDetails.sortCode, bankDetails.accountNumber)) match {
-              case Profile(_, createAccountResponse) ⇒
+              case Profile(_, createAccountResponse) =>
                 createAccountResponse.response match {
-                  case Right(()) ⇒
+                  case Right(()) =>
                     val accountNumber = generateAccountNumberJson
                     handleRequest(nsiPayload, Created(accountNumber), description)
-                  case Left(error) ⇒
+                  case Left(error) =>
                     logger.warn(s"Create Account request failed, errorDetails are: $error")
                     BadRequest(
                       Json.toJson(SubmissionFailureResponse(
@@ -89,7 +89,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
                 }
             }
 
-          case None ⇒
+          case None =>
             val accountNumber = generateAccountNumberJson
             handleRequest(nsiPayload, Created(accountNumber), description)
         }
@@ -97,19 +97,19 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     }
   }
 
-  def withNSIPayload(description: String)(body: NSIPayload ⇒ Result)(implicit request: Request[AnyContent]): Result = {
+  def withNSIPayload(description: String)(body: NSIPayload => Result)(implicit request: Request[AnyContent]): Result = {
     lazy val requestBodyText = request.body.asText.getOrElse("")
 
     request.body.asJson.map(_.validate[NSIPayload]) match {
-      case None ⇒
+      case None =>
         logger.error(s"No JSON found for $description request: $requestBodyText")
         BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "No JSON found", ""))))
 
-      case Some(er: JsError) ⇒
+      case Some(er: JsError) =>
         logger.error(s"Could not parse JSON found for $description request: $requestBodyText")
         BadRequest(Json.toJson(SubmissionFailureResponse(SubmissionFailure(None, "Invalid Json", er.toString))))
 
-      case Some(JsSuccess(info, _)) ⇒
+      case Some(JsSuccess(info, _)) =>
         body(info)
     }
   }
@@ -117,19 +117,19 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
   def handleRequest(nsiPayload: NSIPayload, successResult: Result, description: String)(
     implicit request: Request[AnyContent]): Result =
     isAuthorised(request.headers).fold(
-      { e ⇒
+      { e =>
         logger.error(e)
         Unauthorized
-      }, { _ ⇒
+      }, { _ =>
         val status: Option[Int] = nsiPayload.nino match {
-          case ninoStatusRegex(s) ⇒ Try(s.toInt).toOption
-          case _ ⇒ None
+          case ninoStatusRegex(s) => Try(s.toInt).toOption
+          case _ => None
         }
 
         logger.info(
           s"Responding to $description with status: ${status.getOrElse(successResult.header.status)}, nsiPayload from the request is: $nsiPayload ")
 
-        status.fold(successResult) { s ⇒
+        status.fold(successResult) { s =>
           Status(s)(
             Json.toJson(SubmissionFailureResponse(
               SubmissionFailure(Some("ID"), "intentional error", s"extracted status $s from nino ${nsiPayload.nino}"))))
@@ -140,25 +140,25 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
   def isAuthorised(headers: Headers): Either[String, Unit] = {
     val decoded: Either[String, String] =
       headers.headers
-        .find(entry ⇒
+        .find(entry =>
           authorizationHeaderKeys.exists(
             entry._1.toLowerCase === _.toLowerCase && entry._2.startsWith(authorizationValuePrefix)))
         .fold[Either[String, String]](
           Left("Could not find authorization header")
         ) {
-          case (_, h) ⇒
+          case (_, h) =>
             val decoded = Try(Base64.getDecoder.decode(h.stripPrefix(authorizationValuePrefix)))
             decoded match {
-              case Success(bytes) ⇒
+              case Success(bytes) =>
                 Right(new String(bytes, StandardCharsets.UTF_8))
 
-              case Failure(error) ⇒
+              case Failure(error) =>
                 Left(s"Could not decode authorization details: header value was $h. ${error.getMessage}")
 
             }
         }
 
-    decoded.flatMap { s ⇒
+    decoded.flatMap { s =>
       if (s === testAuthHeader) {
         Right(())
       } else {
@@ -181,13 +181,13 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     correlationId: Option[String],
     nino: Option[String],
     version: Option[String],
-    systemId: Option[String]): Action[AnyContent] = Action.async { _ ⇒
-    withDelay[Result](getAccountDelayConfig) { () ⇒
+    systemId: Option[String]): Action[AnyContent] = Action.async { _ =>
+    withDelay[Result](getAccountDelayConfig) { () =>
       validateParams(nino, version, systemId).fold(
-        errors ⇒ {
+        errors => {
           logger.warn("[Handle Account Query] invalid params")
           BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
-        }, { validatedNino ⇒
+        }, { validatedNino =>
           if (validatedNino.contains("401")) {
             Unauthorized
           } else if (validatedNino.contains("500")) {
@@ -195,8 +195,8 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
           } else {
             val maybeAccount = getAccountByNino(validatedNino, correlationId)
             maybeAccount match {
-              case Right(a) ⇒ Ok(Json.toJson(a))
-              case Left(e) ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+              case Right(a) => Ok(Json.toJson(a))
+              case Left(e) => BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
             }
           }
         }
@@ -213,7 +213,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       .fold[Validated[ErrorDetails, String]](
         Validated.Invalid(NSIErrorResponse.missingVersionError)
       )(
-        v ⇒ if (v =!= "V1.0") Validated.Invalid(NSIErrorResponse.unsupportedVersionError) else Validated.Valid(v)
+        v => if (v =!= "V1.0") Validated.Invalid(NSIErrorResponse.unsupportedVersionError) else Validated.Valid(v)
       )
       .toValidatedNel
 
@@ -221,7 +221,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       .fold[Validated[ErrorDetails, String]]({
         Invalid(NSIErrorResponse.missingNinoError)
       }) {
-        case maybeNino ⇒
+        case maybeNino =>
           if (!maybeNino.matches(helptosavestub.util.ninoRegex.regex)) {
             Invalid(NSIErrorResponse.badNinoError)
           } else { Valid(maybeNino) }
@@ -232,13 +232,13 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       .fold[Validated[ErrorDetails, String]](
         Validated.Invalid(NSIErrorResponse.missingSystemIdError)
       )(
-        sid ⇒ Validated.Valid(sid)
+        sid => Validated.Valid(sid)
       )
       .toValidatedNel
 
     (versionValidation, ninoValidation, systemIdValidation)
       .mapN {
-        case (_, validatedNino, _) ⇒ validatedNino
+        case (_, validatedNino, _) => validatedNino
       }
 
   }
@@ -247,13 +247,13 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     correlationId: Option[String],
     nino: Option[String],
     version: Option[String],
-    systemId: Option[String]): Action[AnyContent] = Action.async { _ ⇒
-    withDelay(getTransactionsDelayConfig) { () ⇒
+    systemId: Option[String]): Action[AnyContent] = Action.async { _ =>
+    withDelay(getTransactionsDelayConfig) { () =>
       validateParams(nino, version, systemId).fold(
-        errors ⇒ {
+        errors => {
           logger.warn("[Handle Transactions Query] invalid params")
           BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, errors.toList)))
-        }, { validatedNino ⇒
+        }, { validatedNino =>
           if (validatedNino.contains("401")) {
             Unauthorized
           } else if (validatedNino.contains("500")) {
@@ -261,8 +261,8 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
           } else {
             val maybeAccount = getTransactionsByNino(validatedNino, correlationId)
             maybeAccount match {
-              case Right(a) ⇒ Ok(Json.toJson(a))
-              case Left(e) ⇒ BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
+              case Right(a) => Ok(Json.toJson(a))
+              case Left(e) => BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))
             }
           }
         }

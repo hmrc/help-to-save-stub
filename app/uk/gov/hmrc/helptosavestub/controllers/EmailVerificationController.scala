@@ -25,20 +25,20 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
 class EmailVerificationController @Inject()(cc: ControllerComponents) extends BackendController(cc) with Logging {
 
-  def verify: Action[AnyContent] = Action { implicit request ⇒
+  def verify: Action[AnyContent] = Action { implicit request =>
     request.body.asJson match {
-      case None ⇒
+      case None =>
         logger.warn("[EmailVerificationController] - no JSON in body")
         BadRequest
 
-      case Some(json) ⇒
+      case Some(json) =>
         json
           .validate[EmailVerificationRequest]
           .fold(
-            { e ⇒
+            { e =>
               logger.warn(s"[EmailVerificationController] - could not parse JSON in body $e")
               BadRequest
-            }, { emailVerificationRequest ⇒
+            }, { emailVerificationRequest =>
               logger.info(s"[EmailVerificationController] A request has been made: $emailVerificationRequest")
               Ok
             }

@@ -19,15 +19,15 @@ package uk.gov.hmrc.helptosavestub.controllers
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsString, _}
+import play.api.test.Helpers._
 
 class DESThresholdControllerSpec extends TestSupport {
 
   val fakeRequest = FakeRequest("GET", "/universal-credits/threshold-amount")
-    .withHeaders("Authorization" → "Bearer test")
+    .withHeaders("Authorization" -> "Bearer test")
 
   val fakeRequestWithIncorrectHeader = FakeRequest("GET", "/universal-credits/threshold-amount")
-    .withHeaders("Authorization" → "Incorrect")
+    .withHeaders("Authorization" -> "Incorrect")
 
   val controller = new DESThresholdController(testAppConfig, testCC)
 

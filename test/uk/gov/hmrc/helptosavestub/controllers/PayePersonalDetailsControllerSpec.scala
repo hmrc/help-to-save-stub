@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
-import play.api.test.Helpers.{contentAsString, _}
+import play.api.test.Helpers._
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.smartstub._
@@ -27,7 +27,7 @@ import uk.gov.hmrc.smartstub._
 class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
   val payeDetailsController = new PayePersonalDetailsController(actorSystem, testAppConfig, testCC)
-  private val fakeRequest   = FakeRequest().withHeaders("Authorization" → "Bearer test")
+  private val fakeRequest   = FakeRequest().withHeaders("Authorization" -> "Bearer test")
 
   "GET /pay-as-you-earn/02.00.00/individuals/{NINO}" should {
 

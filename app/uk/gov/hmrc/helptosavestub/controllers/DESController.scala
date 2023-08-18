@@ -36,9 +36,9 @@ class DESController @Inject()(cc: ControllerComponents, appConfig: AppConfig)
     appConfig.runModeConfiguration.underlying
       .get[List[String]]("microservice.expectedDESHeaders")
       .value
-      .map(e ⇒ s"Bearer $e")
+      .map(e => s"Bearer $e")
 
-  def desAuthorisedAction(body: Request[AnyContent] ⇒ Future[Result]): Action[AnyContent] = Action.async { request ⇒
+  def desAuthorisedAction(body: Request[AnyContent] => Future[Result]): Action[AnyContent] = Action.async { request =>
     val authHeaders = request.headers.getAll("Authorization")
 
     if (expectedDESHeaders.intersect(authHeaders).nonEmpty) {

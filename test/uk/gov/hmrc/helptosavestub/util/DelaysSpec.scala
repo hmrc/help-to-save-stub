@@ -40,9 +40,9 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
          |delays {
          |  $name {
          |    enabled: $delayEnabled,
-         |    meanDelay: $meanDelay
-         |    standardDeviation = $standardDeviation
-         |    minimumDelay = $minimumDelay
+         |    mean-delay: $meanDelay
+         |    standard-deviation = $standardDeviation
+         |    minimum-delay = $minimumDelay
          |  }
          |}
       """.stripMargin)
@@ -70,7 +70,7 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
     "delay actions if configured to do so" in new TestDelays(
       Delays.config("test", config("test", "true", "1 second", "0 seconds", "0 seconds"))) {
-      val result: Future[String] = withDelay(delayConfig)(() ⇒ "hello")
+      val result: Future[String] = withDelay(delayConfig)(() => "hello")
 
       time.advance(1.second - 1.millisecond)
       a[TimeoutException] shouldBe thrownBy(Await.result(result, 1.second))
@@ -81,7 +81,7 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
     "not delay actions if configured to do so" in new TestDelays(
       Delays.config("test", config("test", "false", "1 second", "0 seconds", "0 seconds"))) {
-      val result: Future[String] = withDelay(delayConfig)(() ⇒ "hello")
+      val result: Future[String] = withDelay(delayConfig)(() => "hello")
       // shouldn't need to advance time for the future to complete
       Await.result(result, 1.second) shouldBe "hello"
     }
