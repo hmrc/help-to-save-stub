@@ -96,7 +96,6 @@ hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
 
 def testDependencies(scope: String = "test") = Seq(
   hmrc                     %% "bootstrap-test-play-28"    % bootstrapBackendVersion % scope,
-  hmrc                     %% "service-integration-test"  % "1.3.0-play-28"         % scope,
   "org.scalatest"          %% "scalatest"                 % "3.2.9"                 % scope,
   "com.vladsch.flexmark"   % "flexmark-all"               % "0.35.10"               % scope,
   "org.scalatestplus"      %% "scalatestplus-scalacheck"  % "3.1.0.0-RC2"           % scope,
