@@ -121,7 +121,7 @@ object NSIGetTransactionsBehaviour {
     implicit val format: Format[NSIGetTransactionsByNinoResponse] =
       Jsonx.formatCaseClass[NSIGetTransactionsByNinoResponse]
 
-    val bethTransaction: List[Transaction] = List[Transaction](
+    def bethTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -163,7 +163,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    val peteTransaction: List[Transaction] = List[Transaction](
+    def peteTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "30.00",
@@ -221,7 +221,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    val lauraTransaction: List[Transaction] = List[Transaction](
+    def lauraTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "10.00",
@@ -303,7 +303,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 2, 17),
         LocalDate.of(2018, 2, 17))
     )
-    val tonyTransaction: List[Transaction] = List[Transaction](
+    def tonyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "40.00",
@@ -354,7 +354,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 3))
     )
     val monikaTransaction: List[Transaction] = List.empty
-    val happyTransaction: List[Transaction] = List[Transaction](
+    def happyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -740,7 +740,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 2, 1),
         LocalDate.of(2018, 2, 1))
     )
-    val takenTransaction: List[Transaction] = List[Transaction](
+    def takenTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -942,7 +942,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2016, 3, 2),
         LocalDate.of(2016, 3, 2))
     )
-    val spencerTransaction: List[Transaction] = List[Transaction](
+    def spencerTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "40.00",
@@ -1136,7 +1136,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    val alexTransaction: List[Transaction] = List[Transaction](
+    def alexTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "35.00",
@@ -1442,7 +1442,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    val closedAccountTransaction: List[Transaction] = List[Transaction](
+    def closedAccountTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -1484,7 +1484,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    val accountBlockedTransaction: List[Transaction] = List[Transaction](
+    def accountBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -1526,7 +1526,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    val clientBlockedTransaction: List[Transaction] = List[Transaction](
+    def clientBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -1568,7 +1568,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    val annaTransaction: List[Transaction] = List[Transaction](
+    def annaTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "1.00",
@@ -1738,8 +1738,8 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
-    val closedAccount2Transaction: List[Transaction] = List.empty
-    val closedAccount3Transaction: List[Transaction] = List[Transaction](
+    def closedAccount2Transaction: List[Transaction] = List.empty
+    def closedAccount3Transaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -1757,7 +1757,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 1, 1),
         LocalDate.of(2018, 1, 1))
     )
-    val closedAccount4Transaction: List[Transaction] = List[Transaction](
+    def closedAccount4Transaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -1791,7 +1791,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 1, 1),
         LocalDate.of(2018, 1, 1))
     )
-    val accountUnspecifiedBlockedTransaction: List[Transaction] = List[Transaction](
+    def accountUnspecifiedBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -1833,7 +1833,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
-    val tomTransaction: List[Transaction] = List[Transaction](
+    def tomTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -1880,7 +1880,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 1)
       )
     )
-    val angelaTransaction: List[Transaction] = List[Transaction](
+    def angelaTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "30.00",
@@ -1945,7 +1945,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 2)
       )
     )
-    val ivoTransaction: List[Transaction] = List[Transaction](
+    def ivoTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "10.00",
@@ -2037,7 +2037,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(1), xMonthsAgoMonth(1), 17)
       )
     )
-    val arsenyTransaction: List[Transaction] = List[Transaction](
+    def arsenyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "40.00",
@@ -2093,7 +2093,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 3)
       )
     )
-    val sunanTransaction: List[Transaction] = List[Transaction](
+    def sunanTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -2527,7 +2527,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(1), xMonthsAgoMonth(1), 1)
       )
     )
-    val ranaTransaction: List[Transaction] = List[Transaction](
+    def ranaTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "50.00",
@@ -2754,7 +2754,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(24), xMonthsAgoMonth(24), 2)
       )
     )
-    val marshalTransaction: List[Transaction] = List[Transaction](
+    def marshalTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "40.00",
@@ -2972,7 +2972,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 2)
       )
     )
-    val dennisTransaction: List[Transaction] = List[Transaction](
+    def dennisTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
         "35.00",
