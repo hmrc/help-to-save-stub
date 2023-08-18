@@ -86,7 +86,6 @@ val dependencies = Seq(
 hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
   hmrc                %% "domain"                    % "8.3.0-play-28",
   hmrc                %% "stub-data-generator"       % "1.1.0",
-  "org.scalacheck"    %% "scalacheck"                % "1.14.3",
   "org.typelevel"     %% "cats-core"                 % "2.3.1",
   "ai.x"              %% "play-json-extensions"      % "0.40.2",
   "com.github.kxbmap" %% "configs"                   % "0.6.1",
@@ -96,12 +95,13 @@ hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
 )
 
 def testDependencies(scope: String = "test") = Seq(
-  hmrc                     %% "bootstrap-backend-play-28" % bootstrapBackendVersion % scope,
+  hmrc                     %% "bootstrap-test-play-28"    % bootstrapBackendVersion % scope,
   hmrc                     %% "service-integration-test"  % "1.3.0-play-28"         % scope,
   "org.scalatest"          %% "scalatest"                 % "3.2.9"                 % scope,
   "com.vladsch.flexmark"   % "flexmark-all"               % "0.35.10"               % scope,
   "org.scalatestplus"      %% "scalatestplus-scalacheck"  % "3.1.0.0-RC2"           % scope,
   "org.scalatestplus.play" %% "scalatestplus-play"        % "5.1.0"                 % scope,
+  "org.scalacheck"         %% "scalacheck"                % "1.14.3"                % scope,
   "com.typesafe.play"      %% "play-test"                 % PlayVersion.current     % scope,
   "com.miguno.akka"        %% "akka-mock-scheduler"       % "0.5.5"                 % scope,
   "org.pegdown"            % "pegdown"                    % "1.6.0"                 % scope
