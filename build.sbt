@@ -5,8 +5,6 @@ import wartremover.{Wart, Warts}
 import wartremover.WartRemover.autoImport.{wartremoverErrors, wartremoverExcluded}
 
 lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
-lazy val plugins: Seq[Plugins]          = Seq.empty
-lazy val playSettings: Seq[Setting[_]]  = Seq.empty
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
@@ -40,9 +38,9 @@ lazy val wartRemoverSettings = {
 }
 lazy val microservice =
   Project(appName, file("."))
-    .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
+    .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
     .settings(onLoadMessage := "")
-    .settings(playSettings ++ scoverageSettings: _*)
+    .settings(scoverageSettings: _*)
     .settings(scalaSettings: _*)
     .settings(majorVersion := 2)
     .settings(defaultSettings(): _*)
