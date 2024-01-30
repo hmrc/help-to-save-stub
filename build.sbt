@@ -81,10 +81,10 @@ lazy val microservice =
 
 val appName                 = "help-to-save-stub"
 val hmrc                    = "uk.gov.hmrc"
-val bootstrapBackendVersion = "5.25.0"
+val bootstrapBackendVersion = "7.23.0"
 val dependencies = Seq(
   ws,
-hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
+  hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
   hmrc                %% "domain"                    % "8.3.0-play-28",
   hmrc                %% "stub-data-generator"       % "1.1.0",
   "org.typelevel"     %% "cats-core"                 % "2.3.1",
