@@ -5,8 +5,6 @@ import wartremover.{Wart, Warts}
 import wartremover.WartRemover.autoImport.{wartremoverErrors, wartremoverExcluded}
 
 lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
-lazy val plugins: Seq[Plugins]          = Seq.empty
-lazy val playSettings: Seq[Setting[_]]  = Seq.empty
 lazy val scoverageSettings = {
   import scoverage.ScoverageKeys
   Seq(
@@ -40,8 +38,9 @@ lazy val wartRemoverSettings = {
 }
 lazy val microservice =
   Project(appName, file("."))
-    .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
-    .settings(playSettings ++ scoverageSettings: _*)
+    .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+    .settings(onLoadMessage := "")
+    .settings(scoverageSettings: _*)
     .settings(scalaSettings: _*)
     .settings(majorVersion := 2)
     .settings(defaultSettings(): _*)
@@ -81,10 +80,10 @@ lazy val microservice =
 
 val appName                 = "help-to-save-stub"
 val hmrc                    = "uk.gov.hmrc"
-val bootstrapBackendVersion = "5.25.0"
+val bootstrapBackendVersion = "7.23.0"
 val dependencies = Seq(
   ws,
-hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
+  hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
   hmrc                %% "domain"                    % "8.3.0-play-28",
   hmrc                %% "stub-data-generator"       % "1.1.0",
   "org.typelevel"     %% "cats-core"                 % "2.3.1",
