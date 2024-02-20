@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 
-import akka.actor.{ActorSystem, Scheduler}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import com.google.inject.{Inject, Singleton}
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}

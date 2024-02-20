@@ -16,9 +16,10 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
+import ai.x.play.json.Encoders.encoder
+
 import java.time.LocalDate
 import java.time.temporal.TemporalAdjusters
-
 import ai.x.play.json.Jsonx
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}

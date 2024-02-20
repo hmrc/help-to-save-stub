@@ -18,7 +18,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 
 import java.util.UUID
 
-import akka.actor.{ActorSystem, Scheduler}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import cats.instances.string._
 import cats.syntax.eq._
 import com.google.inject.Inject

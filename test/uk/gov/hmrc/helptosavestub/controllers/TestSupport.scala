@@ -33,7 +33,7 @@ trait TestSupport extends UnitSpec with BeforeAndAfterAll {
   val testCC                            = play.api.test.Helpers.stubControllerComponents()
   val testAppConfig                     = fakeApplication.injector.instanceOf[AppConfig]
   private val generator                 = new Generator(1)
-  implicit lazy val ec                  = fakeApplication.injector.instanceOf[ExecutionContext]
+  implicit lazy val ec: ExecutionContext = fakeApplication.injector.instanceOf[ExecutionContext]
 
   implicit lazy val configuration: Configuration = fakeApplication.injector.instanceOf[Configuration]
 
