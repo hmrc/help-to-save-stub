@@ -14,14 +14,13 @@ object AppDependencies {
     "org.typelevel"     %% "cats-core"                       % "2.10.0",
     "ai.x"              %% "play-json-extensions"            % "0.42.0",
     "com.github.kxbmap" %% "configs"                         % "0.6.1"
-    //"com.google.inject" % "guice"                            % "5.0.1",
   )
 
   def testDependencies(scope: String = "test"): Seq[ModuleID] = Seq(
     hmrc                     %% s"bootstrap-test-$playVersion" % bootstrapBackendVersion % scope,
     "org.scalatestplus"      %% "scalatestplus-scalacheck"     % "3.1.0.0-RC2"           % scope,
     "org.scalacheck"         %% "scalacheck"                   % "1.17.0"                % scope,
-    "com.github.pjfanning"   %% "pekko-mock-scheduler"    % "0.6.0"                 % scope,
+    "com.github.pjfanning"   %% "pekko-mock-scheduler"         % "0.6.0"                 % scope,
     "org.pegdown"            % "pegdown"                       % "1.6.0"                 % scope
   )
 }
