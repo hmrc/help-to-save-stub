@@ -8,9 +8,6 @@ import wartremover.{Wart, Warts}
 val appName = "help-to-save-stub"
 
 lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
-lazy val plugins: Seq[Plugins]          = Seq.empty
-lazy val playSettings: Seq[Setting[_]]  = Seq.empty
-
 lazy val ItTest = config("it") extend Test
 
 lazy val wartRemoverSettings = {
@@ -37,8 +34,8 @@ lazy val wartRemoverSettings = {
 
 lazy val microservice =
   Project(appName, file("."))
-    .enablePlugins(Seq(play.sbt.PlayScala, SbtDistributablesPlugin) ++ plugins: _*)
-    .settings(playSettings ++ scoverageSettings: _*)
+    .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+    .settings(scoverageSettings: _*)
     .settings(scalaSettings: _*)
     .settings(majorVersion := 2)
     .settings(defaultSettings(): _*)
