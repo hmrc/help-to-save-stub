@@ -16,8 +16,9 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.time.{LocalDate, Month}
+import ai.x.play.json.Encoders.encoder
 
+import java.time.{LocalDate, Month}
 import ai.x.play.json.Jsonx
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
@@ -120,6 +121,7 @@ object NSIGetTransactionsBehaviour {
     // linter:ignore // ignores all warnings
     implicit val format: Format[NSIGetTransactionsByNinoResponse] =
       Jsonx.formatCaseClass[NSIGetTransactionsByNinoResponse]
+
 
     def bethTransaction: List[Transaction] = List[Transaction](
       Transaction(

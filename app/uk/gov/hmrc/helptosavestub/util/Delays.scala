@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.helptosavestub.util
 
-import akka.actor.Scheduler
-import akka.pattern.after
+import org.apache.pekko.actor.Scheduler
+import org.apache.pekko.pattern.after
 import com.typesafe.config.Config
 import configs.syntax._
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig

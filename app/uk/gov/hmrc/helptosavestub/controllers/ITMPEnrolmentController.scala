@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import akka.actor.{ActorSystem, Scheduler}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import com.google.inject.{Inject, Singleton}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.helptosavestub.config.AppConfig

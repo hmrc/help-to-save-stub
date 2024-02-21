@@ -19,7 +19,7 @@ package uk.gov.hmrc.helptosavestub.controllers
 import java.nio.charset.StandardCharsets
 import java.util.Base64
 
-import akka.actor.{ActorSystem, Scheduler}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
 import cats.instances.string._

@@ -17,8 +17,8 @@
 package uk.gov.hmrc.helptosavestub.util
 
 import java.nio.charset.Charset
-import akka.stream.Materializer
-import akka.util.ByteString
+import org.apache.pekko.stream.Materializer
+import org.apache.pekko.util.ByteString
 import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 import play.api.inject.guice.GuiceableModule

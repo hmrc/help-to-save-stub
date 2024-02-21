@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import akka.actor.{ActorSystem, Scheduler}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNel
 import cats.instances.option._

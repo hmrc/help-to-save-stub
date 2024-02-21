@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.helptosavestub.util
 
-import akka.actor.Scheduler
-import com.miguno.akka.testing.VirtualTime
+import com.github.pjfanning.pekko.scheduler.mock.VirtualTime
+import org.apache.pekko.actor.Scheduler
 import com.typesafe.config.{Config, ConfigFactory}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.matchers.should.Matchers
@@ -29,7 +29,7 @@ import scala.concurrent.duration._
 
 class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
-  implicit lazy val ec = app.injector.instanceOf[ExecutionContext]
+  implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
   def config(
     name: String,
     delayEnabled: String,
@@ -49,7 +49,6 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   class TestDelays(val delayConfig: DelayConfig) extends Delays {
     val time = new VirtualTime
-
     override val scheduler: Scheduler = time.scheduler
   }
 

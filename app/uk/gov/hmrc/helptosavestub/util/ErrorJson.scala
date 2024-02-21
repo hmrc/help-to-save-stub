@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.util
 
-import akka.http.scaladsl.model.{StatusCode, StatusCodes}
+import org.apache.pekko.http.scaladsl.model.{StatusCode, StatusCodes}
 import play.api.libs.json.{JsValue, Json}
 
 object ErrorJson {

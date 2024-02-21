@@ -16,7 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers.support
 
-import akka.actor.ActorSystem
+import org.apache.pekko.actor.ActorSystem
 import org.scalatest.{BeforeAndAfterAll, Suite}
 import uk.gov.hmrc.helptosavestub.util.UnitSpec
 

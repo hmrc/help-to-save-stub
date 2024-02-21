@@ -1,20 +1,15 @@
-import play.core.PlayVersion
+import AppDependencies._
+import ScoverageSettings.scoverageSettings
 import sbt.Keys.compile
 import uk.gov.hmrc.DefaultBuildSettings.{addTestReportOption, defaultSettings, scalaSettings}
-import wartremover.{Wart, Warts}
 import wartremover.WartRemover.autoImport.{wartremoverErrors, wartremoverExcluded}
+import wartremover.{Wart, Warts}
+
+val appName = "help-to-save-stub"
 
 lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
-lazy val scoverageSettings = {
-  import scoverage.ScoverageKeys
-  Seq(
-    // Semicolon-separated list of regexs matching classes to exclude
-    ScoverageKeys.coverageExcludedPackages := "<empty>;.*Reverse.*;.*config.*;.*(AuthService|BuildInfo|Routes).*",
-    ScoverageKeys.coverageFailOnMinimum := true,
-    ScoverageKeys.coverageHighlighting := true,
-    Test / parallelExecution := false
-  )
-}
+lazy val ItTest = config("it") extend Test
+
 lazy val wartRemoverSettings = {
   // list of warts here: http://www.wartremover.org/doc/warts.html
   val excludedWarts = Seq(
@@ -36,15 +31,15 @@ lazy val wartRemoverSettings = {
 
   Compile / compile / wartremoverErrors ++= Warts.allBut(excludedWarts: _*)
 }
+
 lazy val microservice =
   Project(appName, file("."))
     .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
-    .settings(onLoadMessage := "")
     .settings(scoverageSettings: _*)
     .settings(scalaSettings: _*)
     .settings(majorVersion := 2)
     .settings(defaultSettings(): _*)
-    .settings(scalaVersion := "2.13.8")
+    .settings(scalaVersion := "2.13.12")
     .settings(PlayKeys.playDefaultPort := 7002)
     .settings(wartRemoverSettings)
     // disable some wart remover checks in tests - (Any, Null, PublicInference) seems to struggle with
@@ -67,39 +62,13 @@ lazy val microservice =
     )
     .settings(scalacOptions ++= Seq("-Xcheckinit", "-feature"))
     .settings(Compile / scalacOptions -= "utf8")
-    .configs(IntegrationTest)
-    .settings(inConfig(IntegrationTest)(Defaults.itSettings): _*)
+    .configs(ItTest)
+    .settings(inConfig(ItTest)(Defaults.testSettings): _*)
     .settings(
-      IntegrationTest / Keys.fork := false,
-      IntegrationTest / unmanagedSourceDirectories := Seq((IntegrationTest / baseDirectory).value / "it"),
-      addTestReportOption(IntegrationTest, "int-test-reports"),
-      IntegrationTest / parallelExecution := false
+      ItTest / Keys.fork := false,
+      ItTest / unmanagedSourceDirectories := Seq((ItTest / baseDirectory).value / "it"),
+      addTestReportOption(ItTest, "int-test-reports"),
+      ItTest / parallelExecution := false
     )
     .settings(scalacOptions += "-Wconf:src=routes/.*:s")
     .settings(Global / lintUnusedKeysOnLoad := false)
-
-val appName                 = "help-to-save-stub"
-val hmrc                    = "uk.gov.hmrc"
-val bootstrapBackendVersion = "7.23.0"
-val dependencies = Seq(
-  ws,
-  hmrc                %% "bootstrap-backend-play-28" % bootstrapBackendVersion,
-  hmrc                %% "domain"                    % "8.3.0-play-28",
-  hmrc                %% "stub-data-generator"       % "1.1.0",
-  "org.typelevel"     %% "cats-core"                 % "2.3.1",
-  "ai.x"              %% "play-json-extensions"      % "0.40.2",
-  "com.github.kxbmap" %% "configs"                   % "0.6.1",
-  "com.google.inject" % "guice"                      % "5.0.1",
-)
-
-def testDependencies(scope: String = "test") = Seq(
-  hmrc                     %% "bootstrap-test-play-28"    % bootstrapBackendVersion % scope,
-  "org.scalatest"          %% "scalatest"                 % "3.2.9"                 % scope,
-  "com.vladsch.flexmark"   % "flexmark-all"               % "0.35.10"               % scope,
-  "org.scalatestplus"      %% "scalatestplus-scalacheck"  % "3.1.0.0-RC2"           % scope,
-  "org.scalatestplus.play" %% "scalatestplus-play"        % "5.1.0"                 % scope,
-  "org.scalacheck"         %% "scalacheck"                % "1.14.3"                % scope,
-  "com.typesafe.play"      %% "play-test"                 % PlayVersion.current     % scope,
-  "com.miguno.akka"        %% "akka-mock-scheduler"       % "0.5.5"                 % scope,
-  "org.pegdown"            % "pegdown"                    % "1.6.0"                 % scope
-)
