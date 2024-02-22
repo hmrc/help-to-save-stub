@@ -12,7 +12,7 @@ object AppDependencies {
     hmrc                %% s"domain-$playVersion"            % "9.0.0",
     hmrc                %% "stub-data-generator"             % "1.1.0",
     "org.typelevel"     %% "cats-core"                       % "2.10.0",
-    "ai.x"              %% "play-json-extensions"            % "0.42.0",
+    "ai.x"              %% "play-json-extensions"            % "0.42.0" exclude ("com.typesafe.play", "play-json_2.13"),
     "com.github.kxbmap" %% "configs"                         % "0.6.1"
   )
 
