@@ -10,6 +10,10 @@ PUT        /help-to-save/accounts/:nino               uk.gov.hmrc.helptosavestub
 GET        /help-to-save/eligibility-check/:nino      uk.gov.hmrc.helptosavestub.controllers.EligibilityCheckController.eligibilityCheck(nino, universalCreditClaimant: Option[String], withinThreshold: Option[String])
 GET        /universal-credits/threshold-amount        uk.gov.hmrc.helptosavestub.controllers.DESThresholdController.getThresholdAmount()
 
+# email service
+POST       /hmrc/email                                uk.gov.hmrc.helptosavestub.controllers.EmailController.send
+DELETE     /hmrc/bounces/:email                       uk.gov.hmrc.helptosavestub.controllers.EmailController.unblock(email: String)
+
 # email verification microservice
 POST       /email-verification/verification-requests  uk.gov.hmrc.helptosavestub.controllers.EmailVerificationController.verify
 
