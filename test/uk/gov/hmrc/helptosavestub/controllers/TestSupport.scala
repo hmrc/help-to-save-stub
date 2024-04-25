@@ -17,12 +17,14 @@
 package uk.gov.hmrc.helptosavestub.controllers
 
 import com.typesafe.config.ConfigFactory
+import org.mockito.Mockito.mock
 import org.scalatest.BeforeAndAfterAll
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.{Application, Configuration, Environment, Play}
 import uk.gov.hmrc.domain.Generator
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.UnitSpec
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.ExecutionContext
 
@@ -32,6 +34,7 @@ trait TestSupport extends UnitSpec with BeforeAndAfterAll {
   lazy val fakeApplication: Application = buildFakeApplication(additionalConfig)
   val testCC                            = play.api.test.Helpers.stubControllerComponents()
   val testAppConfig                     = fakeApplication.injector.instanceOf[AppConfig]
+  val mockServicesConfig = mock(classOf[ServicesConfig])
   private val generator                 = new Generator(1)
   implicit lazy val ec: ExecutionContext = fakeApplication.injector.instanceOf[ExecutionContext]
 

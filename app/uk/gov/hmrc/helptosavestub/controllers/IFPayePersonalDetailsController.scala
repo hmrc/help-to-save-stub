@@ -16,27 +16,29 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.time.LocalDate
-import java.time.format.DateTimeFormatter
-import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import com.google.inject.{Inject, Singleton}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
 import play.api.libs.json.{Json, Writes}
 import play.api.mvc._
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
+import uk.gov.hmrc.helptosavestub.models.ErrorResponse
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
-import uk.gov.hmrc.helptosavestub.util.{Delays, ErrorJson, Logging}
+import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 import uk.gov.hmrc.smartstub._
 
+import java.time.LocalDate
+import java.time.format.DateTimeFormatter
 import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, cc: ControllerComponents)(
+class IFPayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, cc: ControllerComponents, servicesConfig: ServicesConfig)(
   implicit ec: ExecutionContext)
-    extends DESController(cc, appConfig)
+    extends IFController(cc, appConfig, servicesConfig)
     with Logging
     with Delays {
 
@@ -54,16 +56,20 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
 
   def getPayeDetails(nino: String): Action[AnyContent] = desAuthorisedAction { _ =>
     withDelay(getPayeDetailsDelayConfig) { () =>
-      val status: Option[Int] = nino match {
-        case ninoStatusRegex(s) => Try(s.toInt).toOption
-        case _ => None
+     val code: String = nino match {
+        case _ => nino.substring(5)
       }
 
-      val response = status match {
-        case Some(s) =>
-          Status(s)(ErrorJson.errorJson(s))
+      val response = code match {
+        case "INVALID_NINO" =>  Status(400)(ErrorResponse.errorJson(code, "Submission has not passed validation. Invalid parameter nino."))
+        case "INVALID_ORIGINATOR_ID" =>  Status(400)(ErrorResponse.errorJson(code, "Submission has not passed validation. Invalid header Originator-Id."))
+        case "INVALID_CORRELATIONID" =>  Status(400)(ErrorResponse.errorJson(code, "Submission has not passed validation. Invalid header CorrelationId."))
+        case "NOT_FOUND_NINO" =>  Status(404)(ErrorResponse.errorJson(code, "The remote endpoint has indicated that the nino cannot be found."))
+        case "RESOURCE_NOT_FOUND" =>  Status(404)(ErrorResponse.errorJson(code, "The remote endpoint has indicated that the PAYE taxpayer details not found."))
+        case "SERVER_ERROR" =>  Status(500)(ErrorResponse.errorJson(code, "IF is currently experiencing problems that require live service intervention."))
+        case "SERVICE_UNAVAILABLE" =>  Status(503)(ErrorResponse.errorJson(code, "IF is currently experiencing problems that require live service intervention."))
 
-        case None =>
+        case _ =>
           payeDetails(nino)
             .seeded(nino)
             .fold[Result] {
@@ -75,7 +81,7 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
             }
       }
 
-      withDesCorrelationID(response)
+      withIfCorrelationID(response)
     }
   }
 
@@ -130,7 +136,7 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, appConfi
 
 }
 
-object PayePersonalDetailsController {
+object IFPayePersonalDetailsController {
 
   implicit class GenderOps(val gender: Gender) extends AnyVal {
     def fold[A](female: => A, male: => A): A = gender match {
