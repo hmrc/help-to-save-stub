@@ -30,7 +30,7 @@ import scala.concurrent.Future
 @Singleton
 class DWPControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
-  val fakeRequest = FakeRequest().withHeaders("Authorization" -> "Bearer test")
+  val fakeRequest = FakeRequest().withHeaders("Authorization" -> "Bearer test-des")
 
   val dwpController = new DWPController(actorSystem, testCC)
 
