@@ -20,44 +20,71 @@ import play.api.http.Status
 import play.api.libs.json.Json
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.smartstub._
 
 class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterializerSpec {
-
-  val payeDetailsController = new PayePersonalDetailsController(actorSystem, testAppConfig, testCC)
+  implicit val appConfig: AppConfig = testAppConfig
+  val payeDetailsController = new PayePersonalDetailsController(actorSystem, testCC)
   private val fakeRequest   = FakeRequest().withHeaders("Authorization" -> "Bearer test")
 
   "GET /pay-as-you-earn/02.00.00/individuals/{NINO}" should {
 
     "returns paye details for a valid NINO" in {
       val nino   = randomNINO()
-      val result = payeDetailsController.getPayeDetails(nino)(fakeRequest)
+      val result = payeDetailsController.getDESPayeDetails(nino)(fakeRequest)
 
       status(result) shouldBe Status.OK
-      val json = contentAsString(result)
-
-      json === Json.toJson(
-        payeDetailsController.payeDetails(nino).seeded(nino).getOrElse(sys.error("Could not generate details")))
-
+      contentAsJson(result) shouldBe Json.parse(payeDetailsController.payeDetails(nino).seeded(nino).getOrElse(fail()))
     }
 
     "handles 404 cases when supplied NINO cant be found in DES" in {
 
-      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PY404"))(fakeRequest)
+      val result = payeDetailsController.getDESPayeDetails(randomNINO().withPrefixReplace("PY404"))(fakeRequest)
 
       status(result) shouldBe Status.NOT_FOUND
     }
 
-    "handles 500 cases when there is internal error" in {
-      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PY500"))(fakeRequest)
+    "handles 500 cases when there is internal error in DES" in {
+      val result = payeDetailsController.getDESPayeDetails(randomNINO().withPrefixReplace("PY500"))(fakeRequest)
 
       status(result) shouldBe Status.INTERNAL_SERVER_ERROR
     }
 
-    "handles non-standard error code cases when there is internal error" in {
-      val result = payeDetailsController.getPayeDetails(randomNINO().withPrefixReplace("PY924"))(fakeRequest)
+    "handles non-standard error code cases when there is internal error in DES" in {
+      val result = payeDetailsController.getDESPayeDetails(randomNINO().withPrefixReplace("PY924"))(fakeRequest)
+
+      status(result) shouldBe 924
+    }
+  }
+
+  "GET /if/pay-as-you-earn/02.00.00/individuals/{NINO}" should {
+
+    "returns paye details for a valid NINO" in {
+      val nino = randomNINO()
+      val result = payeDetailsController.getIFPayeDetails(nino)(fakeRequest)
+      status(result) shouldBe Status.OK
+      contentAsJson(result) shouldBe Json.parse(payeDetailsController.payeDetails(nino).seeded(nino).getOrElse(fail()))
+    }
+
+
+    "handles 404 cases when supplied NINO cant be found in IF" in {
+
+      val result = payeDetailsController.getIFPayeDetails(randomNINO().withPrefixReplace("PY404"))(fakeRequest)
+
+      status(result) shouldBe Status.NOT_FOUND
+    }
+
+    "handles 500 cases when there is internal error in IF" in {
+      val result = payeDetailsController.getIFPayeDetails(randomNINO().withPrefixReplace("PY500"))(fakeRequest)
+
+      status(result) shouldBe Status.INTERNAL_SERVER_ERROR
+    }
+
+    "handles non-standard error code cases when there is internal error in IF" in {
+      val result = payeDetailsController.getIFPayeDetails(randomNINO().withPrefixReplace("PY924"))(fakeRequest)
 
       status(result) shouldBe 924
     }
