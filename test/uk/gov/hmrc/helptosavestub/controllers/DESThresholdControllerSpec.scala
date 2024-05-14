@@ -24,7 +24,7 @@ import play.api.test.Helpers._
 class DESThresholdControllerSpec extends TestSupport {
 
   val fakeRequest = FakeRequest("GET", "/universal-credits/threshold-amount")
-    .withHeaders("Authorization" -> "Bearer test")
+    .withHeaders("Authorization" -> "Bearer test-des")
 
   val fakeRequestWithIncorrectHeader = FakeRequest("GET", "/universal-credits/threshold-amount")
     .withHeaders("Authorization" -> "Incorrect")
