@@ -55,8 +55,10 @@ trait DWPEligibilityBehaviour {
       2)
 
   def getProfile(nino: String): Option[Profile] = // scalastyle:ignore
-    // Scenario 6
-    if (nino.startsWith("WP9911")) {
+    if (nino.startsWith("AA") || nino.startsWith("AB") || nino.startsWith("BE")) {
+      Some(Profile(None, Some(eligibleResult(7))))
+      // QA
+    } else if (nino.startsWith("WP9911")) {
       Some(Profile(None, Some(eligibleResult(7))))
       // Scenario 1
     } else if (nino.startsWith("WP9999")) {
