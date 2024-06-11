@@ -28,6 +28,8 @@ object NSIGetAccountBehaviour {
   // linter:ignore // ignores all warnings
   def getAccountByNino(nino: String, correlationId: Option[String]): Either[ErrorDetails, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
     nino match {
+      case n if (n.startsWith("AA") || n.startsWith("AB")) || n.startsWith("BE") =>
+        Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
       case n if (n.startsWith("EM200") || n.startsWith("EL07")) || n.startsWith("AC") || n.startsWith("AS409") =>
         Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
       case n if n.startsWith("EM002") => Left(NSIErrorResponse.missingVersionError)
