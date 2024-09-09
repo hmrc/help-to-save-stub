@@ -187,9 +187,6 @@ object NSIGetAccountBehaviour {
       LocalDate.of(xMonthsFutureYear, xMonthsFutureMonth, dayOfLastDayOfMonth)
     }
 
-    @SuppressWarnings(
-      Array("org.wartremover.warts.Any", "org.wartremover.warts.Equals", "org.wartremover.warts.IsInstanceOf"))
-    // linter:ignore // ignores all warnings
     implicit val format: Format[NSIGetAccountByNinoResponse] = Jsonx.formatCaseClass[NSIGetAccountByNinoResponse]
 
     val bethCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
