@@ -20,7 +20,6 @@ About Help to Save
 ==================
 Please click [here](https://github.com/hmrc/help-to-save#about-help-to-save) for more information.
 
-
 Running and Testing
 ===================
 
@@ -67,8 +66,6 @@ Email verification stubs
 | Path                                                        | Method | Description  |
 | ------------------------------------------------------------| ------ | ------------ |
 | /hmrc/{NINO}                                                | GET    | Mimics a call to check the UC status. Different responses are allowed for based on the NINO in the request  |
-| /hmrc-healthcheck                                           | GET    | Mimics the DWP health check endpoint |
-
   
 GetPAYEPersonDetails stubs
 --------------------------
@@ -81,7 +78,6 @@ Bank Account Reputation Service stubs
 | Path                                                        | Method | Description  |
 | ------------------------------------------------------------| ------ | ------------ |
 | /validateBankDetails                                        | GET    | Mimics a call to validate bank details. Different responses are allowed for based on the bank details being passed in |
-  
   
 License
 =======

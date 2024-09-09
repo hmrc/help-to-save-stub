@@ -49,14 +49,6 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       w <- if (c === "Y") { booleanGen.map(Some(_)) } else { Gen.const(None) }
     } yield UCDetails(c, w)
   }
-  val healthCheckResponse: JsValue =
-    Json.parse("""
-                 |{
-                 |  "RequestService" : {
-                 |    "healthy" : true
-                 |  }
-                 |}
-               """.stripMargin)
 
   def dwpClaimantCheck(
     nino: String,
@@ -87,12 +79,6 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     val result = nino.substring(2, 5).toInt // scalastyle:ignore magic.number
     Status(result)
   }
-
-  def dwpHealthCheck(): Action[AnyContent] = Action { _ =>
-    logger.info("Responding to DWP health check with status 200")
-    Ok(healthCheckResponse)
-  }
-
 }
 
 object DWPController {
