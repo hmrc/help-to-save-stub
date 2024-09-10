@@ -8,6 +8,7 @@ lazy val appDependencies: Seq[ModuleID] = dependencies ++ testDependencies()
 lazy val microservice =
   Project(appName, file("."))
     .enablePlugins(play.sbt.PlayScala, SbtDistributablesPlugin)
+    .disablePlugins(JUnitXmlReportPlugin) //Required to prevent https://github.com/scalatest/scalatest/issues/1427
     .settings(scoverageSettings *)
     .settings(majorVersion := 2)
     .settings(scalaVersion := "2.13.12")
