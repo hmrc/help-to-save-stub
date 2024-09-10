@@ -16,12 +16,10 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import ai.x.play.json.Encoders.encoder
-
-import java.time.{LocalDate, Month}
-import ai.x.play.json.Jsonx
 import play.api.libs.json.{Format, Json}
 import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse}
+
+import java.time.{LocalDate, Month}
 
 object NSIGetTransactionsBehaviour {
 
@@ -115,10 +113,8 @@ object NSIGetTransactionsBehaviour {
   }
 
   object NSIGetTransactionsByNinoResponse {
-
     implicit val format: Format[NSIGetTransactionsByNinoResponse] =
-      Jsonx.formatCaseClass[NSIGetTransactionsByNinoResponse]
-
+      Json.format[NSIGetTransactionsByNinoResponse]
 
     def bethTransaction: List[Transaction] = List[Transaction](
       Transaction(
@@ -162,6 +158,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
+
     def peteTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -220,6 +217,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
+
     def lauraTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -302,6 +300,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 2, 17),
         LocalDate.of(2018, 2, 17))
     )
+
     def tonyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -352,7 +351,9 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 3),
         LocalDate.of(2018, 3, 3))
     )
+
     val monikaTransaction: List[Transaction] = List.empty
+
     def happyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -739,6 +740,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 2, 1),
         LocalDate.of(2018, 2, 1))
     )
+
     def takenTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -941,6 +943,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2016, 3, 2),
         LocalDate.of(2016, 3, 2))
     )
+
     def spencerTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1135,6 +1138,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
+
     def alexTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1441,6 +1445,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
+
     def closedAccountTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1483,6 +1488,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
+
     def accountBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1525,6 +1531,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
+
     def clientBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1567,6 +1574,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
+
     def annaTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1737,7 +1745,9 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 2),
         LocalDate.of(2018, 3, 2))
     )
+
     def closedAccount2Transaction: List[Transaction] = List.empty
+
     def closedAccount3Transaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1756,6 +1766,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 1, 1),
         LocalDate.of(2018, 1, 1))
     )
+
     def closedAccount4Transaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1790,6 +1801,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 1, 1),
         LocalDate.of(2018, 1, 1))
     )
+
     def accountUnspecifiedBlockedTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1832,6 +1844,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(2018, 3, 1),
         LocalDate.of(2018, 3, 1))
     )
+
     def tomTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1879,6 +1892,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 1)
       )
     )
+
     def angelaTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -1944,6 +1958,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 2)
       )
     )
+
     def ivoTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -2036,6 +2051,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(1), xMonthsAgoMonth(1), 17)
       )
     )
+
     def arsenyTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -2092,6 +2108,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 3)
       )
     )
+
     def sunanTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -2526,6 +2543,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(1), xMonthsAgoMonth(1), 1)
       )
     )
+
     def ranaTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -2753,6 +2771,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(24), xMonthsAgoMonth(24), 2)
       )
     )
+
     def marshalTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
@@ -2971,6 +2990,7 @@ object NSIGetTransactionsBehaviour {
         LocalDate.of(xMonthsAgoYear(0), xMonthsAgoMonth(0), 2)
       )
     )
+
     def dennisTransaction: List[Transaction] = List[Transaction](
       Transaction(
         "1",
