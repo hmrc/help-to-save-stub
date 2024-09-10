@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.nio.charset.StandardCharsets
-import java.time.LocalDate
-import java.util.Base64
-
 import play.api.libs.json._
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
 import uk.gov.hmrc.domain.Generator
-import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.NSIGetAccountByNinoResponse
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.NSIGetTransactionsByNinoResponse
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
-import uk.gov.hmrc.helptosavestub.models.NSIPayload
+import uk.gov.hmrc.helptosavestub.models.{NSIGetAccountByNinoResponse, NSIPayload}
+
+import java.nio.charset.StandardCharsets
+import java.time.LocalDate
+import java.util.Base64
 
 class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 

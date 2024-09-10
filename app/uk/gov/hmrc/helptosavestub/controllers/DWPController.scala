@@ -16,20 +16,19 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.util.UUID
-
-import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import cats.instances.string._
 import cats.syntax.eq._
 import com.google.inject.Inject
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalacheck.Gen
-import play.api.libs.json.{Format, JsValue, Json}
+import play.api.libs.json.{Format, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.util.UUID
 import scala.concurrent.ExecutionContext
 
 class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext)
