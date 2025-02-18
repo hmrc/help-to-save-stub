@@ -8,7 +8,7 @@ object AppDependencies {
   val dependencies: Seq[ModuleID] = Seq(
     hmrc                %% s"bootstrap-backend-$playVersion" % bootstrapBackendVersion,
     hmrc                %% s"domain-$playVersion"            % "9.0.0",
-    hmrc                %% "stub-data-generator"             % "1.1.0",
+    hmrc                %% "stub-data-generator"             % "1.2.0",
     "org.typelevel"     %% "cats-core"                       % "2.12.0",
     "com.github.kxbmap" %% "configs"                         % "0.6.1"
   )
