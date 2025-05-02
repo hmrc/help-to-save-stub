@@ -17,8 +17,11 @@
 package uk.gov.hmrc.helptosavestub.config
 
 import com.google.inject.{Inject, Singleton}
-import play.api.{Configuration, Environment, Mode}
+import play.api.{ConfigLoader, Configuration, Environment, Mode}
+import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
+
+import scala.concurrent.duration.FiniteDuration
 
 @Singleton
 class AppConfig @Inject()(
@@ -28,4 +31,13 @@ class AppConfig @Inject()(
 
   protected def mode: Mode = environment.mode
 
+  val desHeaders: String = s"Bearer ${servicesConfig.getString("microservice.expectedDESHeaders")}"
+  val ifHeaders: String = s"Bearer ${servicesConfig.getString("microservice.expectedIFHeaders")}"
+
+  def delayConfig(name: String): DelayConfig = DelayConfig(
+    servicesConfig.getBoolean(s"delays.$name.enabled"),
+    runModeConfiguration.get[FiniteDuration](s"delays.$name.mean-delay"),
+    runModeConfiguration.get[FiniteDuration](s"delays.$name.standard-deviation"),
+    runModeConfiguration.get[FiniteDuration](s"delays.$name.minimum-delay")
+  )
 }

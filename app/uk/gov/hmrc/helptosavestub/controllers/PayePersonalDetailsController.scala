@@ -21,12 +21,12 @@ import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalacheck.Gen
 import org.scalacheck.Gen.{listOfN, numChar}
 import play.api.libs.json.{Json, Writes}
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.helptosavestub.config.AppConfig
-import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController._
+import uk.gov.hmrc.helptosavestub.controllers.PayePersonalDetailsController.*
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.helptosavestub.util.{Delays, ErrorJson, Logging}
-import uk.gov.hmrc.smartstub._
+import uk.gov.hmrc.smartstub.*
 
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
@@ -44,7 +44,7 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, cc: Cont
 
   val scheduler: Scheduler = actorSystem.scheduler
 
-  val getPayeDetailsDelayConfig: DelayConfig = Delays.config("get-paye-personal-details", actorSystem.settings.config)
+  val getPayeDetailsDelayConfig: DelayConfig = Delays.config("get-paye-personal-details")
   private val ninoStatusRegex                = """PY(\d{3}).*""".r
   private val telephoneNumberGen: Gen[TelephoneNumber] = for {
     callingCode               <- Gen.choose(1, 250)

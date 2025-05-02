@@ -16,20 +16,18 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.nio.charset.StandardCharsets
-import java.util.Base64
-
-import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.{Validated, ValidatedNel}
-import cats.instances.string._
-import cats.syntax.apply._
-import cats.syntax.eq._
+import cats.instances.string.*
+import cats.syntax.apply.*
+import cats.syntax.eq.*
 import com.google.inject.{Inject, Singleton}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalacheck.Gen
-import play.api.libs.json._
-import play.api.mvc._
+import play.api.libs.json.*
+import play.api.mvc.*
 import uk.gov.hmrc.helptosavestub
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.BARSController.BankDetails
 import uk.gov.hmrc.helptosavestub.controllers.BankDetailsBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetAccountBehaviour.getAccountByNino
@@ -39,11 +37,13 @@ import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.helptosavestub.util.{Delays, Logging, NINO}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.nio.charset.StandardCharsets
+import java.util.Base64
 import scala.concurrent.ExecutionContext
 import scala.util.{Failure, Success, Try}
 
 @Singleton
-class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext)
+class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext, appConfig: AppConfig)
     extends BackendController(cc)
     with Logging
     with BankDetailsBehaviour
@@ -54,10 +54,10 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
   val authorizationHeaderKeys: List[String]   = List("Authorization-test", "Authorization")
   val authorizationValuePrefix: String        = "Basic "
   val testAuthHeader: String                  = "username:password"
-  val createAccountDelayConfig: DelayConfig   = Delays.config("create-account", actorSystem.settings.config)
-  val getAccountDelayConfig: DelayConfig      = Delays.config("get-account", actorSystem.settings.config)
-  val updateAccountDelayConfig: DelayConfig   = Delays.config("update-account", actorSystem.settings.config)
-  val getTransactionsDelayConfig: DelayConfig = Delays.config("get-transactions", actorSystem.settings.config)
+  val createAccountDelayConfig: DelayConfig   = Delays.config("create-account")
+  val getAccountDelayConfig: DelayConfig      = Delays.config("get-account")
+  val updateAccountDelayConfig: DelayConfig   = Delays.config("update-account")
+  val getTransactionsDelayConfig: DelayConfig = Delays.config("get-transactions")
   private val ninoStatusRegex                 = """AS(\d{3}).*""".r
 
   def updateEmailOrHealthCheck(): Action[AnyContent] = Action.async { implicit request =>

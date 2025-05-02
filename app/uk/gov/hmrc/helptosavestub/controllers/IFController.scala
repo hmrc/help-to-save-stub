@@ -16,8 +16,7 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import configs.syntax._
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendBaseController
@@ -28,16 +27,13 @@ import scala.concurrent.Future
 // class for controllers mimicking IF to extend
 trait IFController extends BackendBaseController with Logging {
 
-  private def expectedHeaders(implicit appConfig: AppConfig): List[String] =
-    appConfig.runModeConfiguration.underlying
-      .get[List[String]]("microservice.expectedIFHeaders")
-      .value
-      .map(e => s"Bearer $e")
+  private def expectedHeaders(implicit appConfig: AppConfig) =
+    appConfig.ifHeaders
 
   def ifAuthorisedAction(body: Request[AnyContent] => Future[Result])(
     implicit appConfig: AppConfig): Action[AnyContent] = Action.async { request =>
     val authHeaders = request.headers.getAll("Authorization")
-    if (expectedHeaders.intersect(authHeaders).nonEmpty) {
+    if (authHeaders.contains(expectedHeaders)) {
       body(request)
     } else {
       logger.warn(s"Request did not contain expected authorisation header. Received: $authHeaders")

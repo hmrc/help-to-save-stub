@@ -18,14 +18,12 @@ package uk.gov.hmrc.helptosavestub.util
 
 import org.apache.pekko.actor.Scheduler
 import org.apache.pekko.pattern.after
-import com.typesafe.config.Config
-import configs.syntax._
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 
+import scala.concurrent.duration.*
 import scala.concurrent.{ExecutionContext, Future}
-import scala.concurrent.duration.FiniteDuration
 import scala.util.Random
-import scala.concurrent.duration._
 
 trait Delays {
 
@@ -58,7 +56,6 @@ object Delays {
     val minimumDelayNanos: Long      = minimumDelay.toNanos
   }
 
-  def config(name: String, config: Config): DelayConfig =
-    config.get[DelayConfig](s"delays.$name").value
-
+  def config(name: String)(implicit appConfig: AppConfig): DelayConfig =    
+    appConfig.delayConfig(name)
 }
