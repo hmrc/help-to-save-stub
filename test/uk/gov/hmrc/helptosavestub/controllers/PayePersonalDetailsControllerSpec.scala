@@ -26,7 +26,7 @@ import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
 import uk.gov.hmrc.smartstub._
 
 class PayePersonalDetailsControllerSpec extends TestSupport with AkkaMaterializerSpec {
-  implicit val appConfig: AppConfig = testAppConfig
+  override implicit lazy val appConfig: AppConfig = testAppConfig
   val payeDetailsController = new PayePersonalDetailsController(actorSystem, testCC)
   private val fakeRequestBearerTokenIF   = FakeRequest().withHeaders("Authorization" -> "Bearer test-if")
   private val fakeRequestBearerTokenDES   = FakeRequest().withHeaders("Authorization" -> "Bearer test-des")

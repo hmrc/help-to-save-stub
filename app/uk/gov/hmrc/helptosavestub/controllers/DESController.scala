@@ -16,15 +16,13 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import java.util.UUID
-
 import com.google.inject.Inject
-import configs.syntax._
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Logging
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import java.util.UUID
 import scala.concurrent.Future
 
 // class for controllers mimicking DES to extend
@@ -32,16 +30,12 @@ class DESController @Inject()(cc: ControllerComponents, appConfig: AppConfig)
     extends BackendController(cc)
     with Logging {
 
-  private val expectedDESHeaders: List[String] =
-    appConfig.runModeConfiguration.underlying
-      .get[List[String]]("microservice.expectedDESHeaders")
-      .value
-      .map(e => s"Bearer $e")
+  private val expectedDESHeaders = appConfig.desHeaders
 
   def desAuthorisedAction(body: Request[AnyContent] => Future[Result]): Action[AnyContent] = Action.async { request =>
     val authHeaders = request.headers.getAll("Authorization")
 
-    if (expectedDESHeaders.intersect(authHeaders).nonEmpty) {
+    if (authHeaders.contains(expectedDESHeaders)) {
       body(request)
     } else {
       logger.warn(s"Request did not contain expected authorisation header. Received: $authHeaders")

@@ -16,8 +16,8 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import com.google.inject.{Inject, Singleton}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Delays
@@ -26,13 +26,13 @@ import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import scala.concurrent.ExecutionContext
 
 @Singleton
-class ITMPEnrolmentController @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, cc: ControllerComponents)(
-  implicit ec: ExecutionContext)
+class ITMPEnrolmentController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(
+  implicit ec: ExecutionContext, appConfig: AppConfig)
     extends DESController(cc, appConfig)
     with Delays {
 
   val scheduler: Scheduler                = actorSystem.scheduler
-  val setItmpFlagDelayConfig: DelayConfig = Delays.config("set-itmp-flag", actorSystem.settings.config)
+  val setItmpFlagDelayConfig: DelayConfig = Delays.config("set-itmp-flag")
 
   def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { _ =>
     withDelay(setItmpFlagDelayConfig) { () =>

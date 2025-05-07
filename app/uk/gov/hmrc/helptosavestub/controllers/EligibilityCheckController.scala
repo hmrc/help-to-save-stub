@@ -16,16 +16,16 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import cats.data.Validated.{Invalid, Valid}
 import cats.data.ValidatedNel
-import cats.instances.option._
-import cats.instances.string._
-import cats.syntax.apply._
-import cats.syntax.eq._
+import cats.instances.option.*
+import cats.instances.string.*
+import cats.syntax.apply.*
+import cats.syntax.eq.*
 import com.google.inject.{Inject, Singleton}
+import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import play.api.libs.json.{Format, JsValue, Json}
-import play.api.mvc._
+import play.api.mvc.*
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.DWPEligibilityBehaviour.Profile
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
@@ -35,14 +35,14 @@ import scala.concurrent.ExecutionContext
 import scala.util.Try
 
 @Singleton
-class EligibilityCheckController @Inject()(actorSystem: ActorSystem, appConfig: AppConfig, cc: ControllerComponents)(
-  implicit ec: ExecutionContext)
+class EligibilityCheckController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(
+  implicit ec: ExecutionContext, appConfig: AppConfig)
     extends DESController(cc, appConfig)
     with DWPEligibilityBehaviour
     with Delays {
 
   val scheduler: Scheduler                     = actorSystem.scheduler
-  val checkEligibilityDelayConfig: DelayConfig = Delays.config("check-eligibility", actorSystem.settings.config)
+  val checkEligibilityDelayConfig: DelayConfig = Delays.config("check-eligibility")
   private val ninoStatusRegex                  = """ES(\d{3}).*""".r
 
   def eligibilityCheck(

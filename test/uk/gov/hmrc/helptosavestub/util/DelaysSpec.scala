@@ -17,19 +17,28 @@
 package uk.gov.hmrc.helptosavestub.util
 
 import com.github.pjfanning.pekko.scheduler.mock.VirtualTime
-import org.apache.pekko.actor.Scheduler
 import com.typesafe.config.{Config, ConfigFactory}
-import org.scalatest.wordspec.AnyWordSpec
+import org.apache.pekko.actor.Scheduler
+import org.mockito.Mockito.*
+import org.scalactic.Prettifier.default
 import org.scalatest.matchers.should.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatestplus.mockito.MockitoSugar
 import org.scalatestplus.play.guice.GuiceOneAppPerSuite
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
+import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import scala.concurrent.duration.*
 import scala.concurrent.{Await, ExecutionContext, Future, TimeoutException}
-import scala.concurrent.duration._
 
-class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
+class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite with MockitoSugar {
 
   implicit lazy val ec: ExecutionContext = app.injector.instanceOf[ExecutionContext]
+  implicit lazy val mockAppConfig: AppConfig = mock[AppConfig]
+  implicit lazy val servicesConfig: ServicesConfig = app.injector.instanceOf[ServicesConfig]
+
+
   def config(
     name: String,
     delayEnabled: String,
@@ -54,13 +63,30 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
 
   "Delays" must {
 
-    "read parameters from config correctly" in {
-      Delays.config(
-        "test",
-        config("test", "true", "1 second", "2 seconds", "0 seconds")
-      ) shouldBe DelayConfig(true, 1.second, 2.seconds, 0.seconds)
+    "read parameters from config correctly" in  {
+      val configWithTrueAndTimeInSeconds = config("test", "true", "1 second", "2 seconds", "0 seconds")
+      when(mockAppConfig.delayConfig("test"))
+        .thenReturn(
+          DelayConfig(
+            configWithTrueAndTimeInSeconds.getBoolean(s"delays.test.enabled"),
+          (configWithTrueAndTimeInSeconds.getDuration(s"delays.test.mean-delay").toSeconds, SECONDS),
+          (configWithTrueAndTimeInSeconds.getDuration(s"delays.test.standard-deviation").toSeconds, SECONDS),
+          (configWithTrueAndTimeInSeconds.getDuration(s"delays.test.minimum-delay").toSeconds, SECONDS)
+        ))
 
-      Delays.config("test", config("test", "false", "1 minute", "2 minutes", "0 minutes")) shouldBe DelayConfig(
+      Delays.config("test") shouldBe
+        DelayConfig(true, 1.second, 2.seconds, 0.seconds)
+
+      val configWithFalseAndTimeInMinutes =  config("test", "false", "1 minute", "2 minutes", "0 minutes")
+      when(mockAppConfig.delayConfig("test"))
+        .thenReturn(
+          DelayConfig(
+            configWithFalseAndTimeInMinutes.getBoolean(s"delays.test.enabled"),
+            (configWithFalseAndTimeInMinutes.getDuration(s"delays.test.mean-delay").toMinutes, MINUTES),
+            (configWithFalseAndTimeInMinutes.getDuration(s"delays.test.standard-deviation").toMinutes, MINUTES),
+            (configWithFalseAndTimeInMinutes.getDuration(s"delays.test.minimum-delay").toMinutes, MINUTES)
+          ))
+      Delays.config("test") shouldBe DelayConfig(
         false,
         1.minute,
         2.minutes,
@@ -68,8 +94,15 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "delay actions if configured to do so" in new TestDelays(
-      Delays.config("test", config("test", "true", "1 second", "0 seconds", "0 seconds"))) {
-      val result: Future[String] = withDelay(delayConfig)(() => "hello")
+      Delays.config("test"))
+    {
+      val configTest: Config = config("test", "true", "1 second", "0 seconds", "0 seconds")
+      val result: Future[String] = withDelay(DelayConfig(
+        configTest.getBoolean(s"delays.test.enabled"),
+        (configTest.getDuration(s"delays.test.mean-delay").toSeconds, SECONDS),
+        (configTest.getDuration(s"delays.test.standard-deviation").toSeconds, SECONDS),
+        (configTest.getDuration(s"delays.test.minimum-delay").toSeconds, SECONDS)
+      ))(() => "hello")
 
       time.advance(1.second - 1.millisecond)
       a[TimeoutException] shouldBe thrownBy(Await.result(result, 1.second))
@@ -79,8 +112,15 @@ class DelaysSpec extends AnyWordSpec with Matchers with GuiceOneAppPerSuite {
     }
 
     "not delay actions if configured to do so" in new TestDelays(
-      Delays.config("test", config("test", "false", "1 second", "0 seconds", "0 seconds"))) {
-      val result: Future[String] = withDelay(delayConfig)(() => "hello")
+      Delays.config("test"))
+        {
+      val configTest: Config = config("test", "false", "1 second", "0 seconds", "0 seconds")
+      val result: Future[String] = withDelay(DelayConfig(
+        configTest.getBoolean(s"delays.test.enabled"),
+        (configTest.getDuration(s"delays.test.mean-delay").toSeconds, SECONDS),
+        (configTest.getDuration(s"delays.test.standard-deviation").toSeconds, SECONDS),
+        (configTest.getDuration(s"delays.test.minimum-delay").toSeconds, SECONDS)
+      ))(() => "hello")
       // shouldn't need to advance time for the future to complete
       Await.result(result, 1.second) shouldBe "hello"
     }

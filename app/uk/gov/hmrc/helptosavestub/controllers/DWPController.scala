@@ -16,13 +16,14 @@
 
 package uk.gov.hmrc.helptosavestub.controllers
 
-import cats.instances.string._
-import cats.syntax.eq._
+import cats.instances.string.*
+import cats.syntax.eq.*
 import com.google.inject.Inject
 import org.apache.pekko.actor.{ActorSystem, Scheduler}
 import org.scalacheck.Gen
 import play.api.libs.json.{Format, Json}
 import play.api.mvc.{Action, AnyContent, ControllerComponents, Result}
+import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.controllers.DWPController.UCDetails
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.helptosavestub.util.{Delays, Logging}
@@ -31,7 +32,7 @@ import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 import java.util.UUID
 import scala.concurrent.ExecutionContext
 
-class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext)
+class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(implicit ec: ExecutionContext, appConfig: AppConfig)
     extends BackendController(cc)
     with Logging
     with DWPEligibilityBehaviour
@@ -39,7 +40,7 @@ class DWPController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
 
   val scheduler: Scheduler = actorSystem.scheduler
 
-  val checkUCStatusDelayConfig: DelayConfig = Delays.config("check-uc-status", actorSystem.settings.config)
+  val checkUCStatusDelayConfig: DelayConfig = Delays.config("check-uc-status")
 
   val ucGen: Gen[UCDetails] = {
     val booleanGen = Gen.oneOf("Y", "N")
