@@ -77,150 +77,150 @@ object NSIGetAccountByNinoResponse {
 
   implicit val format: Format[NSIGetAccountByNinoResponse] = Json.format[NSIGetAccountByNinoResponse]
 
-  val bethCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val bethCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
 
-  val bethTerms: List[Term] = List[Term](
+  private val bethTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "250.00", "125.00", "0.00"),
     Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00")
   )
-  val peteCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("9.88", "50.00", LocalDate.of(2018, 3, 31))
-  val peteTerms: List[Term] = List[Term](
+  private val peteCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("9.88", "50.00", LocalDate.of(2018, 3, 31))
+  private val peteTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 9, 1), LocalDate.of(2019, 8, 31), "190.12", "95.06", "0.00"),
     Term(2, LocalDate.of(2019, 9, 1), LocalDate.of(2021, 8, 31), "0.00", "0.00", "0.00")
   )
-  val lauraCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
-  val lauraTerms: List[Term] = List[Term](
+  private val lauraCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val lauraTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 3, 1), LocalDate.of(2019, 2, 28), "135.00", "67.50", "0.00"),
     Term(2, LocalDate.of(2019, 3, 1), LocalDate.of(2021, 2, 28), "0.00", "0.00", "0.00")
   )
-  val tonyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
-  val tonyTerms: List[Term] = List[Term](
+  private val tonyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val tonyTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 10, 1), LocalDate.of(2019, 9, 30), "75.00", "37.50", "0.00"),
     Term(2, LocalDate.of(2019, 10, 1), LocalDate.of(2021, 9, 30), "0.00", "0.00", "0.00")
   )
-  val monikaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
-  val monikaTerms: List[Term] = List[Term](
+  private val monikaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val monikaTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 2, 29), "0.00", "0.00", "0.00"),
     Term(2, LocalDate.of(2020, 3, 1), LocalDate.of(2022, 2, 28), "0.00", "0.00", "0.00")
   )
-  val happyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
-  val happyTerms: List[Term] = List[Term](
+  private val happyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val happyTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "1200.00", "600.00", "600.00"),
     Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 2, 28), "2400.00", "600.00", "600.00")
   )
-  val takenCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
-  val takenTerms: List[Term] = List[Term](
+  private val takenCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val takenTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "1200.00", "600.00", "600.00"),
     Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 2, 28), "0.00", "0.00", "0.00")
   )
-  val spencerCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("40.00", "50.00", LocalDate.of(2018, 3, 31))
-  val spencerTerms: List[Term] = List[Term](
+  private val spencerCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("40.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val spencerTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2016, 3, 1), LocalDate.of(2018, 2, 28), "822.00", "411.00", "411.00"),
     Term(2, LocalDate.of(2018, 3, 1), LocalDate.of(2020, 2, 29), "10.00", "5.00", "0.00")
   )
-  val alexCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("13.00", "50.00", LocalDate.of(2018, 3, 31))
-  val alexTerms: List[Term] = List[Term](
+  private val alexCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("13.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val alexTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2015, 2, 1), LocalDate.of(2017, 1, 31), "900.00", "450.00", "450.00"),
     Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 1, 31), "1270.00", "185.00", "0.00")
   )
-  val annaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
-  val annaTerms: List[Term] = List[Term](
+  private val annaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val annaTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 10, 1), LocalDate.of(2019, 9, 30), "75.00", "37.50", "0.00"),
     Term(2, LocalDate.of(2019, 10, 1), LocalDate.of(2021, 9, 30), "0.00", "0.00", "0.00")
   )
-  val accountBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
-  val accountBlockedTerms: List[Term] = List[Term](
+  private val accountBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val accountBlockedTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "250.00", "125.00", "0.00"),
     Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00")
   )
-  val clientBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
-  val clientBlockedTerms: List[Term] = List[Term](
+  private val clientBlockedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val clientBlockedTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "250.00", "125.00", "0.00"),
     Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00")
   )
-  val positiveBonusZeroBalanceCIM: CurrentInvestmentMonth =
+  private val positiveBonusZeroBalanceCIM: CurrentInvestmentMonth =
     CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
   // make sure term 2 lasts a long time so we are always in term 2 during testing
-  val positiveBonusZeroBalanceTerms: List[Term] = List[Term](
+  private val positiveBonusZeroBalanceTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "2400.00", "600.00", "600.00"),
     Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2916, 2, 28), "2400.00", "600.00", "0.00")
   )
-  val zeroBonusPositiveBalanceCIM: CurrentInvestmentMonth =
+  private val zeroBonusPositiveBalanceCIM: CurrentInvestmentMonth =
     CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
   // make sure term 2 lasts a long time so we are always in term 2 during testing
-  val zeroBonusPositiveBalanceTerms: List[Term] = List[Term](
+  private val zeroBonusPositiveBalanceTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2014, 3, 1), LocalDate.of(2016, 2, 29), "2400.00", "600.00", "600.00"),
     Term(2, LocalDate.of(2016, 3, 1), LocalDate.of(2916, 2, 28), "2400.00", "0.00", "0.00")
   )
-  val closedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
-  val closedTerms: List[Term] = List[Term](
+  private val closedCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val closedTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "250.00", "00.00", "0.00"),
     Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00")
   )
-  val closed2CIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
-  val closed2Terms: List[Term] = List[Term](
+  private val closed2CIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val closed2Terms: List[Term] = List[Term](
     Term(1, LocalDate.of(2015, 2, 1), LocalDate.of(2017, 1, 31), "0.00", "0.00", "0.00"),
     Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 1, 31), "0.00", "0.00", "0.00")
   )
-  val closed3CIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
-  val closed3Terms: List[Term] = List[Term](
+  private val closed3CIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val closed3Terms: List[Term] = List[Term](
     Term(1, LocalDate.of(2015, 2, 1), LocalDate.of(2017, 1, 31), "0.00", "0.00", "0.00"),
     Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 1, 31), "100.00", "0.00", "0.00")
   )
-  val closed4CIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
-  val closed4Terms: List[Term] = List[Term](
+  private val closed4CIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", LocalDate.of(2018, 3, 31))
+  private val closed4Terms: List[Term] = List[Term](
     Term(1, LocalDate.of(2015, 2, 1), LocalDate.of(2017, 1, 31), "100.00", "50.00", "50.00"),
     Term(2, LocalDate.of(2017, 2, 1), LocalDate.of(2019, 1, 31), "200.00", "0.00", "0.00")
   )
-  val accountUnspecifiedBlockedCIM: CurrentInvestmentMonth =
+  private val accountUnspecifiedBlockedCIM: CurrentInvestmentMonth =
     CurrentInvestmentMonth("0.00", "50.00", LocalDate.of(2018, 3, 31))
-  val accountUnspecifiedBlockedTerms: List[Term] = List[Term](
+  private val accountUnspecifiedBlockedTerms: List[Term] = List[Term](
     Term(1, LocalDate.of(2017, 11, 1), LocalDate.of(2019, 10, 31), "250.00", "125.00", "0.00"),
     Term(2, LocalDate.of(2019, 11, 1), LocalDate.of(2021, 10, 31), "0.00", "0.00", "0.00")
   )
-  val tomCIM: CurrentInvestmentMonth =
+  private val tomCIM: CurrentInvestmentMonth =
     CurrentInvestmentMonth("0.00", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val tomTerms: List[Term] = List[Term](
+  private val tomTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(4), xMonthsFutureLastDayOfMonth(19), "250.00", "125.00", "0.00"),
     Term(2, xMonthsFutureFirstOfMonth(20), xMonthsFutureLastDayOfMonth(43), "0.00", "0.00", "0.00")
   )
-  val angelaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("9.88", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val angelaTerms: List[Term] = List[Term](
+  private val angelaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("9.88", "50.00", xMonthsAgoLastDayOfMonth(0))
+  private val angelaTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(6), xMonthsFutureLastDayOfMonth(17), "190.12", "95.06", "0.00"),
     Term(2, xMonthsFutureFirstOfMonth(18), xMonthsFutureLastDayOfMonth(41), "0.00", "0.00", "0.00")
   )
-  val ivoCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val ivoTerms: List[Term] = List[Term](
+  private val ivoCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", xMonthsAgoLastDayOfMonth(0))
+  private val ivoTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(12), xMonthsFutureLastDayOfMonth(11), "135.00", "67.50", "0.00"),
     Term(2, xMonthsFutureFirstOfMonth(12), xMonthsFutureLastDayOfMonth(35), "0.00", "0.00", "0.00")
   )
-  val arsenyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val arsenyTerms: List[Term] = List[Term](
+  private val arsenyCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("45.00", "50.00", xMonthsAgoLastDayOfMonth(0))
+  private val arsenyTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(5), xMonthsFutureLastDayOfMonth(18), "75.00", "37.50", "0.00"),
     Term(2, xMonthsFutureFirstOfMonth(19), xMonthsFutureLastDayOfMonth(42), "0.00", "0.00", "0.00")
   )
-  val sunanCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val sunanTerms: List[Term] = List[Term](
+  private val sunanCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", xMonthsAgoLastDayOfMonth(0))
+  private val sunanTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(48), xMonthsAgoLastDayOfMonth(25), "1200.00", "600.00", "600.00"),
     Term(2, xMonthsAgoFirstOfMonth(24), xMonthsAgoLastDayOfMonth(1), "2400.00", "600.00", "600.00")
   )
-  val ranaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val ranaTerms: List[Term] = List[Term](
+  private val ranaCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("50.00", "50.00", xMonthsAgoLastDayOfMonth(0))
+  private val ranaTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(48), xMonthsAgoLastDayOfMonth(25), "1200.00", "600.00", "600.00"),
     Term(2, xMonthsAgoFirstOfMonth(24), xMonthsAgoLastDayOfMonth(1), "0.00", "0.00", "0.00")
   )
-  val marshalCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("40.00", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val marshalTerms: List[Term] = List[Term](
+  private val marshalCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("40.00", "50.00", xMonthsAgoLastDayOfMonth(0))
+  private val marshalTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(24), xMonthsAgoLastDayOfMonth(1), "822.00", "411.00", "411.00"),
     Term(2, xMonthsAgoFirstOfMonth(0), xMonthsFutureLastDayOfMonth(23), "10.00", "5.00", "0.00")
   )
-  val dennisCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("13.00", "50.00", xMonthsAgoLastDayOfMonth(0))
-  val dennisTerms: List[Term] = List[Term](
+  private val dennisCIM: CurrentInvestmentMonth = CurrentInvestmentMonth("13.00", "50.00", xMonthsAgoLastDayOfMonth(0))
+  private val dennisTerms: List[Term] = List[Term](
     Term(1, xMonthsAgoFirstOfMonth(37), xMonthsAgoLastDayOfMonth(14), "900.00", "450.00", "450.00"),
     Term(2, xMonthsAgoFirstOfMonth(13), xMonthsFutureLastDayOfMonth(10), "1270.00", "185.00", "0.00")
   )
 
-  def bethNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def bethNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112057",
       "250.00",
@@ -240,7 +240,7 @@ object NSIGetAccountByNinoResponse {
       bethTerms
     )
 
-  def peteNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def peteNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112058",
       "190.12",
@@ -260,7 +260,7 @@ object NSIGetAccountByNinoResponse {
       peteTerms
     )
 
-  def lauraNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def lauraNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112059",
       "135.00",
@@ -280,7 +280,7 @@ object NSIGetAccountByNinoResponse {
       lauraTerms
     )
 
-  def tonyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def tonyNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112060",
       "75.00",
@@ -299,7 +299,7 @@ object NSIGetAccountByNinoResponse {
       "801497",
       tonyTerms)
 
-  def monikaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def monikaNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112061",
       "0.00",
@@ -319,7 +319,7 @@ object NSIGetAccountByNinoResponse {
       monikaTerms
     )
 
-  def happyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def happyNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112062",
       "2400.00",
@@ -339,7 +339,7 @@ object NSIGetAccountByNinoResponse {
       happyTerms
     )
 
-  def takenNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def takenNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112063",
       "0.00",
@@ -359,7 +359,7 @@ object NSIGetAccountByNinoResponse {
       takenTerms
     )
 
-  def spencerNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def spencerNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112064",
       "832.00",
@@ -379,7 +379,7 @@ object NSIGetAccountByNinoResponse {
       spencerTerms
     )
 
-  def alexNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def alexNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112065",
       "1270.00",
@@ -399,7 +399,7 @@ object NSIGetAccountByNinoResponse {
       alexTerms
     )
 
-  def annaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def annaNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112066",
       "75.00",
@@ -419,7 +419,7 @@ object NSIGetAccountByNinoResponse {
       annaTerms
     )
 
-  def accountBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def accountBlockedResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112067",
       "250.00",
@@ -439,7 +439,7 @@ object NSIGetAccountByNinoResponse {
       accountBlockedTerms
     )
 
-  def clientBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def clientBlockedResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112068",
       "250.00",
@@ -459,7 +459,7 @@ object NSIGetAccountByNinoResponse {
       clientBlockedTerms
     )
 
-  def positiveBonusZeroBalanceResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def positiveBonusZeroBalanceResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112069",
       "0.00",
@@ -479,7 +479,7 @@ object NSIGetAccountByNinoResponse {
       positiveBonusZeroBalanceTerms
     )
 
-  def zeroBonusPositiveBalanceResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def zeroBonusPositiveBalanceResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112070",
       "2400.00",
@@ -499,7 +499,7 @@ object NSIGetAccountByNinoResponse {
       zeroBonusPositiveBalanceTerms
     )
 
-  def closedAccountResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def closedAccountResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112071",
       "0.00",
@@ -519,7 +519,7 @@ object NSIGetAccountByNinoResponse {
       closedTerms
     )
 
-  def closedAccount2Response(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def closedAccount2Response(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112072",
       "0.00",
@@ -539,7 +539,7 @@ object NSIGetAccountByNinoResponse {
       closed2Terms
     )
 
-  def closedAccount3Response(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def closedAccount3Response(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112073",
       "0.00",
@@ -559,7 +559,7 @@ object NSIGetAccountByNinoResponse {
       closed3Terms
     )
 
-  def closedAccount4Response(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def closedAccount4Response(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112074",
       "0.00",
@@ -579,7 +579,7 @@ object NSIGetAccountByNinoResponse {
       closed4Terms
     )
 
-  def accountUnspecifiedBlockedResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def accountUnspecifiedBlockedResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112075",
       "250.00",
@@ -599,7 +599,7 @@ object NSIGetAccountByNinoResponse {
       accountUnspecifiedBlockedTerms
     )
 
-  def tomNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def tomNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112076",
       "250.00",
@@ -618,7 +618,7 @@ object NSIGetAccountByNinoResponse {
       "801497",
       tomTerms)
 
-  def angelaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def angelaNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112077",
       "190.12",
@@ -638,7 +638,7 @@ object NSIGetAccountByNinoResponse {
       angelaTerms
     )
 
-  def ivoNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def ivoNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112078",
       "135.00",
@@ -657,7 +657,7 @@ object NSIGetAccountByNinoResponse {
       "801497",
       ivoTerms)
 
-  def arsenyNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def arsenyNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112079",
       "60.00",
@@ -676,7 +676,7 @@ object NSIGetAccountByNinoResponse {
       "801497",
       arsenyTerms)
 
-  def sunanNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def sunanNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112080",
       "2400.00",
@@ -696,7 +696,7 @@ object NSIGetAccountByNinoResponse {
       sunanTerms
     )
 
-  def ranaNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def ranaNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112081",
       "0.00",
@@ -716,7 +716,7 @@ object NSIGetAccountByNinoResponse {
       ranaTerms
     )
 
-  def marshalNSIResponse(correlationId: Option[String]): NSIGetAccountByNinoResponse =
+  def marshalNSIResponse(): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112082",
       "832.00",
@@ -736,7 +736,7 @@ object NSIGetAccountByNinoResponse {
       marshalTerms
     )
 
-  def dennisNSIResponse(correlationId: Option[String], closedFlag: String = " "): NSIGetAccountByNinoResponse =
+  def dennisNSIResponse(closedFlag: String = " "): NSIGetAccountByNinoResponse =
     NSIGetAccountByNinoResponse(
       "1100000112083",
       "1270.00",

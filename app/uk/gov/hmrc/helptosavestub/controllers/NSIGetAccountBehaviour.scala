@@ -20,12 +20,12 @@ import uk.gov.hmrc.helptosavestub.models.{ErrorDetails, NSIErrorResponse, NSIGet
 
 object NSIGetAccountBehaviour {
   // linter:ignore // ignores all warnings
-  def getAccountByNino(nino: String, correlationId: Option[String]): Either[ErrorDetails, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
+  def getAccountByNino(nino: String): Either[ErrorDetails, NSIGetAccountByNinoResponse] = // scalastyle:ignore cyclomatic.complexity line.size.limit
     nino match {
       case n if (n.startsWith("AA") || n.startsWith("AB")) || n.startsWith("BE") =>
-        Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.bethNSIResponse())
       case n if (n.startsWith("EM200") || n.startsWith("EL07")) || n.startsWith("AC") || n.startsWith("AS409") =>
-        Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.bethNSIResponse())
       case n if n.startsWith("EM002") => Left(NSIErrorResponse.missingVersionError)
       case n if n.startsWith("EM003") => Left(NSIErrorResponse.unsupportedVersionError)
       case n if n.startsWith("EM004") => Left(NSIErrorResponse.missingNinoError)
@@ -33,61 +33,61 @@ object NSIGetAccountBehaviour {
       case n if n.startsWith("EM006") => Left(NSIErrorResponse.unknownNinoError)
       case n if n.startsWith("EM012") => Left(NSIErrorResponse.missingSystemIdError)
       case n if n.startsWith("EM0") && n.endsWith("001A") =>
-        Right(NSIGetAccountByNinoResponse.bethNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.bethNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("002A") =>
-        Right(NSIGetAccountByNinoResponse.peteNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.peteNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("003A") =>
-        Right(NSIGetAccountByNinoResponse.lauraNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.lauraNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("004A") =>
-        Right(NSIGetAccountByNinoResponse.tonyNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.tonyNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("005A") =>
-        Right(NSIGetAccountByNinoResponse.monikaNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.monikaNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("006A") =>
-        Right(NSIGetAccountByNinoResponse.happyNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.happyNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("007A") =>
-        Right(NSIGetAccountByNinoResponse.takenNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.takenNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("008A") =>
-        Right(NSIGetAccountByNinoResponse.spencerNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.spencerNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("009A") =>
-        Right(NSIGetAccountByNinoResponse.alexNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.alexNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("010A") =>
-        Right(NSIGetAccountByNinoResponse.closedAccountResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.closedAccountResponse())
       case n if n.startsWith("EM0") && n.endsWith("011A") =>
-        Right(NSIGetAccountByNinoResponse.accountBlockedResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.accountBlockedResponse())
       case n if n.startsWith("EM0") && n.endsWith("012A") =>
-        Right(NSIGetAccountByNinoResponse.clientBlockedResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.clientBlockedResponse())
       case n if n.startsWith("EM0") && n.endsWith("013A") =>
-        Right(NSIGetAccountByNinoResponse.closedAccount2Response(correlationId))
+        Right(NSIGetAccountByNinoResponse.closedAccount2Response())
       case n if n.startsWith("EM0") && n.endsWith("014A") =>
-        Right(NSIGetAccountByNinoResponse.closedAccount3Response(correlationId))
+        Right(NSIGetAccountByNinoResponse.closedAccount3Response())
       case n if n.startsWith("EM0") && n.endsWith("015A") =>
-        Right(NSIGetAccountByNinoResponse.closedAccount4Response(correlationId))
+        Right(NSIGetAccountByNinoResponse.closedAccount4Response())
       case n if n.startsWith("EM0") && n.endsWith("016A") =>
-        Right(NSIGetAccountByNinoResponse.accountUnspecifiedBlockedResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.accountUnspecifiedBlockedResponse())
       case n if n.startsWith("EM0") && n.endsWith("099A") =>
-        Right(NSIGetAccountByNinoResponse.positiveBonusZeroBalanceResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.positiveBonusZeroBalanceResponse())
       case n if n.startsWith("EM0") && n.endsWith("098A") =>
-        Right(NSIGetAccountByNinoResponse.zeroBonusPositiveBalanceResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.zeroBonusPositiveBalanceResponse())
       case n if n.startsWith("TM7") && n.endsWith("915A") =>
-        Right(NSIGetAccountByNinoResponse.annaNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.annaNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("017A") =>
-        Right(NSIGetAccountByNinoResponse.tomNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.tomNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("018A") =>
-        Right(NSIGetAccountByNinoResponse.angelaNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.angelaNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("019A") =>
-        Right(NSIGetAccountByNinoResponse.ivoNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.ivoNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("020A") =>
-        Right(NSIGetAccountByNinoResponse.arsenyNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.arsenyNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("021A") =>
-        Right(NSIGetAccountByNinoResponse.sunanNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.sunanNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("022A") =>
-        Right(NSIGetAccountByNinoResponse.ranaNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.ranaNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("023A") =>
-        Right(NSIGetAccountByNinoResponse.marshalNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.marshalNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("024A") =>
-        Right(NSIGetAccountByNinoResponse.dennisNSIResponse(correlationId))
+        Right(NSIGetAccountByNinoResponse.dennisNSIResponse())
       case n if n.startsWith("EM0") && n.endsWith("025A") =>
-        Right(NSIGetAccountByNinoResponse.dennisNSIResponse(correlationId, "C"))
+        Right(NSIGetAccountByNinoResponse.dennisNSIResponse( "C"))
       case _ => Left(NSIErrorResponse.unknownNinoError)
     }
 }

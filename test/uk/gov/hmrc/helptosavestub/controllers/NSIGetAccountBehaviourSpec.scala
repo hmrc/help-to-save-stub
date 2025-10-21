@@ -25,41 +25,41 @@ class NSIGetAccountBehaviourSpec extends AnyWordSpec with Matchers {
   "NSIGetAccountBehaviour.getAccountByNino" should {
 
     "return bethNSIResponse for NINOs starting with AA, AB, or BE" in {
-      val result = NSIGetAccountBehaviour.getAccountByNino("AA123456A", Some("corr-id"))
-      result shouldBe Right(NSIGetAccountByNinoResponse.bethNSIResponse(Some("corr-id")))
+      val result = NSIGetAccountBehaviour.getAccountByNino("AA123456A")
+      result shouldBe Right(NSIGetAccountByNinoResponse.bethNSIResponse())
     }
 
     "return missingVersionError for NINOs starting with EM002" in {
-      val result = NSIGetAccountBehaviour.getAccountByNino("EM002123A", None)
+      val result = NSIGetAccountBehaviour.getAccountByNino("EM002123A")
       result shouldBe Left(NSIErrorResponse.missingVersionError)
     }
 
     "return unsupportedVersionError for NINOs starting with EM003" in {
-      val result = NSIGetAccountBehaviour.getAccountByNino("EM003123A", None)
+      val result = NSIGetAccountBehaviour.getAccountByNino("EM003123A")
       result shouldBe Left(NSIErrorResponse.unsupportedVersionError)
     }
 
     "return specific named responses for known suffixes" in {
-      val result1 = NSIGetAccountBehaviour.getAccountByNino("EM000001A", Some("corr-id"))
-      result1 shouldBe Right(NSIGetAccountByNinoResponse.bethNSIResponse(Some("corr-id")))
+      val result1 = NSIGetAccountBehaviour.getAccountByNino("EM000001A")
+      result1 shouldBe Right(NSIGetAccountByNinoResponse.bethNSIResponse())
 
-      val result2 = NSIGetAccountBehaviour.getAccountByNino("EM000002A", Some("corr-id"))
-      result2 shouldBe Right(NSIGetAccountByNinoResponse.peteNSIResponse(Some("corr-id")))
+      val result2 = NSIGetAccountBehaviour.getAccountByNino("EM000002A")
+      result2 shouldBe Right(NSIGetAccountByNinoResponse.peteNSIResponse())
 
-      val result3 = NSIGetAccountBehaviour.getAccountByNino("EM000025A", Some("corr-id"))
-      result3 shouldBe Right(NSIGetAccountByNinoResponse.dennisNSIResponse(Some("corr-id"), "C"))
+      val result3 = NSIGetAccountBehaviour.getAccountByNino("EM000025A")
+      result3 shouldBe Right(NSIGetAccountByNinoResponse.dennisNSIResponse("C"))
     }
 
     "return unknownNinoError for unrecognized NINOs" in {
-      val result = NSIGetAccountBehaviour.getAccountByNino("ZZ123456A", None)
+      val result = NSIGetAccountBehaviour.getAccountByNino("ZZ123456A")
       result shouldBe Left(NSIErrorResponse.unknownNinoError)
     }
 
     "return bethNSIResponse for NINOs starting with AA, AB, BE, EM200, EL07, AC, AS409" in {
       val validPrefixes = Seq("AA", "AB", "BE", "EM200", "EL07", "AC", "AS409")
       validPrefixes.foreach { prefix =>
-        val result = NSIGetAccountBehaviour.getAccountByNino(s"${prefix}123456A", Some("corr-id"))
-        result shouldBe Right(NSIGetAccountByNinoResponse.bethNSIResponse(Some("corr-id")))
+        val result = NSIGetAccountBehaviour.getAccountByNino(s"${prefix}123456A")
+        result shouldBe Right(NSIGetAccountByNinoResponse.bethNSIResponse())
       }
     }
 
@@ -74,52 +74,52 @@ class NSIGetAccountBehaviourSpec extends AnyWordSpec with Matchers {
       )
 
       errorCases.foreach { case (nino, expectedError) =>
-        NSIGetAccountBehaviour.getAccountByNino(nino, None) shouldBe Left(expectedError)
+        NSIGetAccountBehaviour.getAccountByNino(nino) shouldBe Left(expectedError)
       }
     }
 
     "return correct named responses for EM0xxxxA suffixes" in {
       val testCases = Seq(
-        "EM000001A" -> ((cid: Option[String]) =>  NSIGetAccountByNinoResponse.bethNSIResponse (cid)),
-        "EM000002A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.peteNSIResponse (cid)),
-        "EM000003A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.lauraNSIResponse (cid)),
-        "EM000004A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.tonyNSIResponse (cid)),
-        "EM000005A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.monikaNSIResponse (cid)),
-        "EM000006A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.happyNSIResponse (cid)),
-        "EM000007A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.takenNSIResponse (cid)),
-        "EM000008A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.spencerNSIResponse (cid)),
-        "EM000009A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.alexNSIResponse (cid)),
-        "EM000010A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.closedAccountResponse (cid)),
-        "EM000011A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.accountBlockedResponse (cid)),
-        "EM000012A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.clientBlockedResponse (cid)),
-        "EM000013A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.closedAccount2Response (cid)),
-        "EM000014A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.closedAccount3Response (cid)),
-        "EM000015A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.closedAccount4Response (cid)),
-        "EM000016A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.accountUnspecifiedBlockedResponse (cid)),
-        "EM000099A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.positiveBonusZeroBalanceResponse (cid)),
-        "EM000098A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.zeroBonusPositiveBalanceResponse (cid)),
-        "TM7915915A" ->((cid: Option[String]) => NSIGetAccountByNinoResponse.annaNSIResponse (cid)),
-        "EM000017A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.tomNSIResponse (cid)),
-        "EM000018A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.angelaNSIResponse (cid)),
-        "EM000019A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.ivoNSIResponse (cid)),
-        "EM000020A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.arsenyNSIResponse (cid)),
-        "EM000021A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.sunanNSIResponse (cid)),
-        "EM000022A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.ranaNSIResponse (cid)),
-        "EM000023A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.marshalNSIResponse (cid)),
-        "EM000024A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.dennisNSIResponse (cid)),
-        "EM000025A" -> ((cid: Option[String]) => NSIGetAccountByNinoResponse.dennisNSIResponse(cid, "C"))
+        "EM000001A" -> ((_: Option[String]) =>  NSIGetAccountByNinoResponse.bethNSIResponse ()),
+        "EM000002A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.peteNSIResponse ()),
+        "EM000003A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.lauraNSIResponse ()),
+        "EM000004A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.tonyNSIResponse ()),
+        "EM000005A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.monikaNSIResponse ()),
+        "EM000006A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.happyNSIResponse ()),
+        "EM000007A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.takenNSIResponse ()),
+        "EM000008A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.spencerNSIResponse ()),
+        "EM000009A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.alexNSIResponse ()),
+        "EM000010A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.closedAccountResponse ()),
+        "EM000011A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.accountBlockedResponse ()),
+        "EM000012A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.clientBlockedResponse ()),
+        "EM000013A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.closedAccount2Response ()),
+        "EM000014A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.closedAccount3Response ()),
+        "EM000015A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.closedAccount4Response ()),
+        "EM000016A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.accountUnspecifiedBlockedResponse ()),
+        "EM000099A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.positiveBonusZeroBalanceResponse ()),
+        "EM000098A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.zeroBonusPositiveBalanceResponse ()),
+        "TM7915915A" ->((_: Option[String]) => NSIGetAccountByNinoResponse.annaNSIResponse ()),
+        "EM000017A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.tomNSIResponse ()),
+        "EM000018A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.angelaNSIResponse ()),
+        "EM000019A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.ivoNSIResponse ()),
+        "EM000020A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.arsenyNSIResponse ()),
+        "EM000021A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.sunanNSIResponse ()),
+        "EM000022A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.ranaNSIResponse ()),
+        "EM000023A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.marshalNSIResponse ()),
+        "EM000024A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.dennisNSIResponse ()),
+        "EM000025A" -> ((_: Option[String]) => NSIGetAccountByNinoResponse.dennisNSIResponse("C"))
       )
 
       val correlationId = Some("corr-id")
 
       testCases.foreach { case (nino, expectedResponseFn) =>
-        val result = NSIGetAccountBehaviour.getAccountByNino(nino, correlationId)
+        val result = NSIGetAccountBehaviour.getAccountByNino(nino)
         result shouldBe Right(expectedResponseFn(correlationId))
       }
     }
 
     "return unknownNinoError for unmatched NINOs" in {
-      val result = NSIGetAccountBehaviour.getAccountByNino("ZZ999999A", None)
+      val result = NSIGetAccountBehaviour.getAccountByNino("ZZ999999A")
       result shouldBe Left(NSIErrorResponse.unknownNinoError)
     }
   }
