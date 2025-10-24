@@ -97,7 +97,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     }
   }
 
-  def withNSIPayload(description: String)(body: NSIPayload => Result)(implicit request: Request[AnyContent]): Result = {
+  private def withNSIPayload(description: String)(body: NSIPayload => Result)(implicit request: Request[AnyContent]): Result = {
     lazy val requestBodyText = request.body.asText.getOrElse("")
 
     request.body.asJson.map(_.validate[NSIPayload]) match {
@@ -114,7 +114,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
     }
   }
 
-  def handleRequest(nsiPayload: NSIPayload, successResult: Result, description: String)(
+  private def handleRequest(nsiPayload: NSIPayload, successResult: Result, description: String)(
     implicit request: Request[AnyContent]): Result =
     isAuthorised(request.headers).fold(
       { e =>
@@ -137,7 +137,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
       }
     )
 
-  def isAuthorised(headers: Headers): Either[String, Unit] = {
+  private def isAuthorised(headers: Headers): Either[String, Unit] = {
     val decoded: Either[String, String] =
       headers.headers
         .find(entry =>
@@ -193,7 +193,7 @@ class NSIController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents
           } else if (validatedNino.contains("500")) {
             InternalServerError
           } else {
-            val maybeAccount = getAccountByNino(validatedNino, correlationId)
+            val maybeAccount = getAccountByNino(validatedNino)
             maybeAccount match {
               case Right(a) => Ok(Json.toJson(a))
               case Left(e) => BadRequest(Json.toJson(NSIErrorResponse(version, correlationId, Seq(e))))

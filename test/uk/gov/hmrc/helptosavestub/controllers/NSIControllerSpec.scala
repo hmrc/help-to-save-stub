@@ -20,7 +20,7 @@ import play.api.libs.json._
 import play.api.mvc.Result
 import play.api.test.FakeRequest
 import play.api.test.Helpers._
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.helptosavestub.controllers.NSIGetTransactionsBehaviour.NSIGetTransactionsByNinoResponse
 import uk.gov.hmrc.helptosavestub.controllers.TestSupport._
 import uk.gov.hmrc.helptosavestub.controllers.support.AkkaMaterializerSpec
@@ -32,7 +32,7 @@ import java.util.Base64
 
 class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
 
-  val generator                 = new Generator(1)
+  val generator                 = new NinoGenerator()
   val ninoWithAccount: String   = randomNINO().withPrefixReplace("EM0").withSuffixReplace("001A")
   val ninoContaining500: String = randomNINO().withPrefixReplace("EM500")
   val ninoContaining401: String = randomNINO().withPrefixReplace("EM").withSuffixReplace("401A")
@@ -62,7 +62,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
   val nsiController = new NSIController(actorSystem, testCC)
 
   def errorMessageIds(result: Result): List[String] =
-    (jsonBodyOf(result) \ "errors").as[Seq[String]](Reads.seq((__ \ "errorMessageId").read[String])).toList
+    (jsonBodyOf(result) \ "errors").as[Seq[String]](using Reads.seq(using (__ \ "errorMessageId").read[String])).toList
 
   def correlationIds(result: Result): String = (jsonBodyOf(result) \ "correlationId").as[String]
 
@@ -134,7 +134,7 @@ class NSIControllerSpec extends TestSupport with AkkaMaterializerSpec {
       status(result) shouldBe OK
       val json = contentAsString(result)
       Json.fromJson[NSIGetAccountByNinoResponse](Json.parse(json)).get shouldBe NSIGetAccountByNinoResponse
-        .bethNSIResponse(Some("correlationId"))
+        .bethNSIResponse()
     }
 
     "return a 400 with errorMessageId HTS-API015-002 when the service version is missing" in {

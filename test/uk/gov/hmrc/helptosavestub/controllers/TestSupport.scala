@@ -21,7 +21,7 @@ import org.scalatest.BeforeAndAfterAll
 import play.api.inject.guice.GuiceApplicationBuilder
 import play.api.mvc.ControllerComponents
 import play.api.{Application, Configuration, Environment, Play}
-import uk.gov.hmrc.domain.Generator
+import uk.gov.hmrc.domain.NinoGenerator
 import uk.gov.hmrc.helptosavestub.config.AppConfig
 import uk.gov.hmrc.helptosavestub.util.UnitSpec
 
@@ -33,7 +33,7 @@ trait TestSupport extends UnitSpec with BeforeAndAfterAll {
   lazy val fakeApplication: Application = buildFakeApplication(additionalConfig)
   val testCC: ControllerComponents = play.api.test.Helpers.stubControllerComponents()
   lazy val testAppConfig: AppConfig = fakeApplication.injector.instanceOf[AppConfig]
-  private val generator                 = new Generator(1)
+  private val generator                 = new NinoGenerator()
   implicit lazy val ec: ExecutionContext = fakeApplication.injector.instanceOf[ExecutionContext]
   implicit lazy val appConfig: AppConfig = fakeApplication.injector.instanceOf[AppConfig]
 
