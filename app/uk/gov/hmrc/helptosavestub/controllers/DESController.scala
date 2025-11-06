@@ -30,12 +30,10 @@ class DESController @Inject()(cc: ControllerComponents, appConfig: AppConfig)
     extends BackendController(cc)
     with Logging {
 
-  private val expectedDESHeaders = appConfig.desHeaders
-
   def desAuthorisedAction(body: Request[AnyContent] => Future[Result]): Action[AnyContent] = Action.async { request =>
     val authHeaders = request.headers.getAll("Authorization")
 
-    if (authHeaders.contains(expectedDESHeaders)) {
+    if (appConfig.expectedDESHeaders.intersect(authHeaders).nonEmpty) {
       body(request)
     } else {
       logger.warn(s"Request did not contain expected authorisation header. Received: $authHeaders")

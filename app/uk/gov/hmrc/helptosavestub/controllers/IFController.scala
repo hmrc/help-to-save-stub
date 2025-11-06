@@ -27,13 +27,10 @@ import scala.concurrent.Future
 // class for controllers mimicking IF to extend
 trait IFController extends BackendBaseController with Logging {
 
-  private def expectedHeaders(implicit appConfig: AppConfig) =
-    appConfig.ifHeaders
-
   def ifAuthorisedAction(body: Request[AnyContent] => Future[Result])(
     implicit appConfig: AppConfig): Action[AnyContent] = Action.async { request =>
     val authHeaders = request.headers.getAll("Authorization")
-    if (authHeaders.contains(expectedHeaders)) {
+    if (appConfig.expectedHeaders.intersect(authHeaders).nonEmpty) {
       body(request)
     } else {
       logger.warn(s"Request did not contain expected authorisation header. Received: $authHeaders")

@@ -22,6 +22,7 @@ import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
 import scala.concurrent.duration.FiniteDuration
+import scala.jdk.CollectionConverters._
 
 @Singleton
 class AppConfig @Inject()(
@@ -31,8 +32,23 @@ class AppConfig @Inject()(
 
   protected def mode: Mode = environment.mode
 
-  val desHeaders: String = s"Bearer ${servicesConfig.getString("microservice.expectedDESHeaders")}"
+ /* val desHeaders: String = s"Bearer ${servicesConfig.getString("microservice.expectedDESHeaders")}"
   val ifHeaders: String = s"Bearer ${servicesConfig.getString("microservice.expectedIFHeaders")}"
+*/
+
+  val expectedDESHeaders: Seq[String] =
+    runModeConfiguration.underlying
+      .getStringList("microservice.expectedDESHeaders").asScala
+      .map(e => s"Bearer $e")
+      .toSeq
+
+  val expectedHeaders: Seq[String] =
+    runModeConfiguration.underlying
+      .getStringList("microservice.expectedIFHeaders")
+      .asScala.map(e => s"Bearer $e")
+      .toSeq
+
+
 
   def delayConfig(name: String): DelayConfig = DelayConfig(
     servicesConfig.getBoolean(s"delays.$name.enabled"),
