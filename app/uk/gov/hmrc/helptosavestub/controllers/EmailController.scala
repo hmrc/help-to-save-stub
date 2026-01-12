@@ -20,8 +20,10 @@ import com.google.inject.Inject
 import play.api.mvc.{Action, AnyContent, ControllerComponents}
 import uk.gov.hmrc.play.bootstrap.backend.controller.BackendController
 
+import scala.annotation.unused
+
 // Mock of the e-mail service
 class EmailController @Inject()(cc: ControllerComponents) extends BackendController(cc) {
   def send: Action[AnyContent]                   = Action { Accepted }
-  def unblock(email: String): Action[AnyContent] = Action { Ok }
+  def unblock(@unused email: String): Action[AnyContent] = Action { Ok }
 }
