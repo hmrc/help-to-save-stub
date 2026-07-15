@@ -37,7 +37,7 @@ import scala.util.Try
 class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(
   implicit ec: ExecutionContext,
   appConfig: AppConfig)
-    extends DESController(cc, appConfig)
+    extends DownstreamAuthController(cc)
     with IFController
     with Logging
     with Delays {
@@ -89,7 +89,7 @@ class PayePersonalDetailsController @Inject()(actorSystem: ActorSystem, cc: Cont
     getPayeDetails(ifAuthorisedAction(_), withIfCorrelationID(_), nino)
 
   def getDESPayeDetails(nino: String): Action[AnyContent] =
-    getPayeDetails(desAuthorisedAction, withDesCorrelationID, nino)
+    getPayeDetails(authorisedAction(appConfig.desHeaders), withCorrelationID(_), nino)
 
   private[controllers] def payeDetails(nino: String) =
     for { // scalastyle:ignore

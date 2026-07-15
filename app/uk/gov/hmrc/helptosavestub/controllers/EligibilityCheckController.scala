@@ -37,7 +37,7 @@ import scala.util.Try
 @Singleton
 class EligibilityCheckController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(
   implicit ec: ExecutionContext, appConfig: AppConfig)
-    extends DESController(cc, appConfig)
+    extends DownstreamAuthController(cc)
     with DWPEligibilityBehaviour
     with Delays {
 
@@ -49,7 +49,7 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, cc: Control
     nino: String,
     universalCreditClaimant: Option[String],
     withinThreshold: Option[String]): Action[AnyContent] =
-    desAuthorisedAction { _ =>
+    authorisedAction(appConfig.desHeaders) { _ =>
       withDelay(checkEligibilityDelayConfig) { () =>
         logger.info(
           s"Received eligibility check request for nino: $nino. UC parameters in the request are: " +
@@ -71,7 +71,7 @@ class EligibilityCheckController @Inject()(actorSystem: ActorSystem, cc: Control
             getResponse(nino, universalCreditClaimant, withinThreshold)
         }
 
-        withDesCorrelationID(response)
+        withCorrelationID(response)
       }
     }
 

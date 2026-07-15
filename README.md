@@ -78,6 +78,25 @@ Bank Account Reputation Service stubs
 | Path                                                        | Method | Description  |
 | ------------------------------------------------------------| ------ | ------------ |
 | /validateBankDetails                                        | GET    | Mimics a call to validate bank details. Different responses are allowed for based on the bank details being passed in |
+
+
+HIP/Eligibility stubs
+--------------
+| Path                                                        | Method | Description  |
+| ------------------------------------------------------------|--------| ------------ |
+| /help-to-save/{NINO}/account                      | POST   | Mimics a call to check eligibility for HTS. Different responses are allowed for based on the NINO in the request  |
+
+
+Eligibility Test data
+---------------------
+| Usecase                    | Description                       |
+|----------------------------|-----------------------------------|
+| Not Found                  | NINO starts with WP1144 or AA1231 |
+| Eligible result with code  | result code = first digit in NINO |
+| already has Account Result | NINO starts with AC               |
+| manual Rejection Result    | NINO starts with DS01             |
+| Eligible result code  7    | NINO starts with TM02             |
+
   
 License
 =======

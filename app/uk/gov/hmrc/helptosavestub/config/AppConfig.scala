@@ -21,6 +21,7 @@ import play.api.{ConfigLoader, Configuration, Environment, Mode}
 import uk.gov.hmrc.helptosavestub.util.Delays.DelayConfig
 import uk.gov.hmrc.play.bootstrap.config.ServicesConfig
 
+import java.util.Base64
 import scala.concurrent.duration.FiniteDuration
 
 @Singleton
@@ -33,6 +34,9 @@ class AppConfig @Inject()(
 
   val desHeaders: String = s"Bearer ${servicesConfig.getString("microservice.expectedDESHeaders")}"
   val ifHeaders: String = s"Bearer ${servicesConfig.getString("microservice.expectedIFHeaders")}"
+  val goUKOriginatorId: String = s"${servicesConfig.getString("microservice.gov-uk-originator-id")}"
+  private val hipCredentials: String = s"${servicesConfig.getString("microservice.hipClientID")}:${servicesConfig.getString("microservice.hipSecret")}"
+  val hipHeaders: String = "Basic " + Base64.getEncoder.encodeToString(hipCredentials.getBytes("UTF-8"))
 
   def delayConfig(name: String): DelayConfig = DelayConfig(
     servicesConfig.getBoolean(s"delays.$name.enabled"),
