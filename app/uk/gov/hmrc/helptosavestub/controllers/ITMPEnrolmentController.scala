@@ -28,13 +28,13 @@ import scala.concurrent.ExecutionContext
 @Singleton
 class ITMPEnrolmentController @Inject()(actorSystem: ActorSystem, cc: ControllerComponents)(
   implicit ec: ExecutionContext, appConfig: AppConfig)
-    extends DESController(cc, appConfig)
+    extends DownstreamAuthController(cc)
     with Delays {
 
   val scheduler: Scheduler                = actorSystem.scheduler
   val setItmpFlagDelayConfig: DelayConfig = Delays.config("set-itmp-flag")
 
-  def enrol(nino: String): Action[AnyContent] = desAuthorisedAction { _ =>
+  def enrol(nino: String): Action[AnyContent] = authorisedAction(appConfig.desHeaders) { _ =>
     withDelay(setItmpFlagDelayConfig) { () =>
       val response = if (nino.startsWith("HS403")) {
         logger.info("Received request to set ITMP flag: returning status 403 (FORBIDDEN)")
@@ -60,7 +60,7 @@ class ITMPEnrolmentController @Inject()(actorSystem: ActorSystem, cc: Controller
         Ok
       }
 
-      withDesCorrelationID(response)
+      withCorrelationID(response)
     }
   }
 }

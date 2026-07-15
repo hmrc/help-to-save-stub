@@ -24,7 +24,7 @@ import uk.gov.hmrc.helptosavestub.config.AppConfig
 import scala.concurrent.Future
 
 class DESThresholdController @Inject()(appConfig: AppConfig, cc: ControllerComponents)
-    extends DESController(cc, appConfig) {
+    extends DownstreamAuthController(cc) {
 
   val thresholdAmount: Double = appConfig.runModeConfiguration.underlying.getDouble("microservice.ucThresholdAmount")
 
@@ -35,7 +35,7 @@ class DESThresholdController @Inject()(appConfig: AppConfig, cc: ControllerCompo
                    |}
                  """.stripMargin)
 
-  def getThresholdAmount(): Action[AnyContent] = desAuthorisedAction { _ =>
+  def getThresholdAmount(): Action[AnyContent] = authorisedAction(appConfig.desHeaders) { _ =>
     Future.successful(Ok(thresholdAmountJson))
   }
 
