@@ -76,8 +76,8 @@ class EligibilityCheckHipController @Inject() (actorSystem: ActorSystem, cc: Con
                       Status(400)(Json.toJson(ErrorResponse("Hip", FailureResponse(List(Failures("HTTP message not readable", "400.2"))))))
                     }, { eligibilityCheckRequest =>
                       logger.info(s"[EligibilityCheckHipController] A request has been made: $eligibilityCheckRequest")
-                      val universalCreditAwardStatus = eligibilityCheckRequest.universalCreditAwardStatus.map(if(_)"Y" else "N")
-                      val withinThreshold = eligibilityCheckRequest.withinThreshold.map(if(_)"Y" else "N")
+                      val universalCreditAwardStatus = eligibilityCheckRequest.universalCreditAwardStatus.map(b => if (b) "Y" else "N")
+                      val withinThreshold = eligibilityCheckRequest.withinThreshold.map(b => if (b) "Y" else "N")
                       getResponse(identifier, universalCreditAwardStatus,withinThreshold)
                     }
                   )
